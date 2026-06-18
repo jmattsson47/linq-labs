@@ -33,6 +33,8 @@ npx serve .
 
 ## Deploy it
 
+Pushes to `main` auto-deploy via Vercel. Or manually:
+
 ```
 vercel --prod
 ```
