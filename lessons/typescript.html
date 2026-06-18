@@ -6,8 +6,6 @@
 <title>How TypeScript Works — The Fundamentals</title>
 <link rel="stylesheet" href="/css/shared.css">
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
 body {
   background: var(--bg-primary);
   color: var(--text-secondary);
@@ -16,128 +14,7 @@ body {
   overflow-x: hidden;
 }
 
-/* -- Top Nav -- */
-.top-nav {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 100;
-  background: var(--bg-secondary);
-  border-bottom: 1px solid var(--border-primary);
-  padding: 10px 16px;
-  display: flex;
-  gap: 6px;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-@media (min-width: 1024px) {
-  .top-nav { left: 280px; }
-}
-.top-nav::-webkit-scrollbar { height: 4px; }
-.top-nav::-webkit-scrollbar-thumb { background: var(--border-nav-btn); border-radius: 2px; }
-
-.nav-btn {
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-nav-btn);
-  color: var(--text-nav);
-  padding: 6px 14px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 13px;
-  white-space: nowrap;
-  transition: all 0.2s;
-  font-family: inherit;
-}
-.nav-btn:hover { border-color: var(--text-faint); color: var(--text-body); }
-.nav-btn.active {
-  background: var(--accent-blue-bg);
-  border-color: var(--accent-blue-bg);
-  color: var(--text-primary);
-}
-
-/* -- Container -- */
-.container {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 80px 20px 60px;
-}
-
-/* -- Lessons -- */
-.lesson { display: none; }
-.lesson.active { display: block; }
-
-.lesson h1 {
-  font-size: 32px;
-  font-weight: 700;
-  margin-bottom: 8px;
-  color: var(--text-primary);
-}
-.lesson .subtitle {
-  font-size: 15px;
-  color: var(--text-muted);
-  margin-bottom: 32px;
-}
-
-h2 {
-  font-size: 22px;
-  color: var(--text-primary);
-  margin: 36px 0 14px;
-}
-h3 {
-  font-size: 18px;
-  color: var(--text-secondary);
-  margin: 24px 0 10px;
-}
-
-p { margin-bottom: 16px; color: var(--text-body); }
-
-/* -- Cards -- */
-.card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-secondary);
-  border-radius: 10px;
-  padding: 24px;
-  margin: 20px 0;
-}
-.card-dark {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
-  border-radius: 10px;
-  padding: 24px;
-  margin: 20px 0;
-}
-
-/* -- Analogy boxes -- */
-.analogy {
-  background: var(--bg-analogy);
-  border: 1px solid var(--border-analogy);
-  border-radius: 10px;
-  padding: 20px 24px;
-  margin: 24px 0;
-}
-.analogy strong { color: var(--accent-indigo); }
-.analogy p { color: var(--text-tertiary); margin-bottom: 0; }
-.analogy .analogy-label {
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  color: var(--accent-indigo);
-  margin-bottom: 8px;
-}
-
 /* -- Code blocks -- */
-.code-block {
-  background: var(--bg-code);
-  border: 1px solid var(--border-secondary);
-  border-radius: 8px;
-  padding: 16px 20px;
-  overflow-x: auto;
-  margin: 16px 0;
-  font-family: 'SF Mono', Monaco, monospace;
-  font-size: 13.5px;
-  line-height: 1.6;
-}
 pre {
   background: var(--bg-code);
   border: 1px solid var(--border-secondary);
@@ -153,65 +30,8 @@ code {
   font-family: 'SF Mono', Monaco, monospace;
   font-size: 13px;
 }
-.kw { color: var(--accent-purple); }
-.fn { color: var(--accent-blue); }
-.str { color: var(--accent-green); }
-.typ { color: var(--accent-yellow); }
-.cmt { color: var(--text-faint); font-style: italic; }
-.err { color: #f87171; }
+.err { color: var(--accent-red); }
 .num { color: var(--accent-pink, #f472b6); }
-.op { color: var(--text-secondary); }
-
-/* inline code */
-p code, li code {
-  background: var(--bg-analogy);
-  padding: 2px 7px;
-  border-radius: 4px;
-  color: var(--accent-indigo);
-  font-size: 13px;
-}
-
-/* -- Interactive buttons row -- */
-.btn-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 16px 0;
-}
-.ibtn {
-  background: var(--bg-btn);
-  border: 1px solid var(--border-btn);
-  color: var(--text-nav);
-  padding: 8px 16px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.2s;
-  font-family: inherit;
-}
-.ibtn:hover { border-color: var(--accent-blue); color: var(--text-secondary); }
-.ibtn.selected {
-  background: var(--bg-btn-selected);
-  border-color: var(--border-btn-selected);
-  color: var(--text-primary);
-}
-
-/* -- Next button -- */
-.next-btn {
-  display: inline-block;
-  background: var(--accent-blue-bg);
-  color: var(--text-primary);
-  border: none;
-  padding: 14px 36px;
-  border-radius: 10px;
-  font-size: 16px;
-  cursor: pointer;
-  margin-top: 40px;
-  transition: background 0.2s;
-  font-family: inherit;
-  font-weight: 600;
-}
-.next-btn:hover { background: #3b82f6; }
 
 /* -- Error display -- */
 .error-display {
@@ -222,7 +42,7 @@ p code, li code {
   margin: 16px 0;
   font-family: 'SF Mono', Monaco, monospace;
   font-size: 13px;
-  color: #f87171;
+  color: var(--accent-red);
   line-height: 1.6;
 }
 
@@ -265,16 +85,6 @@ p code, li code {
   .compare-panels { grid-template-columns: 1fr; }
 }
 
-/* -- Result box for interactive demos -- */
-.result-box {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
-  border-radius: 10px;
-  padding: 20px;
-  margin: 16px 0;
-  min-height: 60px;
-}
-
 /* -- Type badge -- */
 .type-badge {
   display: inline-block;
@@ -309,7 +119,7 @@ p code, li code {
 }
 .interface-field .field-name { color: var(--accent-blue); }
 .interface-field .field-type { color: var(--accent-yellow); margin-left: auto; }
-.interface-field.missing { border-color: #f87171; background: rgba(248, 113, 113, 0.05); }
+.interface-field.missing { border-color: var(--accent-red); background: rgba(248, 113, 113, 0.05); }
 .interface-field.present { border-color: var(--accent-green); background: rgba(52, 211, 153, 0.05); }
 
 /* -- Generic box visual -- */
@@ -390,20 +200,8 @@ li { margin-bottom: 8px; color: var(--text-body); }
 
 /* -- Responsive -- */
 @media (max-width: 640px) {
-  .top-nav { padding: 8px 10px; gap: 4px; }
-  .nav-btn { padding: 5px 10px; font-size: 12px; }
-  .container { padding: 70px 14px 40px; }
-  .lesson h1 { font-size: 24px; }
   .compare-panels { grid-template-columns: 1fr; }
 }
-
-.breadcrumb { margin-top: 64px; padding-top: 8px; }
-
-.next-course-banner { background: var(--bg-secondary); border: 1px solid var(--border-primary); border-radius: 10px; padding: 24px; margin-top: 32px; text-align: center; }
-.next-course-banner h3 { color: var(--text-primary); margin: 0 0 8px; font-size: 18px; }
-.next-course-banner p { color: var(--text-muted); font-size: 15px; margin: 0 0 16px; }
-.next-course-banner a { display: inline-block; background: var(--accent-blue-bg); color: var(--text-primary); padding: 10px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px; transition: background 0.2s; }
-.next-course-banner a:hover { background: #3b82f6; }
 </style>
 </head>
 <body>
@@ -463,7 +261,7 @@ li { margin-bottom: 8px; color: var(--text-body); }
 
 <div class="content-wrapper">
 
-<div class="breadcrumb"><a href="/index.html">Home</a><span class="sep">&#8250;</span><span>How TypeScript Works</span></div>
+<div class="breadcrumb"><a href="/index.html">Home</a><span class="sep">›</span><span>How TypeScript Works</span></div>
 
 <!-- Top Nav -->
 <nav class="top-nav" id="topNav">
@@ -1445,7 +1243,7 @@ function toggleField(index) {
     field.classList.remove('present');
     field.classList.add('missing');
     field.querySelector('span:last-child').innerHTML = '&#10007;';
-    field.querySelector('span:last-child').style.color = '#f87171';
+    field.querySelector('span:last-child').style.color = 'var(--accent-red)';
   }
 
   updateInterfaceResult();
@@ -1628,7 +1426,7 @@ function narrowUnion(branch, el) {
         &nbsp;&nbsp;result.<strong>count</strong> &mdash; number (how many agents)<br>
         &nbsp;&nbsp;result.<strong>data[0].name</strong> &mdash; string<br>
         &nbsp;&nbsp;result.<strong>data[0].adapter</strong> &mdash; string<br><br>
-        <span style="color:var(--text-muted);">result.error &mdash; <span style="color:#f87171;">Error: Property 'error' does not exist</span></span><br>
+        <span style="color:var(--text-muted);">result.error &mdash; <span style="color:var(--accent-red);">Error: Property 'error' does not exist</span></span><br>
         <span style="color:var(--text-muted);">TypeScript knows there's no 'error' on the success branch.</span>
       </div>
     </div>`;
@@ -1639,7 +1437,7 @@ function narrowUnion(branch, el) {
         <span style="color:var(--text-body);">Available properties inside this branch:</span><br>
         <span style="color:var(--text-body);">&nbsp;&nbsp;result.<strong>error</strong> &mdash; string ("Not found", "Unauthorized", etc.)</span><br>
         <span style="color:var(--text-body);">&nbsp;&nbsp;result.<strong>code</strong> &mdash; number (404, 401, 500, etc.)</span><br><br>
-        <span style="color:var(--text-muted);">result.data &mdash; <span style="color:#f87171;">Error: Property 'data' does not exist</span></span><br>
+        <span style="color:var(--text-muted);">result.data &mdash; <span style="color:var(--accent-red);">Error: Property 'data' does not exist</span></span><br>
         <span style="color:var(--text-muted);">TypeScript knows there's no 'data' on the error branch.</span>
       </div>
     </div>`;

@@ -6,12 +6,6 @@
 <title>How Deployment Works — The Fundamentals</title>
 <link rel="stylesheet" href="/css/shared.css">
 <style>
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
 body {
   background: var(--bg-primary);
   color: var(--text-secondary);
@@ -20,223 +14,11 @@ body {
   min-height: 100vh;
 }
 
-/* ===== TOP NAV ===== */
-.top-nav {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  background: var(--bg-secondary);
-  border-bottom: 1px solid var(--border-primary);
-  z-index: 1000;
-  padding: 10px 16px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  overflow-x: auto;
-}
-
-@media (min-width: 1024px) {
-  .top-nav { left: 280px; }
-}
-
-.top-nav .nav-title {
-  font-weight: 700;
-  font-size: 14px;
-  color: #3b82f6;
-  white-space: nowrap;
-  margin-right: 8px;
-}
-
-.top-nav button {
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-nav-btn);
-  color: var(--text-secondary);
-  padding: 6px 14px;
-  border-radius: 6px;
-  font-size: 13px;
-  cursor: pointer;
-  white-space: nowrap;
-  font-family: inherit;
-  transition: all 0.2s;
-}
-
-.top-nav button:hover {
-  background: #252525;
-  border-color: var(--text-faint);
-}
-
-.top-nav button.active {
-  background: var(--accent-blue-bg);
-  border-color: var(--accent-blue-bg);
-  color: var(--text-primary);
-}
-
 /* ===== CONTAINER ===== */
 .container {
   max-width: 960px;
   margin: 0 auto;
   padding: 80px 24px 60px;
-}
-
-/* ===== LESSON ===== */
-.lesson {
-  display: none;
-}
-
-.lesson.active {
-  display: block;
-}
-
-.lesson h1 {
-  font-size: 32px;
-  font-weight: 700;
-  margin-bottom: 8px;
-  color: var(--text-primary);
-}
-
-.lesson .subtitle {
-  font-size: 16px;
-  color: var(--text-muted);
-  margin-bottom: 32px;
-}
-
-.lesson h2 {
-  font-size: 22px;
-  font-weight: 600;
-  margin-top: 36px;
-  margin-bottom: 14px;
-  color: var(--text-secondary);
-}
-
-.lesson h3 {
-  font-size: 18px;
-  font-weight: 600;
-  margin-top: 28px;
-  margin-bottom: 10px;
-  color: #d0d0d0;
-}
-
-.lesson p {
-  margin-bottom: 16px;
-  font-size: 15.5px;
-  color: var(--text-body);
-}
-
-/* ===== CARDS ===== */
-.card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-secondary);
-  border-radius: 10px;
-  padding: 24px;
-  margin-bottom: 20px;
-}
-
-.card-dark {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
-  border-radius: 10px;
-  padding: 24px;
-  margin-bottom: 20px;
-}
-
-/* ===== ANALOGY BOX ===== */
-.analogy {
-  background: var(--bg-analogy);
-  border: 1px solid var(--border-analogy);
-  border-radius: 10px;
-  padding: 20px 24px;
-  margin: 20px 0;
-}
-
-.analogy strong {
-  color: var(--accent-indigo);
-}
-
-.analogy p {
-  color: #c0c0d8;
-  margin-bottom: 0;
-}
-
-.analogy .analogy-label {
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  color: var(--accent-indigo);
-  margin-bottom: 8px;
-  font-weight: 600;
-}
-
-/* ===== CODE BLOCKS ===== */
-.code-block {
-  background: var(--bg-code);
-  border: 1px solid var(--border-secondary);
-  border-radius: 8px;
-  padding: 18px 20px;
-  margin: 16px 0;
-  overflow-x: auto;
-  font-family: 'SF Mono', Monaco, monospace;
-  font-size: 13.5px;
-  line-height: 1.6;
-}
-
-.code-block .kw { color: var(--accent-purple); }
-.code-block .fn { color: var(--accent-blue); }
-.code-block .str { color: var(--accent-green); }
-.code-block .typ { color: var(--accent-yellow); }
-.code-block .cm { color: var(--text-faint); }
-.code-block .op { color: var(--text-secondary); }
-.code-block .num { color: var(--accent-pink); }
-
-/* ===== INTERACTIVE BUTTON ROW ===== */
-.btn-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 16px 0;
-}
-
-.btn-row button {
-  background: var(--bg-btn);
-  border: 1px solid var(--border-btn);
-  color: var(--text-secondary);
-  padding: 8px 18px;
-  border-radius: 8px;
-  font-size: 14px;
-  cursor: pointer;
-  font-family: inherit;
-  transition: all 0.2s;
-}
-
-.btn-row button:hover {
-  background: #263548;
-  border-color: #4a6a8a;
-}
-
-.btn-row button.selected {
-  background: var(--bg-btn-selected);
-  border-color: var(--border-btn-selected);
-  color: #93c5fd;
-}
-
-/* ===== NEXT BUTTON ===== */
-.next-btn {
-  display: inline-block;
-  background: var(--accent-blue-bg);
-  color: var(--text-primary);
-  border: none;
-  padding: 12px 32px;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  margin-top: 36px;
-  font-family: inherit;
-  transition: background 0.2s;
-}
-
-.next-btn:hover {
-  background: #1d4ed8;
 }
 
 /* ===== COMPARISON GRID ===== */
@@ -286,7 +68,7 @@ body {
 .compare-col.good { border-color: #22c55e33; }
 .compare-col.good h4 { color: #4ade80; }
 .compare-col.bad { border-color: #ef444433; }
-.compare-col.bad h4 { color: #f87171; }
+.compare-col.bad h4 { color: var(--accent-red); }
 
 /* ===== TIMELINE / FLOW ===== */
 .flow-container {
@@ -330,7 +112,7 @@ body {
   justify-content: center;
   font-size: 16px;
   font-weight: 700;
-  color: #3b82f6;
+  color: var(--accent-blue);
   flex-shrink: 0;
   border: 2px solid var(--border-btn);
   transition: all 0.4s;
@@ -340,7 +122,7 @@ body {
 
 .flow-dot.active {
   background: var(--bg-btn-selected);
-  border-color: #3b82f6;
+  border-color: var(--accent-blue);
   color: #93c5fd;
 }
 
@@ -379,7 +161,7 @@ body {
 
 .diagram-arrow {
   font-size: 24px;
-  color: #3b82f6;
+  color: var(--accent-blue);
   margin: 12px 0;
 }
 
@@ -397,7 +179,7 @@ body {
 
 .diagram-node.highlight {
   background: var(--bg-btn-selected);
-  border-color: #3b82f6;
+  border-color: var(--accent-blue);
   color: #93c5fd;
   transform: scale(1.05);
   box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
@@ -419,7 +201,7 @@ body {
 
 .reveal-trigger:hover {
   background: var(--border-primary);
-  border-color: #444;
+  border-color: var(--border-tertiary);
 }
 
 .reveal-trigger span {
@@ -481,7 +263,7 @@ body {
 }
 
 .map-dot.active {
-  background: #3b82f6;
+  background: var(--accent-blue);
   box-shadow: 0 0 12px rgba(59, 130, 246, 0.6), 0 0 24px rgba(59, 130, 246, 0.3);
   width: 14px;
   height: 14px;
@@ -534,7 +316,7 @@ body {
 .map-line {
   position: absolute;
   height: 2px;
-  background: linear-gradient(90deg, #22c55e, #3b82f6);
+  background: linear-gradient(90deg, #22c55e, var(--accent-blue));
   transform-origin: left center;
   opacity: 0;
   transition: opacity 0.4s;
@@ -565,7 +347,7 @@ body {
   vertical-align: middle;
 }
 
-.map-legend .edge::before { background: #3b82f6; }
+.map-legend .edge::before { background: var(--accent-blue); }
 .map-legend .user::before { background: #22c55e; }
 
 /* ===== ENV TABLE ===== */
@@ -666,7 +448,7 @@ body {
 }
 
 .deploy-sim .sim-line .sim-ok { color: #4ade80; }
-.deploy-sim .sim-line .sim-info { color: #3b82f6; }
+.deploy-sim .sim-line .sim-info { color: var(--accent-blue); }
 .deploy-sim .sim-line .sim-warn { color: var(--accent-yellow); }
 .deploy-sim .sim-line .sim-url { color: var(--accent-purple); text-decoration: underline; }
 
@@ -711,8 +493,8 @@ body {
 .tab-btn:hover { color: var(--text-body); }
 
 .tab-btn.active {
-  color: #3b82f6;
-  border-bottom-color: #3b82f6;
+  color: var(--accent-blue);
+  border-bottom-color: var(--accent-blue);
 }
 
 .tab-pane {
@@ -744,7 +526,7 @@ body {
 }
 
 .dns-input:focus {
-  border-color: #3b82f6;
+  border-color: var(--accent-blue);
 }
 
 /* ===== INLINE BADGES ===== */
@@ -759,7 +541,7 @@ body {
 
 .badge-blue { background: #1e3a5f; color: #93c5fd; }
 .badge-green { background: #14532d; color: #4ade80; }
-.badge-yellow { background: #422006; color: var(--accent-yellow); }
+.badge-yellow { background: var(--bg-tint-yellow); color: var(--accent-yellow); }
 .badge-purple { background: #2e1065; color: var(--accent-purple); }
 
 /* ===== JOURNEY PIPELINE ===== */
@@ -799,7 +581,7 @@ body {
 
 .pipeline-stage.lit {
   background: var(--bg-btn-selected);
-  border-color: #3b82f6;
+  border-color: var(--accent-blue);
 }
 
 .pipeline-stage.lit h5 { color: #93c5fd; }
@@ -814,12 +596,12 @@ body {
 }
 
 .pipeline-arrow.lit {
-  color: #3b82f6;
+  color: var(--accent-blue);
 }
 
 /* ===== MISC ===== */
 .spacer { height: 20px; }
-.text-blue { color: #3b82f6; }
+.text-blue { color: var(--accent-blue); }
 .text-green { color: #4ade80; }
 .text-yellow { color: var(--accent-yellow); }
 .text-purple { color: var(--accent-purple); }
@@ -848,7 +630,7 @@ body {
 
 .highlight-box {
   background: var(--bg-secondary);
-  border-left: 3px solid #3b82f6;
+  border-left: 3px solid var(--accent-blue);
   padding: 14px 18px;
   margin: 16px 0;
   border-radius: 0 8px 8px 0;
@@ -920,8 +702,6 @@ body {
   }
 }
 
-.breadcrumb { margin-top: 64px; padding-top: 8px; }
-
 .next-course-banner { background: var(--bg-secondary); border: 1px solid var(--border-primary); border-radius: 10px; padding: 24px; margin-top: 32px; text-align: center; }
 .next-course-banner h3 { color: var(--text-primary); margin: 0 0 8px; font-size: 18px; }
 .next-course-banner p { color: var(--text-muted); font-size: 15px; margin: 0 0 16px; }
@@ -950,31 +730,31 @@ body {
     <a href="/lessons/build.html" class="sidebar-link" data-course="build">
       <span class="sidebar-num">04</span> Build a Mini App
     </a>
-    <a href="/lessons/deployment.html" class="sidebar-link" data-course="deployment" aria-current="page">
+    <a href="/lessons/deployment.html" class="sidebar-link" data-course="deployment">
       <span class="sidebar-num">05</span> How Deployment Works
     </a>
     <a href="/lessons/git.html" class="sidebar-link" data-course="git">
       <span class="sidebar-num">06</span> How Git Works
     </a>
+    <a href="/lessons/authentication.html" class="sidebar-link" data-course="authentication">
+      <span class="sidebar-num">07</span> How Auth Works
+    </a>
+    <a href="/lessons/typescript.html" class="sidebar-link" data-course="typescript">
+      <span class="sidebar-num">08</span> How TypeScript Works
+    </a>
+    <a href="/lessons/react.html" class="sidebar-link" data-course="react">
+      <span class="sidebar-num">09</span> How React Works
+    </a>
+    <a href="/lessons/testing.html" class="sidebar-link" data-course="testing">
+      <span class="sidebar-num">10</span> How Testing Works
+    </a>
+    <a href="/lessons/ai-agents.html" class="sidebar-link" data-course="ai-agents">
+      <span class="sidebar-num">11</span> How AI Agents Work
+    </a>
+    <a href="/lessons/shipping.html" class="sidebar-link" data-course="shipping">
+      <span class="sidebar-num">12</span> How to Ship a Product
+    </a>
   </nav>
-      <a href="/lessons/authentication.html" class="sidebar-link" data-course="authentication">
-        <span class="sidebar-num">07</span> How Auth Works
-      </a>
-      <a href="/lessons/typescript.html" class="sidebar-link" data-course="typescript">
-        <span class="sidebar-num">08</span> How TypeScript Works
-      </a>
-      <a href="/lessons/react.html" class="sidebar-link" data-course="react">
-        <span class="sidebar-num">09</span> How React Works
-      </a>
-      <a href="/lessons/testing.html" class="sidebar-link" data-course="testing">
-        <span class="sidebar-num">10</span> How Testing Works
-      </a>
-      <a href="/lessons/ai-agents.html" class="sidebar-link" data-course="ai-agents">
-        <span class="sidebar-num">11</span> How AI Agents Work
-      </a>
-      <a href="/lessons/shipping.html" class="sidebar-link" data-course="shipping">
-        <span class="sidebar-num">12</span> How to Ship a Product
-      </a>
   <div class="sidebar-footer">
     <button class="theme-toggle" id="theme-toggle">
       <span class="theme-icon" id="theme-icon">☀️</span>
@@ -1266,7 +1046,7 @@ body {
       <div class="file-item"><span style="color:var(--accent-purple)">&#128196;</span> api/route.ts &mdash; <span class="text-dim">3.4 KB</span></div>
       <div class="file-item"><span style="color:#22c55e">&#128196;</span> styles.css &mdash; <span class="text-dim">6.8 KB</span></div>
       <div class="file-item"><span style="color:var(--accent-orange)">&#128196;</span> utils.ts &mdash; <span class="text-dim">2.1 KB</span></div>
-      <div class="file-item"><span style="color:#f87171">&#128196;</span> logo.svg &mdash; <span class="text-dim">12 KB</span></div>
+      <div class="file-item"><span style="color:var(--accent-red)">&#128196;</span> logo.svg &mdash; <span class="text-dim">12 KB</span></div>
       <div class="file-item"><span style="color:var(--text-muted)">&#128193;</span> node_modules/ &mdash; <span class="text-dim">180 MB</span></div>
       <div class="file-item" style="margin-top:8px;font-weight:600;color:var(--accent-yellow);">Total: ~180 MB</div>
     </div>

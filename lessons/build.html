@@ -8,29 +8,9 @@
 <style>
   /* LESSON-SPECIFIC styles only — converted to use CSS variables */
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg-primary); color: var(--text-secondary); }
 
-  .nav { position: fixed; top: 0; left: 0; right: 0; background: var(--bg-secondary); border-bottom: 1px solid var(--border-primary); padding: 12px 32px; display: flex; align-items: center; gap: 16px; z-index: 100; flex-wrap: wrap; }
-  @media (min-width: 1024px) {
-    .nav { left: 280px; }
-  }
-  .nav h1 { font-size: 16px; color: var(--text-primary); margin-right: 24px; white-space: nowrap; }
-  .nav button { background: var(--bg-tertiary); border: 1px solid var(--border-nav-btn); color: var(--text-dim); padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; transition: all 0.2s; white-space: nowrap; }
-  .nav button:hover { background: #252525; color: var(--text-primary); border-color: #444; }
-  .nav button.active { background: var(--accent-blue-bg); border-color: #3b82f6; color: var(--text-primary); }
-  .progress { margin-left: auto; font-size: 13px; color: var(--text-faint); }
-
   .container { max-width: 960px; margin: 0 auto; padding: 80px 32px 60px; }
-
-  .lesson { display: none; }
-  .lesson.active { display: block; }
-  .lesson h2 { font-size: 28px; color: var(--text-primary); margin-bottom: 8px; }
-  .lesson .subtitle { color: var(--text-muted); font-size: 16px; margin-bottom: 32px; }
-  .lesson p { color: var(--text-tertiary); line-height: 1.7; margin-bottom: 16px; font-size: 15px; }
-  .lesson h3 { color: var(--text-primary); font-size: 20px; margin: 28px 0 12px; }
-  .lesson .analogy { background: var(--bg-analogy); border: 1px solid var(--border-analogy); border-radius: 10px; padding: 20px 24px; margin: 20px 0; }
-  .lesson .analogy strong { color: var(--accent-indigo); }
 
   .db-table { margin: 24px 0; border-radius: 10px; overflow: hidden; border: 1px solid var(--border-tertiary); }
   .db-table .table-header { background: var(--bg-table-header); padding: 10px 16px; font-weight: 600; font-size: 14px; color: var(--accent-blue); display: flex; align-items: center; gap: 8px; }
@@ -51,32 +31,10 @@
   .arch-box .highlight { color: var(--accent-yellow); }
 
   .code-block { background: var(--bg-code); border: 1px solid var(--border-secondary); border-radius: 8px; padding: 16px 20px; margin: 16px 0; font-family: 'SF Mono', Monaco, monospace; font-size: 13px; line-height: 1.7; overflow-x: auto; white-space: pre; }
-  .code-block .kw { color: var(--accent-purple); font-weight: 600; }
-  .code-block .fn { color: var(--accent-blue); }
-  .code-block .str { color: var(--accent-green); }
-  .code-block .comment { color: var(--text-faint); }
-  .code-block .type { color: var(--accent-yellow); }
-  .code-block .var { color: var(--text-secondary); }
-
-  .btn-row { display: flex; gap: 10px; margin: 24px 0; flex-wrap: wrap; }
-  .btn { background: var(--bg-btn); border: 1px solid var(--border-btn); color: var(--text-nav); padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; transition: all 0.2s; }
-  .btn:hover { background: #253349; color: var(--text-primary); border-color: #4b6a9b; }
-  .btn.selected { background: var(--bg-btn-selected); border-color: var(--border-btn-selected); color: var(--accent-blue); }
-
-  .detail-box { background: var(--bg-card); border: 1px solid #1a2332; border-radius: 10px; padding: 20px; margin: 16px 0; min-height: 60px; transition: all 0.3s; }
-  .detail-box .label { color: var(--text-faint); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
-
-  .result-box { background: var(--bg-card); border: 1px solid #1a2332; border-radius: 10px; padding: 20px; margin: 16px 0; min-height: 60px; transition: all 0.3s; }
-  .result-box .label { color: var(--text-faint); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
-  .result-box.flash { border-color: #3b82f6; }
-
-  .next-btn { display: inline-block; margin-top: 32px; background: var(--accent-blue-bg); border: none; color: var(--text-primary); padding: 12px 28px; border-radius: 8px; cursor: pointer; font-size: 15px; font-weight: 500; transition: all 0.2s; }
-  .next-btn:hover { background: #3b82f6; }
-
   .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin: 24px 0; }
   .stat-card { background: var(--bg-secondary); border: 1px solid var(--border-primary); border-radius: 10px; padding: 16px; text-align: center; }
   .stat-card .number { font-size: 28px; font-weight: 700; color: var(--text-primary); }
-  .stat-card .label { font-size: 12px; color: #666; margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
+  .stat-card .label { font-size: 12px; color: var(--text-muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
 
   .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
   .compare-card { background: var(--bg-secondary); border: 1px solid var(--border-primary); border-radius: 10px; padding: 20px; }
@@ -98,12 +56,12 @@
   .file-tree .indent { padding-left: 24px; }
 
   .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-left: 6px; }
-  .tag-db { background: #1e1b4b; color: var(--accent-indigo); }
-  .tag-server { background: #422006; color: var(--accent-yellow); }
-  .tag-ui { background: #052e16; color: var(--accent-green); }
+  .tag-db { background: var(--bg-tint-indigo); color: var(--accent-indigo); }
+  .tag-server { background: var(--bg-tint-yellow); color: var(--accent-yellow); }
+  .tag-ui { background: var(--bg-tint-green); color: var(--accent-green); }
 
   .key-label { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-left: 6px; }
-  .key-label.pk-label { background: #422006; color: var(--accent-yellow); }
+  .key-label.pk-label { background: var(--bg-tint-yellow); color: var(--accent-yellow); }
 
   .mockup { background: var(--bg-secondary); border: 1px solid var(--border-primary); border-radius: 10px; overflow: hidden; margin: 20px 0; }
   .mockup-bar { background: var(--bg-tertiary); padding: 10px 16px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border-primary); }
@@ -116,13 +74,13 @@
   .mockup-title { font-size: 18px; font-weight: 700; color: var(--text-primary); margin-bottom: 16px; }
   .mockup-input-row { display: flex; gap: 8px; margin-bottom: 16px; }
   .mockup-input { flex: 1; background: var(--bg-tertiary); border: 1px solid var(--border-nav-btn); border-radius: 6px; padding: 8px 12px; color: var(--text-body); font-size: 14px; font-family: inherit; outline: none; }
-  .mockup-input:focus { border-color: #3b82f6; }
+  .mockup-input:focus { border-color: var(--accent-blue); }
   .mockup-add-btn { background: var(--accent-blue-bg); border: none; color: var(--text-primary); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; }
-  .mockup-add-btn:hover { background: #3b82f6; }
+  .mockup-add-btn:hover { background: var(--accent-blue); }
   .mockup-task { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--border-primary); border-radius: 6px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s; }
   .mockup-task:hover { border-color: var(--border-btn); background: var(--bg-table-hover); }
-  .mockup-check { width: 20px; height: 20px; border: 2px solid #444; border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s; }
-  .mockup-check.done { background: var(--accent-blue-bg); border-color: #3b82f6; }
+  .mockup-check { width: 20px; height: 20px; border: 2px solid var(--border-tertiary); border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s; }
+  .mockup-check.done { background: var(--accent-blue-bg); border-color: var(--accent-blue); }
   .mockup-check.done::after { content: ''; display: block; width: 5px; height: 9px; border: solid var(--text-primary); border-width: 0 2px 2px 0; transform: rotate(45deg); margin-bottom: 2px; }
   .mockup-task-text { color: var(--text-body); font-size: 14px; flex: 1; }
   .mockup-task-text.done { text-decoration: line-through; color: var(--text-faint); }
@@ -140,21 +98,19 @@
   .diagram-arrow { font-size: 20px; color: var(--text-faint); padding: 0 8px; }
 
   .copy-btn { position: absolute; top: 8px; right: 8px; background: var(--bg-btn); border: 1px solid var(--border-btn); color: var(--text-nav); padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; transition: all 0.2s; }
-  .copy-btn:hover { background: #253349; color: var(--text-primary); }
+  .copy-btn:hover { background: var(--bg-btn-selected); color: var(--text-primary); }
   .code-wrapper { position: relative; }
 
   .checklist { list-style: none; padding: 0; margin: 16px 0; }
   .checklist li { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; color: var(--text-tertiary); font-size: 14px; }
   .checklist li::before { content: ''; display: inline-block; width: 18px; height: 18px; border: 2px solid var(--border-btn); border-radius: 4px; flex-shrink: 0; margin-top: 1px; }
-  .checklist li.checked::before { background: var(--accent-blue-bg); border-color: #3b82f6; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E"); background-size: 14px; background-repeat: no-repeat; background-position: center; }
+  .checklist li.checked::before { background: var(--accent-blue-bg); border-color: var(--accent-blue); background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E"); background-size: 14px; background-repeat: no-repeat; background-position: center; }
 
   .summary-card { background: var(--bg-secondary); border: 1px solid var(--border-primary); border-radius: 10px; padding: 20px 24px; margin: 12px 0; }
   .summary-card h4 { color: var(--text-primary); margin-bottom: 8px; font-size: 15px; display: flex; align-items: center; gap: 8px; }
   .summary-card p { color: var(--text-muted); font-size: 14px; margin: 0; line-height: 1.6; }
 
   .highlight-row td { background: var(--bg-highlight-row) !important; }
-
-  .breadcrumb { margin-top: 64px; padding-top: 8px; }
 
   .next-course-banner { background: var(--bg-secondary); border: 1px solid var(--border-primary); border-radius: 10px; padding: 24px; margin-top: 32px; text-align: center; }
   .next-course-banner h3 { color: var(--text-primary); margin: 0 0 8px; font-size: 18px; }
@@ -189,7 +145,7 @@
     <a href="/lessons/apis.html" class="sidebar-link" data-course="apis">
       <span class="sidebar-num">03</span> APIs &amp; HTTP
     </a>
-    <a href="/lessons/build.html" class="sidebar-link" data-course="build" aria-current="page">
+    <a href="/lessons/build.html" class="sidebar-link" data-course="build">
       <span class="sidebar-num">04</span> Build a Mini App
     </a>
     <a href="/lessons/deployment.html" class="sidebar-link" data-course="deployment">
@@ -198,25 +154,25 @@
     <a href="/lessons/git.html" class="sidebar-link" data-course="git">
       <span class="sidebar-num">06</span> How Git Works
     </a>
+    <a href="/lessons/authentication.html" class="sidebar-link" data-course="authentication">
+      <span class="sidebar-num">07</span> How Auth Works
+    </a>
+    <a href="/lessons/typescript.html" class="sidebar-link" data-course="typescript">
+      <span class="sidebar-num">08</span> How TypeScript Works
+    </a>
+    <a href="/lessons/react.html" class="sidebar-link" data-course="react">
+      <span class="sidebar-num">09</span> How React Works
+    </a>
+    <a href="/lessons/testing.html" class="sidebar-link" data-course="testing">
+      <span class="sidebar-num">10</span> How Testing Works
+    </a>
+    <a href="/lessons/ai-agents.html" class="sidebar-link" data-course="ai-agents">
+      <span class="sidebar-num">11</span> How AI Agents Work
+    </a>
+    <a href="/lessons/shipping.html" class="sidebar-link" data-course="shipping">
+      <span class="sidebar-num">12</span> How to Ship a Product
+    </a>
   </nav>
-      <a href="/lessons/authentication.html" class="sidebar-link" data-course="authentication">
-        <span class="sidebar-num">07</span> How Auth Works
-      </a>
-      <a href="/lessons/typescript.html" class="sidebar-link" data-course="typescript">
-        <span class="sidebar-num">08</span> How TypeScript Works
-      </a>
-      <a href="/lessons/react.html" class="sidebar-link" data-course="react">
-        <span class="sidebar-num">09</span> How React Works
-      </a>
-      <a href="/lessons/testing.html" class="sidebar-link" data-course="testing">
-        <span class="sidebar-num">10</span> How Testing Works
-      </a>
-      <a href="/lessons/ai-agents.html" class="sidebar-link" data-course="ai-agents">
-        <span class="sidebar-num">11</span> How AI Agents Work
-      </a>
-      <a href="/lessons/shipping.html" class="sidebar-link" data-course="shipping">
-        <span class="sidebar-num">12</span> How to Ship a Product
-      </a>
   <div class="sidebar-footer">
     <button class="theme-toggle" id="theme-toggle">
       <span class="theme-icon" id="theme-icon">☀️</span>

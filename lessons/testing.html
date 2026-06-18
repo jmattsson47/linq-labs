@@ -6,124 +6,12 @@
 <title>How Testing Works — The Fundamentals</title>
 <link rel="stylesheet" href="/css/shared.css">
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
 body {
   background: var(--bg-primary);
   color: var(--text-secondary);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   line-height: 1.7;
   overflow-x: hidden;
-}
-
-/* -- Top Nav -- */
-.top-nav {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 100;
-  background: var(--bg-secondary);
-  border-bottom: 1px solid var(--border-primary);
-  padding: 10px 16px;
-  display: flex;
-  gap: 6px;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-@media (min-width: 1024px) {
-  .top-nav { left: 280px; }
-}
-.top-nav::-webkit-scrollbar { height: 4px; }
-.top-nav::-webkit-scrollbar-thumb { background: var(--border-nav-btn); border-radius: 2px; }
-
-.nav-btn {
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-nav-btn);
-  color: var(--text-nav);
-  padding: 6px 14px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 13px;
-  white-space: nowrap;
-  transition: all 0.2s;
-  font-family: inherit;
-}
-.nav-btn:hover { border-color: var(--text-faint); color: var(--text-body); }
-.nav-btn.active {
-  background: var(--accent-blue-bg);
-  border-color: var(--accent-blue-bg);
-  color: var(--text-primary);
-}
-
-/* -- Container -- */
-.container {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 80px 20px 60px;
-}
-
-/* -- Lessons -- */
-.lesson { display: none; }
-.lesson.active { display: block; }
-
-.lesson h1 {
-  font-size: 32px;
-  font-weight: 700;
-  margin-bottom: 8px;
-  color: var(--text-primary);
-}
-.lesson .subtitle {
-  font-size: 15px;
-  color: var(--text-muted);
-  margin-bottom: 32px;
-}
-
-h2 {
-  font-size: 22px;
-  color: var(--text-primary);
-  margin: 36px 0 14px;
-}
-h3 {
-  font-size: 18px;
-  color: var(--text-secondary);
-  margin: 24px 0 10px;
-}
-
-p { margin-bottom: 16px; color: var(--text-body); }
-
-/* -- Cards -- */
-.card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-secondary);
-  border-radius: 10px;
-  padding: 24px;
-  margin: 20px 0;
-}
-.card-dark {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
-  border-radius: 10px;
-  padding: 24px;
-  margin: 20px 0;
-}
-
-/* -- Analogy boxes -- */
-.analogy {
-  background: var(--bg-analogy);
-  border: 1px solid var(--border-analogy);
-  border-radius: 10px;
-  padding: 20px 24px;
-  margin: 24px 0;
-}
-.analogy strong { color: var(--accent-indigo); }
-.analogy p { color: var(--text-dim); margin-bottom: 0; }
-.analogy .analogy-label {
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  color: var(--accent-indigo);
-  margin-bottom: 8px;
 }
 
 /* -- Code blocks -- */
@@ -142,64 +30,8 @@ code {
   font-family: 'SF Mono', Monaco, monospace;
   font-size: 13px;
 }
-.kw { color: var(--accent-purple); }
-.fn { color: var(--accent-blue); }
-.str { color: var(--accent-green); }
-.typ { color: var(--accent-yellow); }
-.cmt { color: var(--text-faint); font-style: italic; }
-.del { color: #f87171; }
+.del { color: var(--accent-red); }
 .add { color: var(--accent-green); }
-
-/* inline code */
-p code, li code {
-  background: var(--bg-analogy);
-  padding: 2px 7px;
-  border-radius: 4px;
-  color: var(--accent-indigo);
-  font-size: 13px;
-}
-
-/* -- Interactive buttons row -- */
-.btn-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 16px 0;
-}
-.ibtn {
-  background: var(--bg-btn);
-  border: 1px solid var(--border-btn);
-  color: var(--text-nav);
-  padding: 8px 16px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.2s;
-  font-family: inherit;
-}
-.ibtn:hover { border-color: var(--accent-blue); color: var(--text-secondary); }
-.ibtn.selected {
-  background: var(--bg-btn-selected);
-  border-color: var(--border-btn-selected);
-  color: var(--text-primary);
-}
-
-/* -- Next button -- */
-.next-btn {
-  display: inline-block;
-  background: var(--accent-blue-bg);
-  color: var(--text-primary);
-  border: none;
-  padding: 14px 36px;
-  border-radius: 10px;
-  font-size: 16px;
-  cursor: pointer;
-  margin-top: 40px;
-  transition: background 0.2s;
-  font-family: inherit;
-  font-weight: 600;
-}
-.next-btn:hover { background: #3b82f6; }
 
 /* -- Test result display -- */
 .test-output {
@@ -214,7 +46,7 @@ p code, li code {
   min-height: 60px;
 }
 .test-pass { color: var(--accent-green); }
-.test-fail { color: #f87171; }
+.test-fail { color: var(--accent-red); }
 .test-icon { margin-right: 6px; }
 
 /* -- Code editor area -- */
@@ -330,7 +162,7 @@ p code, li code {
   box-shadow: 0 0 10px rgba(59,130,246,0.3);
 }
 .trace-step.completed-step .trace-num {
-  background: #065f46;
+  background: var(--bg-tint-green);
   border-color: var(--accent-green);
   color: var(--accent-green);
 }
@@ -368,7 +200,7 @@ p code, li code {
   height: 10px;
   border-radius: 50%;
 }
-.browser-dot.red { background: #f87171; }
+.browser-dot.red { background: var(--accent-red); }
 .browser-dot.yellow { background: var(--accent-yellow); }
 .browser-dot.green { background: var(--accent-green); }
 .browser-url {
@@ -412,10 +244,10 @@ p code, li code {
 .tdd-phase.active-phase { border-color: var(--border-btn-selected); }
 .tdd-phase h4 { margin-bottom: 4px; font-size: 16px; }
 .tdd-phase p { font-size: 13px; color: var(--text-muted); margin: 0; }
-.tdd-red h4 { color: #f87171; }
+.tdd-red h4 { color: var(--accent-red); }
 .tdd-green h4 { color: var(--accent-green); }
 .tdd-refactor h4 { color: var(--accent-yellow); }
-.tdd-phase.active-phase.tdd-red { border-color: #f87171; background: rgba(248,113,113,0.05); }
+.tdd-phase.active-phase.tdd-red { border-color: var(--accent-red); background: rgba(248,113,113,0.05); }
 .tdd-phase.active-phase.tdd-green { border-color: var(--accent-green); background: rgba(52,211,153,0.05); }
 .tdd-phase.active-phase.tdd-refactor { border-color: var(--accent-yellow); background: rgba(251,191,36,0.05); }
 
@@ -450,13 +282,6 @@ p code, li code {
 .mock-panel.active-mock {
   border-color: var(--border-btn-selected);
 }
-@media (max-width: 640px) {
-  .mock-compare { grid-template-columns: 1fr; }
-}
-
-/* -- Lists -- */
-ul, ol { padding-left: 24px; margin-bottom: 16px; }
-li { margin-bottom: 8px; color: var(--text-body); }
 
 /* -- Fade-in animation -- */
 .fade-in {
@@ -467,31 +292,15 @@ li { margin-bottom: 8px; color: var(--text-body); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* -- Scrollbar -- */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: var(--bg-primary); }
-::-webkit-scrollbar-thumb { background: var(--border-nav-btn); border-radius: 3px; }
-
 /* -- Responsive -- */
 @media (max-width: 640px) {
-  .top-nav { padding: 8px 10px; gap: 4px; }
-  .nav-btn { padding: 5px 10px; font-size: 12px; }
-  .container { padding: 70px 14px 40px; }
-  .lesson h1 { font-size: 24px; }
   .pyramid-unit { width: 100%; }
   .pyramid-integration { width: 85%; }
   .pyramid-e2e { width: 60%; }
   .tdd-cycle { flex-direction: column; align-items: center; }
   .tdd-arrow { transform: rotate(90deg); }
+  .mock-compare { grid-template-columns: 1fr; }
 }
-
-.breadcrumb { margin-top: 64px; padding-top: 8px; }
-
-.next-course-banner { background: var(--bg-secondary); border: 1px solid var(--border-primary); border-radius: 10px; padding: 24px; margin-top: 32px; text-align: center; }
-.next-course-banner h3 { color: var(--text-primary); margin: 0 0 8px; font-size: 18px; }
-.next-course-banner p { color: var(--text-muted); font-size: 15px; margin: 0 0 16px; }
-.next-course-banner a { display: inline-block; background: var(--accent-blue-bg); color: var(--text-primary); padding: 10px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px; transition: background 0.2s; }
-.next-course-banner a:hover { background: #3b82f6; }
 </style>
 </head>
 <body>
@@ -581,7 +390,7 @@ li { margin-bottom: 8px; color: var(--text-body); }
 
   <h2>Without Tests: Fear of Changing Code</h2>
   <div class="card">
-    <p style="margin-bottom:8px; color:#f87171; font-weight:600;">The developer's inner monologue without tests:</p>
+    <p style="margin-bottom:8px; color:var(--accent-red); font-weight:600;">The developer's inner monologue without tests:</p>
     <ul>
       <li>"I need to refactor this function, but what if I break something?"</li>
       <li>"This code is messy, but I'm afraid to touch it."</li>
@@ -756,7 +565,7 @@ li { margin-bottom: 8px; color: var(--text-body); }
   <p>A common mistake: testing <em>how</em> code works internally instead of <em>what</em> it does. If you test implementation details, your tests break every time you refactor &mdash; even when the behavior is the same.</p>
 
   <div class="card">
-    <p style="color:#f87171; font-weight:600; margin-bottom:12px;">Bad: Testing implementation</p>
+    <p style="color:var(--accent-red); font-weight:600; margin-bottom:12px;">Bad: Testing implementation</p>
     <pre style="margin:0;"><span class="cmt">// This test breaks if you rename the internal variable</span>
 <span class="fn">expect</span>(calculator._internalSum).<span class="fn">toBe</span>(<span class="str">42</span>);</pre>
   </div>
@@ -1033,9 +842,9 @@ li { margin-bottom: 8px; color: var(--text-body); }
     <ul>
       <li><strong style="color:var(--accent-green);">Pro:</strong> Tests exactly what users experience &mdash; if the E2E test passes, the feature works for real users</li>
       <li><strong style="color:var(--accent-green);">Pro:</strong> Catches bugs that unit and integration tests miss (CSS hiding a button, broken navigation)</li>
-      <li><strong style="color:#f87171;">Con:</strong> Slow &mdash; each test takes seconds, not milliseconds</li>
-      <li><strong style="color:#f87171;">Con:</strong> Flaky &mdash; timing issues can cause tests to randomly fail</li>
-      <li><strong style="color:#f87171;">Con:</strong> Expensive to maintain &mdash; UI changes break E2E tests</li>
+      <li><strong style="color:var(--accent-red);">Con:</strong> Slow &mdash; each test takes seconds, not milliseconds</li>
+      <li><strong style="color:var(--accent-red);">Con:</strong> Flaky &mdash; timing issues can cause tests to randomly fail</li>
+      <li><strong style="color:var(--accent-red);">Con:</strong> Expensive to maintain &mdash; UI changes break E2E tests</li>
     </ul>
     <p style="margin-top:12px; margin-bottom:0; color:var(--text-muted); font-size:14px;">This is why the testing pyramid says to write <em>few</em> E2E tests &mdash; just enough to cover the critical user journeys.</p>
   </div>
@@ -1085,9 +894,9 @@ li { margin-bottom: 8px; color: var(--text-body); }
     <div class="mock-panel" id="mockPanelRight">
       <h5 id="mockRightTitle">Characteristics</h5>
       <div id="mockRightContent" style="font-size:13px; color:var(--text-body); line-height:1.8;">
-        <p style="margin-bottom:8px;"><span style="color:#f87171;">Slow:</span> Has to connect to a real database</p>
-        <p style="margin-bottom:8px;"><span style="color:#f87171;">Setup:</span> Requires a running DB instance</p>
-        <p style="margin-bottom:8px;"><span style="color:#f87171;">Cleanup:</span> Need to delete test data afterward</p>
+        <p style="margin-bottom:8px;"><span style="color:var(--accent-red);">Slow:</span> Has to connect to a real database</p>
+        <p style="margin-bottom:8px;"><span style="color:var(--accent-red);">Setup:</span> Requires a running DB instance</p>
+        <p style="margin-bottom:8px;"><span style="color:var(--accent-red);">Cleanup:</span> Need to delete test data afterward</p>
         <p style="margin-bottom:0;"><span style="color:var(--accent-green);">Realistic:</span> Tests the real database behavior</p>
       </div>
     </div>
@@ -1134,7 +943,7 @@ li { margin-bottom: 8px; color: var(--text-body); }
       <li>The real dependency is unreliable (external APIs that might be down)</li>
       <li>You want to test error scenarios (simulate a database crash)</li>
     </ul>
-    <p style="color:#f87171; font-weight:600; margin-bottom:8px; margin-top:16px;">Don't mock when:</p>
+    <p style="color:var(--accent-red); font-weight:600; margin-bottom:8px; margin-top:16px;">Don't mock when:</p>
     <ul style="margin-bottom:0;">
       <li>The real thing is fast and reliable &mdash; just use it</li>
       <li>You're writing integration tests &mdash; the whole point is to test real connections</li>
@@ -1220,7 +1029,7 @@ li { margin-bottom: 8px; color: var(--text-body); }
   </div>
 
   <div class="card" id="tddExplanation">
-    <p style="color:#f87171; font-weight:600; margin-bottom:8px;">Phase: RED</p>
+    <p style="color:var(--accent-red); font-weight:600; margin-bottom:8px;">Phase: RED</p>
     <p style="margin-bottom:0;">We write the test before the function exists. The test describes the <em>behavior</em> we want: given a status string, return a label and a color. Notice how the test reads like a specification &mdash; anyone can understand what <code>formatAgentStatus</code> should do just by reading the tests.</p>
   </div>
 
@@ -1735,9 +1544,9 @@ function showMockVersion(version, btn) {
   <span class="fn">expect</span>(result.<span class="typ">name</span>).<span class="fn">toBe</span>(<span class="str">'Research Bot'</span>);
 });`;
     rightTitle.textContent = 'Characteristics';
-    rightContent.innerHTML = `<p style="margin-bottom:8px;"><span style="color:#f87171;">Slow:</span> Has to connect to a real database</p>
-<p style="margin-bottom:8px;"><span style="color:#f87171;">Setup:</span> Requires a running DB instance</p>
-<p style="margin-bottom:8px;"><span style="color:#f87171;">Cleanup:</span> Need to delete test data afterward</p>
+    rightContent.innerHTML = `<p style="margin-bottom:8px;"><span style="color:var(--accent-red);">Slow:</span> Has to connect to a real database</p>
+<p style="margin-bottom:8px;"><span style="color:var(--accent-red);">Setup:</span> Requires a running DB instance</p>
+<p style="margin-bottom:8px;"><span style="color:var(--accent-red);">Cleanup:</span> Need to delete test data afterward</p>
 <p style="margin-bottom:0;"><span style="color:var(--accent-green);">Realistic:</span> Tests the real database behavior</p>`;
     leftPanel.classList.add('active-mock');
     rightPanel.classList.remove('active-mock');
@@ -1762,7 +1571,7 @@ vi.<span class="fn">mock</span>(<span class="str">'../db'</span>, () => ({
     rightContent.innerHTML = `<p style="margin-bottom:8px;"><span style="color:var(--accent-green);">Fast:</span> No database connection needed</p>
 <p style="margin-bottom:8px;"><span style="color:var(--accent-green);">No setup:</span> Works anywhere, no DB required</p>
 <p style="margin-bottom:8px;"><span style="color:var(--accent-green);">No cleanup:</span> Mock resets automatically</p>
-<p style="margin-bottom:0;"><span style="color:#f87171;">Less realistic:</span> Won't catch real DB issues</p>`;
+<p style="margin-bottom:0;"><span style="color:var(--accent-red);">Less realistic:</span> Won't catch real DB issues</p>`;
     leftPanel.classList.remove('active-mock');
     rightPanel.classList.add('active-mock');
   }
@@ -1802,7 +1611,7 @@ const tddSteps = [
   });
 });`,
     output: `<span style="color:var(--text-muted);">Tests have not been run yet. Click "2. Red: Run It" to see what happens.</span>`,
-    explanation: `<p style="color:#f87171; font-weight:600; margin-bottom:8px;">Phase: RED</p>
+    explanation: `<p style="color:var(--accent-red); font-weight:600; margin-bottom:8px;">Phase: RED</p>
 <p style="margin-bottom:0;">We write the test before the function exists. The test describes the <em>behavior</em> we want: given a status string, return a label and a color. Notice how the test reads like a specification &mdash; anyone can understand what <code>formatAgentStatus</code> should do just by reading the tests.</p>`,
     phase: 0
   },
@@ -1820,7 +1629,7 @@ const tddSteps = [
 <br>
 <span class="test-fail">Tests: 3 failed, 3 total</span><br>
 <span style="color:var(--text-muted);">Time: 0.01s</span>`,
-    explanation: `<p style="color:#f87171; font-weight:600; margin-bottom:8px;">Phase: RED &mdash; Tests Fail!</p>
+    explanation: `<p style="color:var(--accent-red); font-weight:600; margin-bottom:8px;">Phase: RED &mdash; Tests Fail!</p>
 <p style="margin-bottom:0;">All three tests fail because <code>formatAgentStatus</code> doesn't exist yet. This is expected! In TDD, <strong style="color:var(--text-primary);">you always start with failing tests</strong>. The red tells you the tests are working correctly &mdash; they detect that the function is missing.</p>`,
     phase: 0
   },

@@ -6,8 +6,6 @@
 <title>How Git Works — The Fundamentals</title>
 <link rel="stylesheet" href="/css/shared.css">
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
 body {
   background: var(--bg-primary);
   color: var(--text-secondary);
@@ -16,191 +14,10 @@ body {
   overflow-x: hidden;
 }
 
-/* -- Top Nav -- */
-.top-nav {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 100;
-  background: var(--bg-secondary);
-  border-bottom: 1px solid var(--border-primary);
-  padding: 10px 16px;
-  display: flex;
-  gap: 6px;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-@media (min-width: 1024px) {
-  .top-nav { left: 280px; }
-}
-.top-nav::-webkit-scrollbar { height: 4px; }
-.top-nav::-webkit-scrollbar-thumb { background: var(--border-nav-btn); border-radius: 2px; }
-
-.nav-btn {
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-nav-btn);
-  color: #999;
-  padding: 6px 14px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 13px;
-  white-space: nowrap;
-  transition: all 0.2s;
-  font-family: inherit;
-}
-.nav-btn:hover { border-color: var(--text-faint); color: var(--text-body); }
-.nav-btn.active {
-  background: var(--accent-blue-bg);
-  border-color: var(--accent-blue-bg);
-  color: var(--text-primary);
-}
-
-/* -- Container -- */
-.container {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 80px 20px 60px;
-}
-
-/* -- Lessons -- */
-.lesson { display: none; }
-.lesson.active { display: block; }
-
-.lesson h1 {
-  font-size: 32px;
-  font-weight: 700;
-  margin-bottom: 8px;
-  color: var(--text-primary);
-}
-.lesson .subtitle {
-  font-size: 15px;
-  color: var(--text-muted);
-  margin-bottom: 32px;
-}
-
-h2 {
-  font-size: 22px;
-  color: var(--text-primary);
-  margin: 36px 0 14px;
-}
-h3 {
-  font-size: 18px;
-  color: #ddd;
-  margin: 24px 0 10px;
-}
-
-p { margin-bottom: 16px; color: var(--text-body); }
-
-/* -- Cards -- */
-.card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-secondary);
-  border-radius: 10px;
-  padding: 24px;
-  margin: 20px 0;
-}
-.card-dark {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
-  border-radius: 10px;
-  padding: 24px;
-  margin: 20px 0;
-}
-
-/* -- Analogy boxes -- */
-.analogy {
-  background: var(--bg-analogy);
-  border: 1px solid var(--border-analogy);
-  border-radius: 10px;
-  padding: 20px 24px;
-  margin: 24px 0;
-}
-.analogy strong { color: var(--accent-indigo); }
-.analogy p { color: #b4b4d0; margin-bottom: 0; }
-.analogy .analogy-label {
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  color: var(--accent-indigo);
-  margin-bottom: 8px;
-}
-
-/* -- Code blocks -- */
-pre {
-  background: var(--bg-code);
-  border: 1px solid var(--border-secondary);
-  border-radius: 8px;
-  padding: 16px 20px;
-  overflow-x: auto;
-  margin: 16px 0;
-  font-family: 'SF Mono', Monaco, monospace;
-  font-size: 14px;
-  line-height: 1.6;
-}
-code {
-  font-family: 'SF Mono', Monaco, monospace;
-  font-size: 13px;
-}
-.kw { color: var(--accent-purple); }
-.fn { color: var(--accent-blue); }
-.str { color: var(--accent-green); }
-.typ { color: var(--accent-yellow); }
-.cmt { color: #6b7280; font-style: italic; }
-.del { color: #f87171; }
+/* -- Unique code-block additions -- */
+.del { color: var(--accent-red); }
 .add { color: var(--accent-green); }
 .conflict-marker { color: #f59e0b; font-weight: bold; }
-
-/* inline code */
-p code, li code {
-  background: var(--bg-analogy);
-  padding: 2px 7px;
-  border-radius: 4px;
-  color: #a5b4fc;
-  font-size: 13px;
-}
-
-/* -- Interactive buttons row -- */
-.btn-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 16px 0;
-}
-.ibtn {
-  background: var(--bg-btn);
-  border: 1px solid var(--border-btn);
-  color: var(--text-nav);
-  padding: 8px 16px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.2s;
-  font-family: inherit;
-}
-.ibtn:hover { border-color: var(--accent-blue); color: var(--text-secondary); }
-.ibtn.selected {
-  background: var(--bg-btn-selected);
-  border-color: var(--border-btn-selected);
-  color: var(--text-primary);
-}
-
-/* -- Next button -- */
-.next-btn {
-  display: inline-block;
-  background: var(--accent-blue-bg);
-  color: var(--text-primary);
-  border: none;
-  padding: 14px 36px;
-  border-radius: 10px;
-  font-size: 16px;
-  cursor: pointer;
-  margin-top: 40px;
-  transition: background 0.2s;
-  font-family: inherit;
-  font-weight: 600;
-}
-.next-btn:hover { background: #1d4ed8; }
 
 /* -- Diagrams -- */
 .diagram-area {
@@ -236,14 +53,14 @@ p code, li code {
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: #3b82f6;
+  background: var(--accent-blue);
   border: 3px solid var(--bg-btn-selected);
   transition: all 0.2s;
   z-index: 2;
 }
 .commit-node.selected .commit-dot {
   background: var(--accent-blue);
-  border-color: #3b82f6;
+  border-color: var(--accent-blue);
   box-shadow: 0 0 12px rgba(96, 165, 250, 0.5);
   width: 28px;
   height: 28px;
@@ -295,7 +112,7 @@ p code, li code {
   transition: border-color 0.3s, box-shadow 0.3s;
 }
 .area-box.highlight {
-  border-color: #3b82f6;
+  border-color: var(--accent-blue);
   box-shadow: 0 0 16px rgba(59, 130, 246, 0.15);
 }
 .area-title {
@@ -382,7 +199,7 @@ p code, li code {
   cursor: pointer;
   transition: all 0.2s;
 }
-.conflict-option:hover { border-color: #3b82f6; }
+.conflict-option:hover { border-color: var(--accent-blue); }
 .conflict-option.chosen {
   border-color: var(--accent-green);
   background: #0d2818;
@@ -485,7 +302,7 @@ p code, li code {
 }
 .pr-step.active-step .pr-step-num {
   background: var(--bg-btn-selected);
-  border-color: #3b82f6;
+  border-color: var(--accent-blue);
   box-shadow: 0 0 10px rgba(59,130,246,0.3);
 }
 .pr-step-content h4 { color: #ddd; font-size: 15px; margin-bottom: 4px; }
@@ -516,7 +333,7 @@ p code, li code {
   gap: 16px;
 }
 .cmd-card:hover { border-color: var(--border-btn); }
-.cmd-card.expanded { border-color: #3b82f6; background: var(--bg-card); }
+.cmd-card.expanded { border-color: var(--accent-blue); background: var(--bg-card); }
 .cmd-num {
   width: 28px;
   height: 28px;
@@ -574,16 +391,12 @@ p code, li code {
   padding: 10px 16px;
   font-family: 'SF Mono', Monaco, monospace;
   font-size: 13px;
-  color: #f87171;
+  color: var(--accent-red);
   position: relative;
   transition: all 0.3s;
 }
 .chaos-file.old { opacity: 0.4; }
 .chaos-file.latest { border-color: var(--accent-yellow); color: var(--accent-yellow); }
-
-/* -- Lists -- */
-ul, ol { padding-left: 24px; margin-bottom: 16px; }
-li { margin-bottom: 8px; color: var(--text-body); }
 
 /* -- Scrollbar -- */
 ::-webkit-scrollbar { width: 6px; }
@@ -592,8 +405,6 @@ li { margin-bottom: 8px; color: var(--text-body); }
 
 /* -- Responsive -- */
 @media (max-width: 640px) {
-  .top-nav { padding: 8px 10px; gap: 4px; }
-  .nav-btn { padding: 5px 10px; font-size: 12px; }
   .container { padding: 70px 14px 40px; }
   .lesson h1 { font-size: 24px; }
   .areas-diagram { flex-direction: column; }
@@ -638,7 +449,7 @@ li { margin-bottom: 8px; color: var(--text-body); }
   color: var(--text-nav);
 }
 .clothing-item:hover { border-color: var(--accent-blue); }
-.clothing-item.packed { background: var(--bg-btn-selected); border-color: #3b82f6; color: #93c5fd; }
+.clothing-item.packed { background: var(--bg-btn-selected); border-color: var(--accent-blue); color: #93c5fd; }
 
 /* -- Version compare -- */
 .version-compare {
@@ -663,8 +474,6 @@ li { margin-bottom: 8px; color: var(--text-body); }
 @media (max-width: 640px) {
   .version-compare { grid-template-columns: 1fr; }
 }
-
-.breadcrumb { margin-top: 64px; padding-top: 8px; }
 
 .next-course-banner { background: var(--bg-secondary); border: 1px solid var(--border-primary); border-radius: 10px; padding: 24px; margin-top: 32px; text-align: center; }
 .next-course-banner h3 { color: var(--text-primary); margin: 0 0 8px; font-size: 18px; }
@@ -697,28 +506,28 @@ li { margin-bottom: 8px; color: var(--text-body); }
     <a href="/lessons/deployment.html" class="sidebar-link" data-course="deployment">
       <span class="sidebar-num">05</span> How Deployment Works
     </a>
-    <a href="/lessons/git.html" class="sidebar-link" data-course="git" aria-current="page">
+    <a href="/lessons/git.html" class="sidebar-link" data-course="git">
       <span class="sidebar-num">06</span> How Git Works
     </a>
+    <a href="/lessons/authentication.html" class="sidebar-link" data-course="authentication">
+      <span class="sidebar-num">07</span> How Auth Works
+    </a>
+    <a href="/lessons/typescript.html" class="sidebar-link" data-course="typescript">
+      <span class="sidebar-num">08</span> How TypeScript Works
+    </a>
+    <a href="/lessons/react.html" class="sidebar-link" data-course="react">
+      <span class="sidebar-num">09</span> How React Works
+    </a>
+    <a href="/lessons/testing.html" class="sidebar-link" data-course="testing">
+      <span class="sidebar-num">10</span> How Testing Works
+    </a>
+    <a href="/lessons/ai-agents.html" class="sidebar-link" data-course="ai-agents">
+      <span class="sidebar-num">11</span> How AI Agents Work
+    </a>
+    <a href="/lessons/shipping.html" class="sidebar-link" data-course="shipping">
+      <span class="sidebar-num">12</span> How to Ship a Product
+    </a>
   </nav>
-      <a href="/lessons/authentication.html" class="sidebar-link" data-course="authentication">
-        <span class="sidebar-num">07</span> How Auth Works
-      </a>
-      <a href="/lessons/typescript.html" class="sidebar-link" data-course="typescript">
-        <span class="sidebar-num">08</span> How TypeScript Works
-      </a>
-      <a href="/lessons/react.html" class="sidebar-link" data-course="react">
-        <span class="sidebar-num">09</span> How React Works
-      </a>
-      <a href="/lessons/testing.html" class="sidebar-link" data-course="testing">
-        <span class="sidebar-num">10</span> How Testing Works
-      </a>
-      <a href="/lessons/ai-agents.html" class="sidebar-link" data-course="ai-agents">
-        <span class="sidebar-num">11</span> How AI Agents Work
-      </a>
-      <a href="/lessons/shipping.html" class="sidebar-link" data-course="shipping">
-        <span class="sidebar-num">12</span> How to Ship a Product
-      </a>
   <div class="sidebar-footer">
     <button class="theme-toggle" id="theme-toggle">
       <span class="theme-icon" id="theme-icon">☀️</span>
@@ -757,7 +566,7 @@ li { margin-bottom: 8px; color: var(--text-body); }
   <p>Without Git, people solve this the worst way possible:</p>
 
   <div class="card">
-    <p style="margin-bottom:12px; color:#f87171; font-weight:600;">The "file naming" disaster:</p>
+    <p style="margin-bottom:12px; color:var(--accent-red); font-weight:600;">The "file naming" disaster:</p>
     <div class="file-chaos" id="fileChaos">
       <div class="chaos-file old">app.js</div>
       <div class="chaos-file old">app_v2.js</div>
@@ -1297,7 +1106,7 @@ li { margin-bottom: 8px; color: var(--text-body); }
     </div>
     <div style="display:flex; gap:16px; font-size:13px; color:var(--text-muted);">
       <span><span style="color:var(--accent-green);">+127</span> lines</span>
-      <span><span style="color:#f87171;">-12</span> lines</span>
+      <span><span style="color:var(--accent-red);">-12</span> lines</span>
       <span>4 files changed</span>
       <span>2 reviewers</span>
     </div>
@@ -1370,8 +1179,8 @@ Changes not staged for commit:
           <ul>
             <li><span style="color:var(--accent-green);">Good:</span> "Fix login timeout by increasing session duration"</li>
             <li><span style="color:var(--accent-green);">Good:</span> "Add search feature to dashboard"</li>
-            <li><span style="color:#f87171;">Bad:</span> "Fixed stuff"</li>
-            <li><span style="color:#f87171;">Bad:</span> "asdfasdf"</li>
+            <li><span style="color:var(--accent-red);">Bad:</span> "Fixed stuff"</li>
+            <li><span style="color:var(--accent-red);">Bad:</span> "asdfasdf"</li>
           </ul>
         </div>
       </div>

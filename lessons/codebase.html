@@ -7,13 +7,6 @@
   <link rel="stylesheet" href="/css/shared.css">
   <style>
     /* LESSON-SPECIFIC styles only — converted to use CSS variables */
-    .lesson { display: none; }
-    .lesson.active { display: block; }
-    .lesson h2 { font-size: 28px; color: var(--text-primary); margin-bottom: 8px; }
-    .lesson .subtitle { color: var(--text-muted); font-size: 16px; margin-bottom: 32px; }
-    .lesson p { color: var(--text-tertiary); line-height: 1.7; margin-bottom: 16px; font-size: 15px; }
-    .lesson .analogy { background: var(--bg-analogy); border: 1px solid var(--border-analogy); border-radius: 10px; padding: 20px 24px; margin: 20px 0; }
-    .lesson .analogy strong { color: var(--accent-indigo); }
 
     .db-table { margin: 24px 0; border-radius: 10px; overflow: hidden; border: 1px solid var(--border-tertiary); }
     .db-table .table-header { background: var(--bg-table-header); padding: 10px 16px; font-weight: 600; font-size: 14px; color: var(--accent-blue); display: flex; align-items: center; gap: 8px; }
@@ -41,26 +34,10 @@
     .arch-box .data { color: var(--accent-green); }
     .arch-box .highlight { color: var(--accent-yellow); }
 
-    .btn-row { display: flex; gap: 10px; margin: 24px 0; flex-wrap: wrap; }
-    .btn { background: var(--bg-btn); border: 1px solid var(--border-btn); color: var(--text-nav); padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; transition: all 0.2s; }
-    .btn:hover { background: #253349; color: var(--text-primary); border-color: #4b6a9b; }
-    .btn.selected { background: var(--bg-btn-selected); border-color: var(--border-btn-selected); color: var(--accent-blue); }
-
-    .detail-box { background: var(--bg-card); border: 1px solid #1a2332; border-radius: 10px; padding: 20px; margin: 16px 0; min-height: 80px; transition: all 0.3s; }
-    .detail-box .label { color: var(--text-faint); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
-
-    .code-block { background: var(--bg-code); border: 1px solid var(--border-secondary); border-radius: 8px; padding: 16px 20px; margin: 16px 0; font-family: 'SF Mono', Monaco, monospace; font-size: 13px; line-height: 1.7; overflow-x: auto; }
-    .code-block .kw { color: var(--accent-purple); }
-    .code-block .fn { color: var(--accent-blue); }
-    .code-block .str { color: var(--accent-green); }
-    .code-block .comment { color: var(--text-faint); }
-    .code-block .type { color: var(--accent-yellow); }
-    .code-block .var { color: var(--text-secondary); }
-
     .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin: 24px 0; }
     .stat-card { background: var(--bg-secondary); border: 1px solid var(--border-primary); border-radius: 10px; padding: 16px; text-align: center; }
     .stat-card .number { font-size: 28px; font-weight: 700; color: var(--text-primary); }
-    .stat-card .label { font-size: 12px; color: #666; margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
+    .stat-card .label { font-size: 12px; color: var(--text-muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
 
     .flow-step { display: flex; align-items: flex-start; gap: 16px; margin: 16px 0; }
     .flow-num { background: var(--accent-blue-bg); color: var(--text-primary); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0; }
@@ -69,13 +46,10 @@
     .flow-content p { color: var(--text-muted); font-size: 14px; margin: 0; }
     .flow-content code { background: var(--bg-btn); padding: 2px 6px; border-radius: 4px; font-size: 13px; color: var(--accent-blue); }
 
-    .next-btn { display: inline-block; margin-top: 32px; background: var(--accent-blue-bg); border: none; color: var(--text-primary); padding: 12px 28px; border-radius: 8px; cursor: pointer; font-size: 15px; font-weight: 500; transition: all 0.2s; }
-    .next-btn:hover { background: #3b82f6; }
-
     .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-left: 6px; }
-    .tag-server { background: #422006; color: var(--accent-yellow); }
-    .tag-ui { background: #052e16; color: var(--accent-green); }
-    .tag-db { background: #1e1b4b; color: var(--accent-indigo); }
+    .tag-server { background: var(--bg-tint-yellow); color: var(--accent-yellow); }
+    .tag-ui { background: var(--bg-tint-green); color: var(--accent-green); }
+    .tag-db { background: var(--bg-tint-indigo); color: var(--accent-indigo); }
     .tag-pkg { background: #1c1917; color: #a8a29e; }
 
     .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
@@ -87,18 +61,6 @@
       .compare-grid { grid-template-columns: 1fr; }
     }
 
-    .nav { position: fixed; top: 0; left: 0; right: 0; background: var(--bg-secondary); border-bottom: 1px solid var(--border-primary); padding: 12px 32px; display: flex; align-items: center; gap: 16px; z-index: 100; flex-wrap: wrap; }
-    .nav h1 { font-size: 16px; color: var(--text-primary); margin-right: 24px; }
-    .nav button { background: var(--bg-tertiary); border: 1px solid var(--border-nav-btn); color: var(--text-dim); padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; transition: all 0.2s; }
-    .nav button:hover { background: #252525; color: var(--text-primary); border-color: #444; }
-    .nav button.active { background: var(--accent-blue-bg); border-color: #3b82f6; color: var(--text-primary); }
-    .progress { margin-left: auto; font-size: 13px; color: var(--text-faint); }
-
-    @media (min-width: 1024px) {
-      .nav { left: 280px; }
-    }
-
-    .breadcrumb { margin-top: 64px; padding-top: 8px; }
   </style>
 </head>
 <body>
@@ -113,7 +75,7 @@
     <a href="/lessons/databases.html" class="sidebar-link" data-course="databases">
       <span class="sidebar-num">01</span> How Databases Work
     </a>
-    <a href="/lessons/codebase.html" class="sidebar-link" data-course="codebase" aria-current="page">
+    <a href="/lessons/codebase.html" class="sidebar-link" data-course="codebase">
       <span class="sidebar-num">02</span> The Codebase
     </a>
     <a href="/lessons/apis.html" class="sidebar-link" data-course="apis">
@@ -128,25 +90,25 @@
     <a href="/lessons/git.html" class="sidebar-link" data-course="git">
       <span class="sidebar-num">06</span> How Git Works
     </a>
+    <a href="/lessons/authentication.html" class="sidebar-link" data-course="authentication">
+      <span class="sidebar-num">07</span> How Auth Works
+    </a>
+    <a href="/lessons/typescript.html" class="sidebar-link" data-course="typescript">
+      <span class="sidebar-num">08</span> How TypeScript Works
+    </a>
+    <a href="/lessons/react.html" class="sidebar-link" data-course="react">
+      <span class="sidebar-num">09</span> How React Works
+    </a>
+    <a href="/lessons/testing.html" class="sidebar-link" data-course="testing">
+      <span class="sidebar-num">10</span> How Testing Works
+    </a>
+    <a href="/lessons/ai-agents.html" class="sidebar-link" data-course="ai-agents">
+      <span class="sidebar-num">11</span> How AI Agents Work
+    </a>
+    <a href="/lessons/shipping.html" class="sidebar-link" data-course="shipping">
+      <span class="sidebar-num">12</span> How to Ship a Product
+    </a>
   </nav>
-      <a href="/lessons/authentication.html" class="sidebar-link" data-course="authentication">
-        <span class="sidebar-num">07</span> How Auth Works
-      </a>
-      <a href="/lessons/typescript.html" class="sidebar-link" data-course="typescript">
-        <span class="sidebar-num">08</span> How TypeScript Works
-      </a>
-      <a href="/lessons/react.html" class="sidebar-link" data-course="react">
-        <span class="sidebar-num">09</span> How React Works
-      </a>
-      <a href="/lessons/testing.html" class="sidebar-link" data-course="testing">
-        <span class="sidebar-num">10</span> How Testing Works
-      </a>
-      <a href="/lessons/ai-agents.html" class="sidebar-link" data-course="ai-agents">
-        <span class="sidebar-num">11</span> How AI Agents Work
-      </a>
-      <a href="/lessons/shipping.html" class="sidebar-link" data-course="shipping">
-        <span class="sidebar-num">12</span> How to Ship a Product
-      </a>
   <div class="sidebar-footer">
     <button class="theme-toggle" id="theme-toggle">
       <span class="theme-icon" id="theme-icon">☀️</span>

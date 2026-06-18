@@ -6,124 +6,12 @@
 <title>How Authentication Works — The Fundamentals</title>
 <link rel="stylesheet" href="/css/shared.css">
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
 body {
   background: var(--bg-primary);
   color: var(--text-secondary);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   line-height: 1.7;
   overflow-x: hidden;
-}
-
-/* -- Top Nav -- */
-.top-nav {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 100;
-  background: var(--bg-secondary);
-  border-bottom: 1px solid var(--border-primary);
-  padding: 10px 16px;
-  display: flex;
-  gap: 6px;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-@media (min-width: 1024px) {
-  .top-nav { left: 280px; }
-}
-.top-nav::-webkit-scrollbar { height: 4px; }
-.top-nav::-webkit-scrollbar-thumb { background: var(--border-nav-btn); border-radius: 2px; }
-
-.nav-btn {
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-nav-btn);
-  color: var(--text-nav);
-  padding: 6px 14px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 13px;
-  white-space: nowrap;
-  transition: all 0.2s;
-  font-family: inherit;
-}
-.nav-btn:hover { border-color: var(--text-faint); color: var(--text-body); }
-.nav-btn.active {
-  background: var(--accent-blue-bg);
-  border-color: var(--accent-blue-bg);
-  color: var(--text-primary);
-}
-
-/* -- Container -- */
-.container {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 80px 20px 60px;
-}
-
-/* -- Lessons -- */
-.lesson { display: none; }
-.lesson.active { display: block; }
-
-.lesson h1 {
-  font-size: 32px;
-  font-weight: 700;
-  margin-bottom: 8px;
-  color: var(--text-primary);
-}
-.lesson .subtitle {
-  font-size: 15px;
-  color: var(--text-muted);
-  margin-bottom: 32px;
-}
-
-h2 {
-  font-size: 22px;
-  color: var(--text-primary);
-  margin: 36px 0 14px;
-}
-h3 {
-  font-size: 18px;
-  color: var(--text-secondary);
-  margin: 24px 0 10px;
-}
-
-p { margin-bottom: 16px; color: var(--text-body); }
-
-/* -- Cards -- */
-.card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-secondary);
-  border-radius: 10px;
-  padding: 24px;
-  margin: 20px 0;
-}
-.card-dark {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
-  border-radius: 10px;
-  padding: 24px;
-  margin: 20px 0;
-}
-
-/* -- Analogy boxes -- */
-.analogy {
-  background: var(--bg-analogy);
-  border: 1px solid var(--border-analogy);
-  border-radius: 10px;
-  padding: 20px 24px;
-  margin: 24px 0;
-}
-.analogy strong { color: var(--accent-indigo); }
-.analogy p { color: var(--text-dim); margin-bottom: 0; }
-.analogy .analogy-label {
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  color: var(--accent-indigo);
-  margin-bottom: 8px;
 }
 
 /* -- Code blocks -- */
@@ -142,62 +30,6 @@ code {
   font-family: 'SF Mono', Monaco, monospace;
   font-size: 13px;
 }
-.kw { color: var(--accent-purple); }
-.fn { color: var(--accent-blue); }
-.str { color: var(--accent-green); }
-.typ { color: var(--accent-yellow); }
-.cmt { color: var(--text-faint); font-style: italic; }
-
-/* inline code */
-p code, li code, td code {
-  background: var(--bg-analogy);
-  padding: 2px 7px;
-  border-radius: 4px;
-  color: var(--accent-indigo);
-  font-size: 13px;
-}
-
-/* -- Interactive buttons row -- */
-.btn-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 16px 0;
-}
-.ibtn {
-  background: var(--bg-btn);
-  border: 1px solid var(--border-btn);
-  color: var(--text-nav);
-  padding: 8px 16px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.2s;
-  font-family: inherit;
-}
-.ibtn:hover { border-color: var(--accent-blue); color: var(--text-secondary); }
-.ibtn.selected {
-  background: var(--bg-btn-selected);
-  border-color: var(--border-btn-selected);
-  color: var(--text-primary);
-}
-
-/* -- Next button -- */
-.next-btn {
-  display: inline-block;
-  background: var(--accent-blue-bg);
-  color: var(--text-primary);
-  border: none;
-  padding: 14px 36px;
-  border-radius: 10px;
-  font-size: 16px;
-  cursor: pointer;
-  margin-top: 40px;
-  transition: background 0.2s;
-  font-family: inherit;
-  font-weight: 600;
-}
-.next-btn:hover { background: #1d4ed8; }
 
 /* -- Diagram area -- */
 .diagram-area {
@@ -650,10 +482,6 @@ li { margin-bottom: 8px; color: var(--text-body); }
 
 /* -- Responsive -- */
 @media (max-width: 640px) {
-  .top-nav { padding: 8px 10px; gap: 4px; }
-  .nav-btn { padding: 5px 10px; font-size: 12px; }
-  .container { padding: 70px 14px 40px; }
-  .lesson h1 { font-size: 24px; }
   .compare-grid { grid-template-columns: 1fr; }
   .jwt-decoded { grid-template-columns: 1fr; }
   .role-demo { grid-template-columns: 1fr; }
@@ -661,14 +489,6 @@ li { margin-bottom: 8px; color: var(--text-body); }
   .oauth-diagram { flex-direction: column; }
   .oauth-arrow { transform: rotate(90deg); }
 }
-
-.breadcrumb { margin-top: 64px; padding-top: 8px; }
-
-.next-course-banner { background: var(--bg-secondary); border: 1px solid var(--border-primary); border-radius: 10px; padding: 24px; margin-top: 32px; text-align: center; }
-.next-course-banner h3 { color: var(--text-primary); margin: 0 0 8px; font-size: 18px; }
-.next-course-banner p { color: var(--text-muted); font-size: 15px; margin: 0 0 16px; }
-.next-course-banner a { display: inline-block; background: var(--accent-blue-bg); color: var(--text-primary); padding: 10px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px; transition: background 0.2s; }
-.next-course-banner a:hover { background: #3b82f6; text-decoration: none; }
 </style>
 </head>
 <body>
@@ -728,7 +548,7 @@ li { margin-bottom: 8px; color: var(--text-body); }
 
 <div class="content-wrapper">
 
-<div class="breadcrumb"><a href="/index.html">Home</a><span class="sep">&#8250;</span><span>How Authentication Works</span></div>
+<div class="breadcrumb"><a href="/index.html">Home</a><span class="sep">›</span><span>How Authentication Works</span></div>
 
 <!-- Top Nav -->
 <nav class="top-nav" id="topNav">

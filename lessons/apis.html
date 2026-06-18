@@ -8,12 +8,6 @@
 <style>
   /* LESSON-SPECIFIC styles only — converted to use CSS variables */
 
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
-
   body {
     background: var(--bg-primary);
     color: var(--text-secondary);
@@ -22,220 +16,11 @@
     padding-top: 60px;
   }
 
-  /* ── Top Nav ── */
-  .top-nav {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    background: var(--bg-secondary);
-    border-bottom: 1px solid var(--border-primary);
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    padding: 10px 16px;
-    gap: 8px;
-    overflow-x: auto;
-  }
-
-  @media (min-width: 1024px) {
-    .top-nav { left: 280px; }
-  }
-
-  .breadcrumb { margin-top: 64px; padding-top: 8px; }
-
-  .top-nav .nav-title {
-    color: var(--accent-indigo);
-    font-weight: 700;
-    font-size: 14px;
-    margin-right: 8px;
-    white-space: nowrap;
-  }
-
-  .top-nav button {
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border-nav-btn);
-    color: var(--text-secondary);
-    padding: 6px 14px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 13px;
-    font-family: inherit;
-    white-space: nowrap;
-    transition: all 0.2s;
-  }
-
-  .top-nav button:hover {
-    background: #252525;
-    border-color: var(--text-faint);
-  }
-
-  .top-nav button.active {
-    background: var(--accent-blue-bg);
-    border-color: var(--accent-blue-bg);
-    color: var(--text-primary);
-  }
-
   /* ── Container ── */
   .container {
     max-width: 960px;
     margin: 0 auto;
     padding: 32px 20px 80px;
-  }
-
-  /* ── Lesson ── */
-  .lesson {
-    display: none;
-  }
-
-  .lesson.active {
-    display: block;
-  }
-
-  .lesson h1 {
-    font-size: 32px;
-    font-weight: 700;
-    margin-bottom: 8px;
-    color: var(--text-primary);
-  }
-
-  .lesson .subtitle {
-    font-size: 16px;
-    color: var(--text-muted);
-    margin-bottom: 32px;
-  }
-
-  .lesson h2 {
-    font-size: 22px;
-    font-weight: 600;
-    margin-top: 36px;
-    margin-bottom: 14px;
-    color: var(--text-secondary);
-  }
-
-  .lesson h3 {
-    font-size: 18px;
-    font-weight: 600;
-    margin-top: 28px;
-    margin-bottom: 10px;
-    color: #d0d0d0;
-  }
-
-  .lesson p {
-    margin-bottom: 16px;
-    font-size: 15px;
-    color: var(--text-body);
-  }
-
-  .lesson ul, .lesson ol {
-    margin-bottom: 16px;
-    padding-left: 24px;
-  }
-
-  .lesson li {
-    margin-bottom: 8px;
-    font-size: 15px;
-    color: var(--text-body);
-  }
-
-  /* ── Cards ── */
-  .card {
-    background: var(--bg-card);
-    border: 1px solid var(--border-secondary);
-    border-radius: 10px;
-    padding: 24px;
-    margin-bottom: 20px;
-  }
-
-  .card h3 {
-    margin-top: 0;
-    color: var(--text-primary);
-  }
-
-  .card p:last-child {
-    margin-bottom: 0;
-  }
-
-  /* ── Analogy Box ── */
-  .analogy {
-    background: var(--bg-analogy);
-    border: 1px solid var(--border-analogy);
-    border-radius: 10px;
-    padding: 20px 24px;
-    margin-bottom: 20px;
-  }
-
-  .analogy strong {
-    color: var(--accent-indigo);
-  }
-
-  .analogy p:last-child {
-    margin-bottom: 0;
-  }
-
-  .analogy-label {
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    color: var(--accent-indigo);
-    margin-bottom: 10px;
-    font-weight: 600;
-  }
-
-  /* ── Code Block ── */
-  .code-block {
-    background: var(--bg-code);
-    border: 1px solid var(--border-primary);
-    border-radius: 10px;
-    padding: 18px 22px;
-    margin-bottom: 20px;
-    overflow-x: auto;
-    font-family: 'SF Mono', Monaco, monospace;
-    font-size: 13.5px;
-    line-height: 1.6;
-    color: var(--text-secondary);
-  }
-
-  .code-block .keyword { color: var(--accent-purple); }
-  .code-block .function { color: var(--accent-blue); }
-  .code-block .string { color: var(--accent-green); }
-  .code-block .type { color: var(--accent-yellow); }
-  .code-block .comment { color: #6b7280; font-style: italic; }
-  .code-block .number { color: var(--accent-pink); }
-  .code-block .property { color: #93c5fd; }
-  .code-block .punctuation { color: #9ca3af; }
-  .code-block .method { color: var(--accent-purple); font-weight: 600; }
-
-  /* ── Interactive Buttons Row ── */
-  .btn-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 20px;
-  }
-
-  .btn-row button {
-    background: var(--bg-btn);
-    border: 1px solid var(--border-btn);
-    color: var(--text-secondary);
-    padding: 10px 18px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 14px;
-    font-family: inherit;
-    transition: all 0.2s;
-    font-weight: 500;
-  }
-
-  .btn-row button:hover {
-    background: #263548;
-    border-color: #4a6580;
-  }
-
-  .btn-row button.selected {
-    background: var(--bg-btn-selected);
-    border-color: var(--border-btn-selected);
-    color: #93c5fd;
   }
 
   /* ── Result Panel ── */
@@ -294,7 +79,7 @@
 
   .diagram-box.highlight {
     background: var(--bg-btn-selected);
-    border-color: #3b82f6;
+    border-color: var(--accent-blue);
     color: #93c5fd;
     transform: scale(1.05);
     box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
@@ -367,27 +152,7 @@
   .status-2xx { background: #064e3b; color: var(--accent-green); }
   .status-3xx { background: var(--bg-btn-selected); color: var(--accent-blue); }
   .status-4xx { background: #78350f; color: var(--accent-yellow); }
-  .status-5xx { background: #7f1d1d; color: #f87171; }
-
-  /* ── Next Button ── */
-  .next-btn {
-    display: inline-block;
-    background: var(--accent-blue-bg);
-    color: var(--text-primary);
-    border: none;
-    padding: 14px 36px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 16px;
-    font-family: inherit;
-    font-weight: 600;
-    margin-top: 32px;
-    transition: all 0.2s;
-  }
-
-  .next-btn:hover {
-    background: #1d4ed8;
-  }
+  .status-5xx { background: #7f1d1d; color: var(--accent-red); }
 
   /* ── Inline Code ── */
   code {
@@ -430,7 +195,7 @@
   }
 
   .collapsible-trigger:hover {
-    background: #263548;
+    background: var(--bg-btn-selected);
   }
 
   .collapsible-trigger .arrow {
@@ -483,7 +248,7 @@
 
   .json-interactive .json-part.active {
     background: var(--bg-btn-selected);
-    outline: 1px solid #3b82f6;
+    outline: 1px solid var(--accent-blue);
   }
 
   .json-explain {
@@ -524,7 +289,7 @@
 
   .request-section.active {
     background: var(--bg-btn-selected);
-    border-left: 3px solid #3b82f6;
+    border-left: 3px solid var(--accent-blue);
   }
 
   .request-section .section-label {
@@ -579,7 +344,7 @@
 
   .trace-step.active {
     background: var(--bg-card);
-    border-left-color: #3b82f6;
+    border-left-color: var(--accent-blue);
   }
 
   .trace-step .step-number {
@@ -668,7 +433,7 @@
   }
 
   .rest-resource.active {
-    border-color: #3b82f6;
+    border-color: var(--accent-blue);
     background: var(--bg-btn-selected);
   }
 
@@ -707,7 +472,7 @@
   .hl-blue { color: var(--accent-blue); font-weight: 600; }
   .hl-green { color: var(--accent-green); font-weight: 600; }
   .hl-yellow { color: var(--accent-yellow); font-weight: 600; }
-  .hl-red { color: #f87171; font-weight: 600; }
+  .hl-red { color: var(--accent-red); font-weight: 600; }
   .hl-indigo { color: var(--accent-indigo); font-weight: 600; }
 
   /* ── Scrollbar ── */
@@ -732,7 +497,7 @@
     <a href="/lessons/codebase.html" class="sidebar-link" data-course="codebase">
       <span class="sidebar-num">02</span> The Codebase
     </a>
-    <a href="/lessons/apis.html" class="sidebar-link" data-course="apis" aria-current="page">
+    <a href="/lessons/apis.html" class="sidebar-link" data-course="apis">
       <span class="sidebar-num">03</span> APIs &amp; HTTP
     </a>
     <a href="/lessons/build.html" class="sidebar-link" data-course="build">
@@ -744,25 +509,25 @@
     <a href="/lessons/git.html" class="sidebar-link" data-course="git">
       <span class="sidebar-num">06</span> How Git Works
     </a>
+    <a href="/lessons/authentication.html" class="sidebar-link" data-course="authentication">
+      <span class="sidebar-num">07</span> How Auth Works
+    </a>
+    <a href="/lessons/typescript.html" class="sidebar-link" data-course="typescript">
+      <span class="sidebar-num">08</span> How TypeScript Works
+    </a>
+    <a href="/lessons/react.html" class="sidebar-link" data-course="react">
+      <span class="sidebar-num">09</span> How React Works
+    </a>
+    <a href="/lessons/testing.html" class="sidebar-link" data-course="testing">
+      <span class="sidebar-num">10</span> How Testing Works
+    </a>
+    <a href="/lessons/ai-agents.html" class="sidebar-link" data-course="ai-agents">
+      <span class="sidebar-num">11</span> How AI Agents Work
+    </a>
+    <a href="/lessons/shipping.html" class="sidebar-link" data-course="shipping">
+      <span class="sidebar-num">12</span> How to Ship a Product
+    </a>
   </nav>
-      <a href="/lessons/authentication.html" class="sidebar-link" data-course="authentication">
-        <span class="sidebar-num">07</span> How Auth Works
-      </a>
-      <a href="/lessons/typescript.html" class="sidebar-link" data-course="typescript">
-        <span class="sidebar-num">08</span> How TypeScript Works
-      </a>
-      <a href="/lessons/react.html" class="sidebar-link" data-course="react">
-        <span class="sidebar-num">09</span> How React Works
-      </a>
-      <a href="/lessons/testing.html" class="sidebar-link" data-course="testing">
-        <span class="sidebar-num">10</span> How Testing Works
-      </a>
-      <a href="/lessons/ai-agents.html" class="sidebar-link" data-course="ai-agents">
-        <span class="sidebar-num">11</span> How AI Agents Work
-      </a>
-      <a href="/lessons/shipping.html" class="sidebar-link" data-course="shipping">
-        <span class="sidebar-num">12</span> How to Ship a Product
-      </a>
   <div class="sidebar-footer">
     <button class="theme-toggle" id="theme-toggle">
       <span class="theme-icon" id="theme-icon">☀️</span>
@@ -1853,7 +1618,7 @@ function checkQuiz1(answer) {
   if (answer === 'b') {
     el.innerHTML = '<div class="result-title" style="color:var(--accent-green);">Correct!</div><div class="result-body">The browser (where the user sees the UI) is the client, and Paperclip\'s backend (the server code you explored in the codebase tutorial) is the server. The database sits behind the server &mdash; the client never talks to the database directly.</div>';
   } else {
-    el.innerHTML = '<div class="result-title" style="color:#f87171;">Not quite!</div><div class="result-body">Try again. Think about which part the user sees and interacts with (that\'s the client) vs. which part processes data behind the scenes (that\'s the server).</div>';
+    el.innerHTML = '<div class="result-title" style="color:var(--accent-red);">Not quite!</div><div class="result-body">Try again. Think about which part the user sees and interacts with (that\'s the client) vs. which part processes data behind the scenes (that\'s the server).</div>';
   }
 }
 
@@ -1865,7 +1630,7 @@ function showApiComparison(which) {
 
   const el = document.getElementById('api-comparison');
   if (which === 'without') {
-    el.innerHTML = '<div class="result-title" style="color:#f87171;">Without an API &mdash; Chaos</div><div class="result-body"><p>Imagine a restaurant with no menu. You walk in and say "I want something with chicken." The kitchen doesn\'t know what you mean. How much chicken? What style? What sides? Every order is a guessing game.</p><p style="margin-top:8px;">Without an API, the browser would have to somehow know the internal structure of the server. It would be like a customer walking into the kitchen and trying to cook their own food. Messy, unsafe, and nothing would work right.</p></div>';
+    el.innerHTML = '<div class="result-title" style="color:var(--accent-red);">Without an API &mdash; Chaos</div><div class="result-body"><p>Imagine a restaurant with no menu. You walk in and say "I want something with chicken." The kitchen doesn\'t know what you mean. How much chicken? What style? What sides? Every order is a guessing game.</p><p style="margin-top:8px;">Without an API, the browser would have to somehow know the internal structure of the server. It would be like a customer walking into the kitchen and trying to cook their own food. Messy, unsafe, and nothing would work right.</p></div>';
   } else {
     el.innerHTML = '<div class="result-title" style="color:var(--accent-green);">With an API &mdash; Order</div><div class="result-body"><p>With a menu, everything is clear. The menu says "Chicken Parmesan &mdash; $15" and you know exactly what you\'ll get. The kitchen knows exactly what to make.</p><p style="margin-top:8px;">With an API, the server publishes a clear list: "Send <code>GET /api/agents</code> and I\'ll give you a list of all agents." The browser knows exactly what to ask for, and the server knows exactly what to send back. Everyone speaks the same language.</p></div>';
   }
@@ -1914,8 +1679,8 @@ function checkMethodQuiz(q, answer) {
     resultEl.innerHTML = '<span style="color:var(--accent-green);">Correct! ' + answer + ' is right.</span>';
     resultEl.style.color = 'var(--accent-green)';
   } else {
-    resultEl.innerHTML = '<span style="color:#f87171;">Not quite. Think about what action is being performed &mdash; reading, creating, updating, or deleting?</span>';
-    resultEl.style.color = '#f87171';
+    resultEl.innerHTML = '<span style="color:var(--accent-red);">Not quite. Think about what action is being performed &mdash; reading, creating, updating, or deleting?</span>';
+    resultEl.style.color = 'var(--accent-red)';
   }
 }
 
@@ -1946,7 +1711,7 @@ function checkReqQuiz(answer) {
   if (answer === 'b') {
     el.innerHTML = '<div class="result-title" style="color:var(--accent-green);">Correct!</div><div class="result-body">A GET request needs a method (GET), a URL (/api/agents), and headers (like Authorization to prove who you are). It does NOT need a body because you\'re just asking to <em>see</em> data, not sending any data.</div>';
   } else {
-    el.innerHTML = '<div class="result-title" style="color:#f87171;">Not quite.</div><div class="result-body">Remember: GET requests are just asking to <em>see</em> something. They don\'t need a body (no data to send). But they do need headers (at minimum, to authenticate). And you always need the method and URL.</div>';
+    el.innerHTML = '<div class="result-title" style="color:var(--accent-red);">Not quite.</div><div class="result-body">Remember: GET requests are just asking to <em>see</em> something. They don\'t need a body (no data to send). But they do need headers (at minimum, to authenticate). And you always need the method and URL.</div>';
   }
 }
 

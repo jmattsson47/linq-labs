@@ -53,6 +53,13 @@
   --accent-indigo: #818cf8;
   --accent-pink: #f472b6;
   --accent-orange: #fb923c;
+  --accent-red: #f87171;
+
+  /* Tinted backgrounds (for tags, labels, badges) */
+  --bg-tint-yellow: #422006;
+  --bg-tint-green: #052e16;
+  --bg-tint-indigo: #1e1b4b;
+  --bg-tint-blue: #172554;
 }
 
 /* --- Custom Properties: Light Mode --- */
@@ -93,6 +100,13 @@
   --text-dim: #777;
   --text-nav: #666;
   --text-table-header: #5a6a8a;
+
+  --accent-red: #f87171;
+
+  --bg-tint-yellow: #fef3c7;
+  --bg-tint-green: #d1fae5;
+  --bg-tint-indigo: #e0e7ff;
+  --bg-tint-blue: #dbeafe;
 }
 
 /* ============================================================
@@ -257,7 +271,8 @@ body, .sidebar, .nav, .top-nav, .content-wrapper, .db-table, .analogy, .code-blo
    Breadcrumbs
    ============================================================ */
 .breadcrumb {
-  padding: 0 32px;
+  padding: 8px 32px 0;
+  margin-top: 64px;
   margin-bottom: -16px;
   font-size: 13px;
   color: var(--text-faint);
@@ -549,4 +564,411 @@ body, .sidebar, .nav, .top-nav, .content-wrapper, .db-table, .analogy, .code-blo
   .content-wrapper {
     margin-left: 280px;
   }
+}
+
+/* ============================================================
+   Top Nav — .nav pattern (databases, build, codebase)
+   ============================================================ */
+.nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-primary);
+  padding: 12px 32px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  z-index: 100;
+  overflow-x: auto;
+  flex-wrap: wrap;
+}
+
+.nav h1 {
+  font-size: 16px;
+  color: var(--text-primary);
+  margin-right: 24px;
+  white-space: nowrap;
+}
+
+.nav button {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-nav-btn);
+  color: var(--text-dim);
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.nav button:hover {
+  background: var(--bg-btn);
+  color: var(--text-primary);
+  border-color: var(--border-tertiary);
+}
+
+.nav button.active {
+  background: var(--accent-blue-bg);
+  border-color: var(--accent-blue-bg);
+  color: var(--text-primary);
+}
+
+.progress {
+  margin-left: auto;
+  font-size: 13px;
+  color: var(--text-faint);
+  white-space: nowrap;
+}
+
+@media (min-width: 1024px) {
+  .nav { left: 280px; }
+}
+
+/* ============================================================
+   Top Nav — .top-nav pattern
+   ============================================================ */
+.top-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-primary);
+  padding: 10px 16px;
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.top-nav::-webkit-scrollbar { height: 4px; }
+.top-nav::-webkit-scrollbar-thumb { background: var(--border-nav-btn); border-radius: 2px; }
+
+.top-nav .nav-title {
+  color: var(--accent-indigo);
+  font-weight: 700;
+  font-size: 14px;
+  margin-right: 8px;
+  white-space: nowrap;
+}
+
+.top-nav button {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-nav-btn);
+  color: var(--text-nav);
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  white-space: nowrap;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.top-nav button:hover {
+  background: var(--bg-btn);
+  border-color: var(--text-faint);
+  color: var(--text-body);
+}
+
+.top-nav button.active {
+  background: var(--accent-blue-bg);
+  border-color: var(--accent-blue-bg);
+  color: var(--text-primary);
+}
+
+.nav-btn {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-nav-btn);
+  color: var(--text-nav);
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  white-space: nowrap;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.nav-btn:hover {
+  border-color: var(--text-faint);
+  color: var(--text-body);
+}
+
+.nav-btn.active {
+  background: var(--accent-blue-bg);
+  border-color: var(--accent-blue-bg);
+  color: var(--text-primary);
+}
+
+@media (min-width: 1024px) {
+  .top-nav { left: 280px; }
+}
+
+/* ============================================================
+   Lesson Layout
+   ============================================================ */
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 80px 20px 60px;
+}
+
+.lesson { display: none; }
+.lesson.active { display: block; }
+
+/* ============================================================
+   Lesson Typography
+   ============================================================ */
+.lesson h1 {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+}
+
+.lesson h2 {
+  font-size: 22px;
+  font-weight: 600;
+  margin-top: 36px;
+  margin-bottom: 14px;
+  color: var(--text-primary);
+}
+
+.lesson h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 24px 0 10px;
+  color: var(--text-secondary);
+}
+
+.lesson .subtitle {
+  font-size: 15px;
+  color: var(--text-muted);
+  margin-bottom: 32px;
+}
+
+.lesson p {
+  margin-bottom: 16px;
+  font-size: 15px;
+  color: var(--text-body);
+  line-height: 1.7;
+}
+
+.lesson ul, .lesson ol {
+  margin-bottom: 16px;
+  padding-left: 24px;
+}
+
+.lesson li {
+  margin-bottom: 8px;
+  font-size: 15px;
+  color: var(--text-body);
+}
+
+/* ============================================================
+   Analogy Box
+   ============================================================ */
+.analogy {
+  background: var(--bg-analogy);
+  border: 1px solid var(--border-analogy);
+  border-radius: 10px;
+  padding: 20px 24px;
+  margin: 24px 0;
+}
+
+.analogy strong { color: var(--accent-indigo); }
+.analogy p { color: var(--text-dim); margin-bottom: 0; }
+
+.analogy-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--accent-indigo);
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+/* ============================================================
+   Cards
+   ============================================================ */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-secondary);
+  border-radius: 10px;
+  padding: 24px;
+  margin: 20px 0;
+}
+
+.card h3 { margin-top: 0; color: var(--text-primary); }
+.card p:last-child { margin-bottom: 0; }
+
+.card-dark {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  padding: 24px;
+  margin: 20px 0;
+}
+
+/* ============================================================
+   Code Blocks
+   ============================================================ */
+.code-block {
+  background: var(--bg-code);
+  border: 1px solid var(--border-secondary);
+  border-radius: 8px;
+  padding: 18px 20px;
+  margin: 16px 0;
+  overflow-x: auto;
+  font-family: 'SF Mono', Monaco, monospace;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+/* Syntax highlighting */
+.kw { color: var(--accent-purple); }
+.fn { color: var(--accent-blue); }
+.str { color: var(--accent-green); }
+.typ { color: var(--accent-yellow); }
+.cmt { color: var(--text-faint); font-style: italic; }
+.op { color: var(--text-secondary); }
+.code-block .keyword { color: var(--accent-purple); }
+.code-block .function { color: var(--accent-blue); }
+.code-block .string { color: var(--accent-green); }
+.code-block .comment { color: var(--text-faint); }
+.code-block .type { color: var(--accent-yellow); }
+
+/* Inline code */
+p code, li code, td code {
+  background: var(--bg-analogy);
+  padding: 2px 7px;
+  border-radius: 4px;
+  color: var(--accent-indigo);
+  font-size: 13px;
+  font-family: 'SF Mono', Monaco, monospace;
+}
+
+/* ============================================================
+   Buttons
+   ============================================================ */
+.btn-row {
+  display: flex;
+  gap: 10px;
+  margin: 24px 0;
+  flex-wrap: wrap;
+}
+
+.btn {
+  background: var(--bg-btn);
+  border: 1px solid var(--border-btn);
+  color: var(--text-nav);
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.btn:hover {
+  background: var(--bg-btn-selected);
+  color: var(--text-primary);
+  border-color: var(--border-btn-selected);
+}
+
+.btn.selected {
+  background: var(--bg-btn-selected);
+  border-color: var(--border-btn-selected);
+  color: var(--accent-blue);
+}
+
+.ibtn {
+  background: var(--bg-btn);
+  border: 1px solid var(--border-btn);
+  color: var(--text-nav);
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.ibtn:hover {
+  border-color: var(--accent-blue);
+  color: var(--text-secondary);
+}
+
+.ibtn.selected {
+  background: var(--bg-btn-selected);
+  border-color: var(--border-btn-selected);
+  color: var(--text-primary);
+}
+
+.next-btn {
+  display: inline-block;
+  margin-top: 32px;
+  background: var(--accent-blue-bg);
+  border: none;
+  color: var(--text-primary);
+  padding: 12px 28px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 500;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+
+.next-btn:hover {
+  background: #3b82f6;
+  text-decoration: none;
+}
+
+/* ============================================================
+   Result & Detail Boxes
+   ============================================================ */
+.result-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border-secondary);
+  border-radius: 10px;
+  padding: 20px;
+  margin: 16px 0;
+  min-height: 60px;
+  transition: all 0.3s;
+}
+
+.result-box .label {
+  color: var(--text-faint);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+}
+
+.result-box.flash { border-color: var(--accent-blue); }
+
+.detail-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border-secondary);
+  border-radius: 10px;
+  padding: 20px;
+  margin: 16px 0;
+  min-height: 60px;
+  transition: all 0.3s;
+}
+
+.detail-box .label {
+  color: var(--text-faint);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
 }
