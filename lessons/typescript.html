@@ -1,0 +1,1748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How TypeScript Works — The Fundamentals</title>
+<link rel="stylesheet" href="/css/shared.css">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+/* -- Top Nav -- */
+.top-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-primary);
+  padding: 10px 16px;
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+@media (min-width: 1024px) {
+  .top-nav { left: 280px; }
+}
+.top-nav::-webkit-scrollbar { height: 4px; }
+.top-nav::-webkit-scrollbar-thumb { background: var(--border-nav-btn); border-radius: 2px; }
+
+.nav-btn {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-nav-btn);
+  color: var(--text-nav);
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  white-space: nowrap;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.nav-btn:hover { border-color: var(--text-faint); color: var(--text-body); }
+.nav-btn.active {
+  background: var(--accent-blue-bg);
+  border-color: var(--accent-blue-bg);
+  color: var(--text-primary);
+}
+
+/* -- Container -- */
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 80px 20px 60px;
+}
+
+/* -- Lessons -- */
+.lesson { display: none; }
+.lesson.active { display: block; }
+
+.lesson h1 {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+}
+.lesson .subtitle {
+  font-size: 15px;
+  color: var(--text-muted);
+  margin-bottom: 32px;
+}
+
+h2 {
+  font-size: 22px;
+  color: var(--text-primary);
+  margin: 36px 0 14px;
+}
+h3 {
+  font-size: 18px;
+  color: var(--text-secondary);
+  margin: 24px 0 10px;
+}
+
+p { margin-bottom: 16px; color: var(--text-body); }
+
+/* -- Cards -- */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-secondary);
+  border-radius: 10px;
+  padding: 24px;
+  margin: 20px 0;
+}
+.card-dark {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  padding: 24px;
+  margin: 20px 0;
+}
+
+/* -- Analogy boxes -- */
+.analogy {
+  background: var(--bg-analogy);
+  border: 1px solid var(--border-analogy);
+  border-radius: 10px;
+  padding: 20px 24px;
+  margin: 24px 0;
+}
+.analogy strong { color: var(--accent-indigo); }
+.analogy p { color: var(--text-tertiary); margin-bottom: 0; }
+.analogy .analogy-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--accent-indigo);
+  margin-bottom: 8px;
+}
+
+/* -- Code blocks -- */
+.code-block {
+  background: var(--bg-code);
+  border: 1px solid var(--border-secondary);
+  border-radius: 8px;
+  padding: 16px 20px;
+  overflow-x: auto;
+  margin: 16px 0;
+  font-family: 'SF Mono', Monaco, monospace;
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+pre {
+  background: var(--bg-code);
+  border: 1px solid var(--border-secondary);
+  border-radius: 8px;
+  padding: 16px 20px;
+  overflow-x: auto;
+  margin: 16px 0;
+  font-family: 'SF Mono', Monaco, monospace;
+  font-size: 14px;
+  line-height: 1.6;
+}
+code {
+  font-family: 'SF Mono', Monaco, monospace;
+  font-size: 13px;
+}
+.kw { color: var(--accent-purple); }
+.fn { color: var(--accent-blue); }
+.str { color: var(--accent-green); }
+.typ { color: var(--accent-yellow); }
+.cmt { color: var(--text-faint); font-style: italic; }
+.err { color: #f87171; }
+.num { color: var(--accent-pink, #f472b6); }
+.op { color: var(--text-secondary); }
+
+/* inline code */
+p code, li code {
+  background: var(--bg-analogy);
+  padding: 2px 7px;
+  border-radius: 4px;
+  color: var(--accent-indigo);
+  font-size: 13px;
+}
+
+/* -- Interactive buttons row -- */
+.btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0;
+}
+.ibtn {
+  background: var(--bg-btn);
+  border: 1px solid var(--border-btn);
+  color: var(--text-nav);
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.ibtn:hover { border-color: var(--accent-blue); color: var(--text-secondary); }
+.ibtn.selected {
+  background: var(--bg-btn-selected);
+  border-color: var(--border-btn-selected);
+  color: var(--text-primary);
+}
+
+/* -- Next button -- */
+.next-btn {
+  display: inline-block;
+  background: var(--accent-blue-bg);
+  color: var(--text-primary);
+  border: none;
+  padding: 14px 36px;
+  border-radius: 10px;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 40px;
+  transition: background 0.2s;
+  font-family: inherit;
+  font-weight: 600;
+}
+.next-btn:hover { background: #3b82f6; }
+
+/* -- Error display -- */
+.error-display {
+  background: #1a0a0a;
+  border: 1px solid #5c1a1a;
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin: 16px 0;
+  font-family: 'SF Mono', Monaco, monospace;
+  font-size: 13px;
+  color: #f87171;
+  line-height: 1.6;
+}
+
+.success-display {
+  background: #0a1a0f;
+  border: 1px solid #1a5c2a;
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin: 16px 0;
+  font-family: 'SF Mono', Monaco, monospace;
+  font-size: 13px;
+  color: var(--accent-green);
+  line-height: 1.6;
+}
+
+/* -- Comparison panels -- */
+.compare-panels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 20px 0;
+}
+.compare-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border-secondary);
+  border-radius: 10px;
+  padding: 16px;
+}
+.compare-panel h4 {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 600;
+}
+.compare-panel.js-side h4 { color: var(--accent-yellow); }
+.compare-panel.ts-side h4 { color: var(--accent-blue); }
+@media (max-width: 640px) {
+  .compare-panels { grid-template-columns: 1fr; }
+}
+
+/* -- Result box for interactive demos -- */
+.result-box {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  padding: 20px;
+  margin: 16px 0;
+  min-height: 60px;
+}
+
+/* -- Type badge -- */
+.type-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'SF Mono', Monaco, monospace;
+  margin: 3px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.type-badge.string-badge { background: rgba(52, 211, 153, 0.15); border: 1px solid rgba(52, 211, 153, 0.3); color: var(--accent-green); }
+.type-badge.number-badge { background: rgba(96, 165, 250, 0.15); border: 1px solid rgba(96, 165, 250, 0.3); color: var(--accent-blue); }
+.type-badge.boolean-badge { background: rgba(192, 132, 252, 0.15); border: 1px solid rgba(192, 132, 252, 0.3); color: var(--accent-purple); }
+.type-badge.array-badge { background: rgba(251, 191, 36, 0.15); border: 1px solid rgba(251, 191, 36, 0.3); color: var(--accent-yellow); }
+.type-badge.selected { box-shadow: 0 0 12px rgba(96, 165, 250, 0.3); transform: scale(1.05); }
+
+/* -- Interface fields -- */
+.interface-field {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+  margin: 6px 0;
+  font-family: 'SF Mono', Monaco, monospace;
+  font-size: 13px;
+  transition: all 0.3s;
+}
+.interface-field .field-name { color: var(--accent-blue); }
+.interface-field .field-type { color: var(--accent-yellow); margin-left: auto; }
+.interface-field.missing { border-color: #f87171; background: rgba(248, 113, 113, 0.05); }
+.interface-field.present { border-color: var(--accent-green); background: rgba(52, 211, 153, 0.05); }
+
+/* -- Generic box visual -- */
+.generic-box {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 24px;
+  background: var(--bg-card);
+  border: 2px solid var(--border-secondary);
+  border-radius: 12px;
+  margin: 8px;
+  transition: all 0.3s;
+  font-family: 'SF Mono', Monaco, monospace;
+}
+.generic-box .box-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-faint);
+}
+.generic-box .box-content {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* -- Union type visual -- */
+.union-branch {
+  padding: 14px 18px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+  margin: 8px 0;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.union-branch:hover { border-color: var(--accent-blue); }
+.union-branch.active-branch { border-color: var(--accent-green); background: rgba(52, 211, 153, 0.05); }
+.union-branch h4 { font-size: 14px; color: var(--text-primary); margin-bottom: 4px; }
+.union-branch p { font-size: 13px; color: var(--text-muted); margin: 0; }
+
+/* -- File tree -- */
+.file-tree {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin: 16px 0;
+  font-family: 'SF Mono', Monaco, monospace;
+  font-size: 13px;
+  line-height: 2;
+}
+.file-tree .folder { color: var(--accent-yellow); }
+.file-tree .ts-file { color: var(--accent-blue); }
+.file-tree .js-file { color: var(--accent-green); }
+.file-tree .config-file { color: var(--accent-purple); }
+.file-tree .indent { margin-left: 20px; }
+.file-tree .indent2 { margin-left: 40px; }
+
+/* -- Fade-in animation -- */
+.fade-in {
+  animation: fadeIn 0.4s ease;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* -- Lists -- */
+ul, ol { padding-left: 24px; margin-bottom: 16px; }
+li { margin-bottom: 8px; color: var(--text-body); }
+
+/* -- Scrollbar -- */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background: var(--border-nav-btn); border-radius: 3px; }
+
+/* -- Responsive -- */
+@media (max-width: 640px) {
+  .top-nav { padding: 8px 10px; gap: 4px; }
+  .nav-btn { padding: 5px 10px; font-size: 12px; }
+  .container { padding: 70px 14px 40px; }
+  .lesson h1 { font-size: 24px; }
+  .compare-panels { grid-template-columns: 1fr; }
+}
+
+.breadcrumb { margin-top: 64px; padding-top: 8px; }
+
+.next-course-banner { background: var(--bg-secondary); border: 1px solid var(--border-primary); border-radius: 10px; padding: 24px; margin-top: 32px; text-align: center; }
+.next-course-banner h3 { color: var(--text-primary); margin: 0 0 8px; font-size: 18px; }
+.next-course-banner p { color: var(--text-muted); font-size: 15px; margin: 0 0 16px; }
+.next-course-banner a { display: inline-block; background: var(--accent-blue-bg); color: var(--text-primary); padding: 10px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px; transition: background 0.2s; }
+.next-course-banner a:hover { background: #3b82f6; }
+</style>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <a href="/index.html" class="sidebar-logo">The Fundamentals</a>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="sidebar-section-title">Courses</div>
+    <a href="/lessons/databases.html" class="sidebar-link" data-course="databases">
+      <span class="sidebar-num">01</span> How Databases Work
+    </a>
+    <a href="/lessons/codebase.html" class="sidebar-link" data-course="codebase">
+      <span class="sidebar-num">02</span> The Codebase
+    </a>
+    <a href="/lessons/apis.html" class="sidebar-link" data-course="apis">
+      <span class="sidebar-num">03</span> APIs &amp; HTTP
+    </a>
+    <a href="/lessons/build.html" class="sidebar-link" data-course="build">
+      <span class="sidebar-num">04</span> Build a Mini App
+    </a>
+    <a href="/lessons/deployment.html" class="sidebar-link" data-course="deployment">
+      <span class="sidebar-num">05</span> How Deployment Works
+    </a>
+    <a href="/lessons/git.html" class="sidebar-link" data-course="git">
+      <span class="sidebar-num">06</span> How Git Works
+    </a>
+    <a href="/lessons/authentication.html" class="sidebar-link" data-course="authentication">
+      <span class="sidebar-num">07</span> How Auth Works
+    </a>
+    <a href="/lessons/typescript.html" class="sidebar-link active" data-course="typescript" aria-current="page">
+      <span class="sidebar-num">08</span> How TypeScript Works
+    </a>
+    <a href="/lessons/react.html" class="sidebar-link" data-course="react">
+      <span class="sidebar-num">09</span> How React Works
+    </a>
+    <a href="/lessons/testing.html" class="sidebar-link" data-course="testing">
+      <span class="sidebar-num">10</span> How Testing Works
+    </a>
+    <a href="/lessons/ai-agents.html" class="sidebar-link" data-course="ai-agents">
+      <span class="sidebar-num">11</span> How AI Agents Work
+    </a>
+    <a href="/lessons/shipping.html" class="sidebar-link" data-course="shipping">
+      <span class="sidebar-num">12</span> How Shipping Works
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <button class="theme-toggle" id="theme-toggle">
+      <span class="theme-icon" id="theme-icon">&#9788;</span>
+      <span class="theme-label" id="theme-label">Light Mode</span>
+    </button>
+  </div>
+</aside>
+<button class="sidebar-toggle" id="sidebar-toggle">&#9776;</button>
+
+<div class="content-wrapper">
+
+<div class="breadcrumb"><a href="/index.html">Home</a><span class="sep">&#8250;</span><span>How TypeScript Works</span></div>
+
+<!-- Top Nav -->
+<nav class="top-nav" id="topNav">
+  <button class="nav-btn active" onclick="goToLesson(0)">1. The Problem</button>
+  <button class="nav-btn" onclick="goToLesson(1)">2. Types</button>
+  <button class="nav-btn" onclick="goToLesson(2)">3. Interfaces</button>
+  <button class="nav-btn" onclick="goToLesson(3)">4. Functions</button>
+  <button class="nav-btn" onclick="goToLesson(4)">5. Generics</button>
+  <button class="nav-btn" onclick="goToLesson(5)">6. Unions</button>
+  <button class="nav-btn" onclick="goToLesson(6)">7. In the Codebase</button>
+  <button class="nav-btn" onclick="goToLesson(7)">8. Getting Started</button>
+</nav>
+
+<div class="container">
+
+<!-- ============================================================ -->
+<!-- LESSON 1: THE PROBLEM TYPESCRIPT SOLVES -->
+<!-- ============================================================ -->
+<div class="lesson active" id="lesson0">
+  <h1>The Problem TypeScript Solves</h1>
+  <p class="subtitle">Lesson 1 of 8 &mdash; JavaScript lets you do anything, including things that break</p>
+
+  <h2>JavaScript is Too Forgiving</h2>
+  <p>JavaScript will happily let you write code that looks fine but crashes when it runs. It never warns you. It just... breaks. In production. At 2am. When a user is trying to pay for something.</p>
+
+  <p>Here are three real bugs that JavaScript is completely fine with:</p>
+
+  <div class="card">
+    <h3>Bug #1: Wrong argument type</h3>
+    <div class="code-block"><span class="kw">function</span> <span class="fn">calculateTotal</span>(price, quantity) {
+  <span class="kw">return</span> price * quantity;
+}
+
+<span class="cmt">// Oops &mdash; passing a string instead of a number</span>
+<span class="fn">calculateTotal</span>(<span class="str">"29.99"</span>, <span class="num">3</span>);
+<span class="cmt">// Returns 89.97... but only by luck.</span>
+<span class="cmt">// What about:</span>
+<span class="fn">calculateTotal</span>(<span class="str">"twenty"</span>, <span class="num">3</span>);
+<span class="cmt">// Returns NaN &mdash; the order silently fails</span></div>
+  </div>
+
+  <div class="card">
+    <h3>Bug #2: Property that doesn't exist</h3>
+    <div class="code-block"><span class="kw">const</span> user = { name: <span class="str">"Jared"</span>, email: <span class="str">"jared@example.com"</span> };
+
+<span class="cmt">// Typo: "naem" instead of "name"</span>
+console.<span class="fn">log</span>(user.naem);
+<span class="cmt">// Returns undefined &mdash; no error, no warning</span>
+<span class="cmt">// Your UI just shows "Hello, undefined!"</span></div>
+  </div>
+
+  <div class="card">
+    <h3>Bug #3: Missing function argument</h3>
+    <div class="code-block"><span class="kw">function</span> <span class="fn">greetUser</span>(firstName, lastName) {
+  <span class="kw">return</span> <span class="str">`Hello, ${firstName} ${lastName}!`</span>;
+}
+
+<span class="fn">greetUser</span>(<span class="str">"Jared"</span>);
+<span class="cmt">// Returns "Hello, Jared undefined!"</span>
+<span class="cmt">// JavaScript doesn't care that you forgot an argument</span></div>
+  </div>
+
+  <h2>Try It: JS vs TypeScript</h2>
+  <p>Click "Run JavaScript" to see the bug happen at runtime. Then click "Run TypeScript" to see how TS catches it before the code ever runs.</p>
+
+  <div class="btn-row">
+    <button class="ibtn" onclick="runJSDemo(this)">Run JavaScript</button>
+    <button class="ibtn" onclick="runTSDemo(this)">Run TypeScript</button>
+  </div>
+
+  <div id="jsTsResult" class="result-box" style="display:none;"></div>
+
+  <h2>What TypeScript Actually Is</h2>
+  <p>TypeScript is JavaScript with <strong style="color:var(--text-primary)">types</strong>. That's it. You write the same code you already know, but you add annotations that tell TypeScript what kind of data each variable, parameter, and return value should be.</p>
+
+  <p>TypeScript checks your code <em>before</em> it runs. If something doesn't match, it tells you immediately &mdash; in your editor, with a red underline, before you even save the file.</p>
+
+  <div class="compare-panels">
+    <div class="compare-panel js-side">
+      <h4>JavaScript</h4>
+      <div class="code-block"><span class="kw">function</span> <span class="fn">add</span>(a, b) {
+  <span class="kw">return</span> a + b;
+}
+<span class="cmt">// No idea what a and b are</span>
+<span class="cmt">// Strings? Numbers? Objects?</span>
+<span class="cmt">// JavaScript says: "whatever"</span></div>
+    </div>
+    <div class="compare-panel ts-side">
+      <h4>TypeScript</h4>
+      <div class="code-block"><span class="kw">function</span> <span class="fn">add</span>(a: <span class="typ">number</span>, b: <span class="typ">number</span>): <span class="typ">number</span> {
+  <span class="kw">return</span> a + b;
+}
+<span class="cmt">// Crystal clear: numbers in, number out</span>
+<span class="cmt">// Pass a string? Instant error.</span></div>
+    </div>
+  </div>
+
+  <div class="analogy">
+    <div class="analogy-label">Analogy</div>
+    <p><strong>JavaScript is like building with no blueprints.</strong> You can nail boards together however you want. Sometimes it works. Sometimes the roof collapses. <strong>TypeScript is adding blueprints.</strong> Before you build, you check that everything fits. The house still gets built the same way &mdash; but now you catch problems before the walls go up.</p>
+  </div>
+
+  <h2>Key Insight</h2>
+  <div class="card">
+    <p>TypeScript doesn't run in the browser. It gets <strong style="color:var(--text-primary)">compiled</strong> (converted) to plain JavaScript before it runs. The types are only there for you, the developer. They disappear completely in the final code.</p>
+    <div class="code-block"><span class="cmt">// You write this (TypeScript):</span>
+<span class="kw">const</span> age: <span class="typ">number</span> = <span class="num">25</span>;
+
+<span class="cmt">// Browser runs this (JavaScript):</span>
+<span class="kw">const</span> age = <span class="num">25</span>;</div>
+    <p style="margin-bottom:0; color:var(--text-muted); font-size:14px;">The <code>: number</code> annotation is stripped away. Zero runtime cost. All the safety, none of the overhead.</p>
+  </div>
+
+  <button class="next-btn" onclick="goToLesson(1)">Next: Types &mdash; The Basics &rarr;</button>
+</div>
+
+<!-- ============================================================ -->
+<!-- LESSON 2: TYPES — THE BASICS -->
+<!-- ============================================================ -->
+<div class="lesson" id="lesson1">
+  <h1>Types &mdash; The Basics</h1>
+  <p class="subtitle">Lesson 2 of 8 &mdash; string, number, boolean, and arrays</p>
+
+  <h2>The Four Core Types</h2>
+  <p>TypeScript has the same data types as JavaScript. The difference is that you <em>declare</em> which type a variable holds. Click each type to see how it works:</p>
+
+  <div class="btn-row">
+    <button class="type-badge string-badge" onclick="showTypeExample('string', this)">string</button>
+    <button class="type-badge number-badge" onclick="showTypeExample('number', this)">number</button>
+    <button class="type-badge boolean-badge" onclick="showTypeExample('boolean', this)">boolean</button>
+    <button class="type-badge array-badge" onclick="showTypeExample('array', this)">array</button>
+  </div>
+
+  <div id="typeExampleResult" class="result-box" style="display:none;"></div>
+
+  <h2>Variable Annotations</h2>
+  <p>To tell TypeScript what type a variable is, you add <code>: type</code> after the variable name:</p>
+
+  <div class="code-block"><span class="cmt">// Explicit type annotations</span>
+<span class="kw">let</span> username: <span class="typ">string</span> = <span class="str">"Jared"</span>;
+<span class="kw">let</span> age: <span class="typ">number</span> = <span class="num">28</span>;
+<span class="kw">let</span> isActive: <span class="typ">boolean</span> = <span class="kw">true</span>;
+<span class="kw">let</span> scores: <span class="typ">number[]</span> = [<span class="num">95</span>, <span class="num">87</span>, <span class="num">92</span>];
+
+<span class="cmt">// Now TypeScript protects you:</span>
+username = <span class="num">42</span>;        <span class="err">// Error: Type 'number' is not assignable to type 'string'</span>
+age = <span class="str">"twenty-eight"</span>;  <span class="err">// Error: Type 'string' is not assignable to type 'number'</span>
+isActive = <span class="str">"yes"</span>;     <span class="err">// Error: Type 'string' is not assignable to type 'boolean'</span>
+scores.<span class="fn">push</span>(<span class="str">"A+"</span>);    <span class="err">// Error: Argument of type 'string' is not assignable</span></div>
+
+  <h2>Function Parameters</h2>
+  <p>The real power shows up in function parameters. In JavaScript, you have to <em>hope</em> callers pass the right types. In TypeScript, you <em>enforce</em> it:</p>
+
+  <div class="compare-panels">
+    <div class="compare-panel js-side">
+      <h4>JavaScript</h4>
+      <div class="code-block"><span class="kw">function</span> <span class="fn">sendEmail</span>(to, subject) {
+  <span class="cmt">// What if `to` is a number?</span>
+  <span class="cmt">// What if `subject` is undefined?</span>
+  <span class="cmt">// We just hope for the best...</span>
+}</div>
+    </div>
+    <div class="compare-panel ts-side">
+      <h4>TypeScript</h4>
+      <div class="code-block"><span class="kw">function</span> <span class="fn">sendEmail</span>(
+  to: <span class="typ">string</span>,
+  subject: <span class="typ">string</span>
+) {
+  <span class="cmt">// TypeScript guarantees both</span>
+  <span class="cmt">// are strings. No hoping.</span>
+}</div>
+    </div>
+  </div>
+
+  <h2>Type Inference</h2>
+  <p>TypeScript is smart. If you assign a value immediately, TypeScript <em>infers</em> the type. You don't always need to write it:</p>
+
+  <div class="code-block"><span class="cmt">// TypeScript infers these types automatically:</span>
+<span class="kw">let</span> name = <span class="str">"Jared"</span>;       <span class="cmt">// TypeScript knows this is a string</span>
+<span class="kw">let</span> count = <span class="num">42</span>;           <span class="cmt">// TypeScript knows this is a number</span>
+<span class="kw">let</span> items = [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>];    <span class="cmt">// TypeScript knows this is number[]</span>
+
+<span class="cmt">// You still get the same protection:</span>
+name = <span class="num">100</span>;               <span class="err">// Error! TypeScript inferred `name` is a string</span></div>
+
+  <div class="analogy">
+    <div class="analogy-label">Analogy</div>
+    <p><strong>Types are like labeled containers in a kitchen.</strong> The sugar jar is labeled "Sugar" &mdash; you only put sugar in it. The flour canister is labeled "Flour." Without labels, someone puts salt in the sugar jar and every recipe fails. Types are the labels. They don't change what's inside &mdash; they just make sure the right thing goes in the right place.</p>
+  </div>
+
+  <h2>When to Add Type Annotations</h2>
+  <div class="card">
+    <ul>
+      <li><strong style="color:var(--text-primary);">Function parameters</strong> &mdash; always annotate. TypeScript can't infer what callers will pass.</li>
+      <li><strong style="color:var(--text-primary);">Variables with assignment</strong> &mdash; usually let TypeScript infer. <code>let x = 5</code> is fine.</li>
+      <li><strong style="color:var(--text-primary);">Variables without assignment</strong> &mdash; annotate. <code>let x: number;</code> because TypeScript doesn't know what's coming.</li>
+      <li><strong style="color:var(--text-primary);">Return types</strong> &mdash; optional but helpful. We'll cover these in Lesson 4.</li>
+    </ul>
+  </div>
+
+  <button class="next-btn" onclick="goToLesson(2)">Next: Interfaces &amp; Objects &rarr;</button>
+</div>
+
+<!-- ============================================================ -->
+<!-- LESSON 3: INTERFACES & OBJECTS -->
+<!-- ============================================================ -->
+<div class="lesson" id="lesson2">
+  <h1>Interfaces &amp; Objects</h1>
+  <p class="subtitle">Lesson 3 of 8 &mdash; Define the shape of an object</p>
+
+  <h2>The Problem with Plain Objects</h2>
+  <p>In JavaScript, objects can have any shape. You can add or forget any property and nothing stops you. But in a real app, objects need to follow a consistent structure. An agent in Paperclip must always have an id, a name, a role, and an adapter.</p>
+
+  <h2>Defining an Interface</h2>
+  <p>An interface tells TypeScript: "Any object of this type must have exactly these fields, with exactly these types."</p>
+
+  <div class="code-block"><span class="kw">interface</span> <span class="typ">Agent</span> {
+  id: <span class="typ">number</span>;
+  name: <span class="typ">string</span>;
+  role: <span class="typ">string</span>;
+  adapter: <span class="typ">string</span>;
+}</div>
+
+  <p>Now any object labeled as an <code>Agent</code> must have all four fields:</p>
+
+  <div class="code-block"><span class="cmt">// This works &mdash; all fields present</span>
+<span class="kw">const</span> agent: <span class="typ">Agent</span> = {
+  id: <span class="num">1</span>,
+  name: <span class="str">"Research Assistant"</span>,
+  role: <span class="str">"researcher"</span>,
+  adapter: <span class="str">"openai"</span>
+};
+
+<span class="cmt">// This fails &mdash; missing 'adapter'</span>
+<span class="kw">const</span> badAgent: <span class="typ">Agent</span> = {
+  id: <span class="num">2</span>,
+  name: <span class="str">"Writer"</span>,
+  role: <span class="str">"writer"</span>
+};
+<span class="err">// Error: Property 'adapter' is missing in type</span></div>
+
+  <h2>Try It: Build an Agent</h2>
+  <p>Click the fields to toggle them on/off. See which combinations TypeScript accepts and which it rejects:</p>
+
+  <div class="card" id="interfaceDemo">
+    <p style="color:var(--text-primary); font-weight:600; margin-bottom:12px;">Agent Interface &mdash; Required Fields</p>
+    <div id="interfaceFields">
+      <div class="interface-field present" onclick="toggleField(0)" data-field="id">
+        <span class="field-name">id</span>
+        <span style="color:var(--text-muted)">:</span>
+        <span class="field-type">number</span>
+        <span style="margin-left:auto; color:var(--accent-green);">&#10003;</span>
+      </div>
+      <div class="interface-field present" onclick="toggleField(1)" data-field="name">
+        <span class="field-name">name</span>
+        <span style="color:var(--text-muted)">:</span>
+        <span class="field-type">string</span>
+        <span style="margin-left:auto; color:var(--accent-green);">&#10003;</span>
+      </div>
+      <div class="interface-field present" onclick="toggleField(2)" data-field="role">
+        <span class="field-name">role</span>
+        <span style="color:var(--text-muted)">:</span>
+        <span class="field-type">string</span>
+        <span style="margin-left:auto; color:var(--accent-green);">&#10003;</span>
+      </div>
+      <div class="interface-field present" onclick="toggleField(3)" data-field="adapter">
+        <span class="field-name">adapter</span>
+        <span style="color:var(--text-muted)">:</span>
+        <span class="field-type">string</span>
+        <span style="margin-left:auto; color:var(--accent-green);">&#10003;</span>
+      </div>
+    </div>
+    <div id="interfaceResult" style="margin-top:16px;"></div>
+  </div>
+
+  <h2>Optional Properties</h2>
+  <p>Sometimes a field is optional. Use <code>?</code> to mark it:</p>
+
+  <div class="code-block"><span class="kw">interface</span> <span class="typ">Agent</span> {
+  id: <span class="typ">number</span>;
+  name: <span class="typ">string</span>;
+  role: <span class="typ">string</span>;
+  adapter: <span class="typ">string</span>;
+  description<span class="op">?</span>: <span class="typ">string</span>;    <span class="cmt">// optional &mdash; can be omitted</span>
+  maxTokens<span class="op">?</span>: <span class="typ">number</span>;      <span class="cmt">// optional</span>
+}
+
+<span class="cmt">// Both of these are valid:</span>
+<span class="kw">const</span> a: <span class="typ">Agent</span> = { id: <span class="num">1</span>, name: <span class="str">"Bot"</span>, role: <span class="str">"helper"</span>, adapter: <span class="str">"openai"</span> };
+<span class="kw">const</span> b: <span class="typ">Agent</span> = { id: <span class="num">2</span>, name: <span class="str">"Bot"</span>, role: <span class="str">"helper"</span>, adapter: <span class="str">"openai"</span>, description: <span class="str">"A helpful bot"</span> };</div>
+
+  <div class="analogy">
+    <div class="analogy-label">Analogy</div>
+    <p><strong>An interface is a form template.</strong> A tax form says: "Name (required), SSN (required), Middle Name (optional)." You can leave optional fields blank, but every required field must be filled in. If you submit a form missing a required field, it gets rejected. That's exactly what TypeScript does with interfaces.</p>
+  </div>
+
+  <h2>Interfaces vs Types</h2>
+  <div class="card">
+    <p>You'll also see <code>type</code> used instead of <code>interface</code>. They're very similar:</p>
+    <div class="code-block"><span class="cmt">// These do almost the same thing:</span>
+<span class="kw">interface</span> <span class="typ">Agent</span> { id: <span class="typ">number</span>; name: <span class="typ">string</span>; }
+<span class="kw">type</span> <span class="typ">Agent</span> = { id: <span class="typ">number</span>; name: <span class="typ">string</span>; };</div>
+    <p style="margin-bottom:0;">The convention: use <code>interface</code> for object shapes, use <code>type</code> for everything else (unions, intersections, aliases). You'll see both in real codebases.</p>
+  </div>
+
+  <button class="next-btn" onclick="goToLesson(3)">Next: Functions &amp; Return Types &rarr;</button>
+</div>
+
+<!-- ============================================================ -->
+<!-- LESSON 4: FUNCTIONS & RETURN TYPES -->
+<!-- ============================================================ -->
+<div class="lesson" id="lesson3">
+  <h1>Functions &amp; Return Types</h1>
+  <p class="subtitle">Lesson 4 of 8 &mdash; Type the inputs AND the output</p>
+
+  <h2>Typing Function Parameters</h2>
+  <p>You already know how to type parameters from Lesson 2. But functions also have a <strong style="color:var(--text-primary)">return type</strong> &mdash; the type of value they send back:</p>
+
+  <div class="code-block"><span class="kw">function</span> <span class="fn">getAgentsByCompany</span>(companyId: <span class="typ">number</span>): <span class="typ">Agent[]</span> {
+  <span class="cmt">// Must return an array of Agent objects</span>
+  <span class="kw">return</span> db.<span class="fn">query</span>(<span class="str">"SELECT * FROM agents WHERE company_id = ?"</span>, [companyId]);
+}</div>
+
+  <p>The <code>: Agent[]</code> after the parentheses is the return type. It tells TypeScript (and every developer reading this code): "This function will return an array of Agents. Guaranteed."</p>
+
+  <h2>Why Return Types Matter</h2>
+  <p>Without return types, you can accidentally return the wrong thing and nobody notices until the app breaks:</p>
+
+  <div class="compare-panels">
+    <div class="compare-panel js-side">
+      <h4>JavaScript (no protection)</h4>
+      <div class="code-block"><span class="kw">function</span> <span class="fn">getTotal</span>(items) {
+  <span class="kw">if</span> (items.length === <span class="num">0</span>) {
+    <span class="kw">return</span> <span class="str">"No items"</span>; <span class="cmt">// string!</span>
+  }
+  <span class="kw">return</span> items.<span class="fn">reduce</span>(
+    (sum, i) => sum + i.price, <span class="num">0</span>
+  ); <span class="cmt">// number!</span>
+}
+<span class="cmt">// Sometimes returns string,</span>
+<span class="cmt">// sometimes number. Chaos.</span></div>
+    </div>
+    <div class="compare-panel ts-side">
+      <h4>TypeScript (protected)</h4>
+      <div class="code-block"><span class="kw">function</span> <span class="fn">getTotal</span>(
+  items: <span class="typ">Item[]</span>
+): <span class="typ">number</span> {
+  <span class="kw">if</span> (items.length === <span class="num">0</span>) {
+    <span class="kw">return</span> <span class="str">"No items"</span>;
+    <span class="err">// Error: Type 'string' is</span>
+    <span class="err">// not assignable to 'number'</span>
+  }
+  <span class="kw">return</span> items.<span class="fn">reduce</span>(
+    (sum, i) => sum + i.price, <span class="num">0</span>
+  );
+}</div>
+    </div>
+  </div>
+
+  <h2>Try It: Wrong Return Type</h2>
+  <p>This function should return a <code>number</code>. Click different return statements to see which ones TypeScript accepts:</p>
+
+  <div class="btn-row">
+    <button class="ibtn" onclick="showReturnDemo(0, this)">return price * qty</button>
+    <button class="ibtn" onclick="showReturnDemo(1, this)">return "total: " + price</button>
+    <button class="ibtn" onclick="showReturnDemo(2, this)">return true</button>
+    <button class="ibtn" onclick="showReturnDemo(3, this)">return [price, qty]</button>
+  </div>
+
+  <div id="returnDemoResult" class="result-box" style="display:none;"></div>
+
+  <h2>Real Codebase Example</h2>
+  <p>In Paperclip, functions are typed end-to-end. Here's what a route handler looks like with full types:</p>
+
+  <div class="code-block"><span class="kw">interface</span> <span class="typ">Agent</span> {
+  id: <span class="typ">number</span>;
+  name: <span class="typ">string</span>;
+  role: <span class="typ">string</span>;
+  adapter: <span class="typ">string</span>;
+}
+
+<span class="kw">async function</span> <span class="fn">getAgents</span>(companyId: <span class="typ">number</span>): <span class="typ">Promise</span>&lt;<span class="typ">Agent[]</span>&gt; {
+  <span class="kw">const</span> agents = <span class="kw">await</span> db.<span class="fn">select</span>()
+    .<span class="fn">from</span>(agentsTable)
+    .<span class="fn">where</span>(<span class="fn">eq</span>(agentsTable.companyId, companyId));
+
+  <span class="kw">return</span> agents; <span class="cmt">// TypeScript verifies this matches Agent[]</span>
+}
+
+<span class="cmt">// When you call it, TypeScript knows exactly what you get back:</span>
+<span class="kw">const</span> agents = <span class="kw">await</span> <span class="fn">getAgents</span>(<span class="num">42</span>);
+agents[<span class="num">0</span>].name;    <span class="cmt">// TypeScript knows this is a string</span>
+agents[<span class="num">0</span>].salary;  <span class="err">// Error: Property 'salary' does not exist on type 'Agent'</span></div>
+
+  <h2>Void and Never</h2>
+  <div class="card">
+    <p>Two special return types:</p>
+    <div class="code-block"><span class="cmt">// void: function doesn't return anything</span>
+<span class="kw">function</span> <span class="fn">logMessage</span>(msg: <span class="typ">string</span>): <span class="typ">void</span> {
+  console.<span class="fn">log</span>(msg);
+  <span class="cmt">// no return statement needed</span>
+}
+
+<span class="cmt">// never: function never finishes (throws or infinite loop)</span>
+<span class="kw">function</span> <span class="fn">throwError</span>(msg: <span class="typ">string</span>): <span class="typ">never</span> {
+  <span class="kw">throw new</span> <span class="typ">Error</span>(msg);
+}</div>
+  </div>
+
+  <button class="next-btn" onclick="goToLesson(4)">Next: Generics &rarr;</button>
+</div>
+
+<!-- ============================================================ -->
+<!-- LESSON 5: GENERICS -->
+<!-- ============================================================ -->
+<div class="lesson" id="lesson4">
+  <h1>Generics</h1>
+  <p class="subtitle">Lesson 5 of 8 &mdash; The hard concept, made simple</p>
+
+  <h2>The Problem</h2>
+  <p>Sometimes you want a function that works with <em>any</em> type, but you still want TypeScript to keep track of which type it's using. Consider this:</p>
+
+  <div class="code-block"><span class="cmt">// This function returns the first item of an array.</span>
+<span class="cmt">// But what TYPE is that item?</span>
+
+<span class="kw">function</span> <span class="fn">getFirst</span>(items: <span class="typ">any[]</span>): <span class="typ">any</span> {
+  <span class="kw">return</span> items[<span class="num">0</span>];
+}
+
+<span class="kw">const</span> name = <span class="fn">getFirst</span>([<span class="str">"Alice"</span>, <span class="str">"Bob"</span>]);
+<span class="cmt">// name is `any` &mdash; TypeScript has no idea it's a string</span>
+<span class="cmt">// name.toUpperCase() &mdash; no autocomplete, no safety</span></div>
+
+  <p>Using <code>any</code> defeats the purpose of TypeScript. You want a function that works with <em>any</em> type but <strong style="color:var(--text-primary)">remembers</strong> which type it's using.</p>
+
+  <h2>The Solution: Generics</h2>
+  <p>A generic is a <strong style="color:var(--text-primary)">type variable</strong>. You put it in angle brackets <code>&lt;T&gt;</code> and it acts as a placeholder that gets filled in when you call the function:</p>
+
+  <div class="code-block"><span class="kw">function</span> <span class="fn">getFirst</span>&lt;<span class="typ">T</span>&gt;(items: <span class="typ">T[]</span>): <span class="typ">T</span> {
+  <span class="kw">return</span> items[<span class="num">0</span>];
+}
+
+<span class="cmt">// Now TypeScript tracks the type:</span>
+<span class="kw">const</span> name = <span class="fn">getFirst</span>([<span class="str">"Alice"</span>, <span class="str">"Bob"</span>]);
+<span class="cmt">// name is `string` &mdash; TypeScript figured it out!</span>
+name.<span class="fn">toUpperCase</span>();  <span class="cmt">// works, autocomplete and everything</span>
+
+<span class="kw">const</span> age = <span class="fn">getFirst</span>([<span class="num">25</span>, <span class="num">30</span>, <span class="num">35</span>]);
+<span class="cmt">// age is `number`</span>
+age.<span class="fn">toFixed</span>(<span class="num">2</span>);  <span class="cmt">// works</span></div>
+
+  <h2>Try It: Swap the Type</h2>
+  <p>Click a type to see how the same generic function adapts:</p>
+
+  <div class="btn-row">
+    <button class="ibtn" onclick="showGenericDemo('string', this)">T = string</button>
+    <button class="ibtn" onclick="showGenericDemo('number', this)">T = number</button>
+    <button class="ibtn" onclick="showGenericDemo('Agent', this)">T = Agent</button>
+    <button class="ibtn" onclick="showGenericDemo('boolean', this)">T = boolean</button>
+  </div>
+
+  <div id="genericDemoResult" class="result-box" style="display:none;"></div>
+
+  <h2>Generics You Already Use</h2>
+  <p>You've been using generics without knowing it. Every time you see angle brackets, that's a generic:</p>
+
+  <div class="code-block"><span class="cmt">// Arrays are generic</span>
+<span class="kw">const</span> names: <span class="typ">Array</span>&lt;<span class="typ">string</span>&gt; = [<span class="str">"Alice"</span>, <span class="str">"Bob"</span>];
+<span class="cmt">// Same as: string[]</span>
+
+<span class="cmt">// Promises are generic</span>
+<span class="kw">const</span> response: <span class="typ">Promise</span>&lt;<span class="typ">Agent</span>&gt; = <span class="fn">fetchAgent</span>(<span class="num">1</span>);
+<span class="cmt">// "This promise will resolve to an Agent"</span>
+
+<span class="cmt">// API responses are generic</span>
+<span class="kw">const</span> result: <span class="typ">Response</span>&lt;<span class="typ">Agent[]</span>&gt; = <span class="kw">await</span> api.<span class="fn">get</span>(<span class="str">"/agents"</span>);
+<span class="cmt">// "The response body will be an array of Agents"</span></div>
+
+  <div class="analogy">
+    <div class="analogy-label">Analogy</div>
+    <p><strong>A generic is a shipping box.</strong> The box itself can hold anything &mdash; books, electronics, food. But every box has a label that says what's inside <em>this specific box</em>. <code>Box&lt;Books&gt;</code> tells you this box has books. <code>Box&lt;Electronics&gt;</code> has electronics. Same box design, different contents, and the label keeps you from opening a box of dishes expecting books.</p>
+  </div>
+
+  <h2>Writing Your Own Generic</h2>
+  <div class="card">
+    <p>Here's a practical example &mdash; a function that wraps an API response:</p>
+    <div class="code-block"><span class="kw">interface</span> <span class="typ">ApiResponse</span>&lt;<span class="typ">T</span>&gt; {
+  data: <span class="typ">T</span>;
+  success: <span class="typ">boolean</span>;
+  timestamp: <span class="typ">number</span>;
+}
+
+<span class="cmt">// When you use it, T gets replaced:</span>
+<span class="kw">const</span> agentResponse: <span class="typ">ApiResponse</span>&lt;<span class="typ">Agent</span>&gt; = {
+  data: { id: <span class="num">1</span>, name: <span class="str">"Bot"</span>, role: <span class="str">"helper"</span>, adapter: <span class="str">"openai"</span> },
+  success: <span class="kw">true</span>,
+  timestamp: <span class="num">1718700000</span>
+};
+
+<span class="cmt">// TypeScript knows agentResponse.data is an Agent</span>
+agentResponse.data.name;  <span class="cmt">// string &#10003;</span>
+agentResponse.data.foo;   <span class="err">// Error: Property 'foo' does not exist</span></div>
+  </div>
+
+  <button class="next-btn" onclick="goToLesson(5)">Next: Union Types &amp; Type Guards &rarr;</button>
+</div>
+
+<!-- ============================================================ -->
+<!-- LESSON 6: UNION TYPES & TYPE GUARDS -->
+<!-- ============================================================ -->
+<div class="lesson" id="lesson5">
+  <h1>Union Types &amp; Type Guards</h1>
+  <p class="subtitle">Lesson 6 of 8 &mdash; When a value could be one of several types</p>
+
+  <h2>What is a Union Type?</h2>
+  <p>Sometimes a value genuinely could be more than one type. A user ID might be a string or a number. An API response is either a success or an error. The <code>|</code> operator lets you say "this OR that":</p>
+
+  <div class="code-block"><span class="cmt">// This variable can be a string OR a number</span>
+<span class="kw">let</span> id: <span class="typ">string</span> | <span class="typ">number</span>;
+
+id = <span class="str">"abc-123"</span>;  <span class="cmt">// valid</span>
+id = <span class="num">42</span>;          <span class="cmt">// also valid</span>
+id = <span class="kw">true</span>;        <span class="err">// Error: Type 'boolean' is not assignable to 'string | number'</span></div>
+
+  <h2>The Problem with Unions</h2>
+  <p>When a value could be multiple types, TypeScript only lets you use methods that exist on <em>all</em> the types:</p>
+
+  <div class="code-block"><span class="kw">function</span> <span class="fn">formatId</span>(id: <span class="typ">string</span> | <span class="typ">number</span>) {
+  id.<span class="fn">toUpperCase</span>();
+  <span class="err">// Error: Property 'toUpperCase' does not exist on type 'number'</span>
+
+  <span class="cmt">// TypeScript says: "This MIGHT be a number.</span>
+  <span class="cmt">// Numbers don't have toUpperCase. I can't let you do this."</span>
+}</div>
+
+  <h2>Type Guards: Narrowing the Type</h2>
+  <p>You narrow a union type by checking what it is at runtime. TypeScript is smart enough to follow your <code>if</code> statements:</p>
+
+  <div class="code-block"><span class="kw">function</span> <span class="fn">formatId</span>(id: <span class="typ">string</span> | <span class="typ">number</span>): <span class="typ">string</span> {
+  <span class="kw">if</span> (<span class="kw">typeof</span> id === <span class="str">"string"</span>) {
+    <span class="cmt">// Inside this block, TypeScript KNOWS id is a string</span>
+    <span class="kw">return</span> id.<span class="fn">toUpperCase</span>();  <span class="cmt">// works!</span>
+  } <span class="kw">else</span> {
+    <span class="cmt">// Here, TypeScript KNOWS id is a number</span>
+    <span class="kw">return</span> id.<span class="fn">toString</span>();     <span class="cmt">// works!</span>
+  }
+}</div>
+
+  <h2>Try It: Narrow the Type</h2>
+  <p>This API response is either a success or an error. Click to narrow the type and see what methods become available:</p>
+
+  <div class="card" id="unionDemo">
+    <p style="color:var(--text-primary); font-weight:600; margin-bottom:4px;">API Response Type</p>
+    <div class="code-block" style="margin-bottom:16px;"><span class="kw">type</span> <span class="typ">ApiResult</span> =
+  | { success: <span class="kw">true</span>; data: <span class="typ">Agent[]</span>; count: <span class="typ">number</span> }
+  | { success: <span class="kw">false</span>; error: <span class="typ">string</span>; code: <span class="typ">number</span> };</div>
+
+    <p style="color:var(--text-muted); margin-bottom:12px;">Click to narrow:</p>
+    <div class="union-branch" onclick="narrowUnion('success', this)" id="unionSuccess">
+      <h4>if (result.success === true)</h4>
+      <p>Narrow to the success type</p>
+    </div>
+    <div class="union-branch" onclick="narrowUnion('error', this)" id="unionError">
+      <h4>if (result.success === false)</h4>
+      <p>Narrow to the error type</p>
+    </div>
+    <div id="unionResult" style="margin-top:16px;"></div>
+  </div>
+
+  <h2>Real Example: API Responses</h2>
+  <p>This pattern is everywhere in real codebases. You make an API call and check whether it succeeded:</p>
+
+  <div class="code-block"><span class="kw">type</span> <span class="typ">Result</span>&lt;<span class="typ">T</span>&gt; =
+  | { ok: <span class="kw">true</span>; data: <span class="typ">T</span> }
+  | { ok: <span class="kw">false</span>; error: <span class="typ">string</span> };
+
+<span class="kw">async function</span> <span class="fn">loadAgents</span>(): <span class="typ">Promise</span>&lt;<span class="typ">void</span>&gt; {
+  <span class="kw">const</span> result: <span class="typ">Result</span>&lt;<span class="typ">Agent[]</span>&gt; = <span class="kw">await</span> api.<span class="fn">get</span>(<span class="str">"/agents"</span>);
+
+  <span class="kw">if</span> (result.ok) {
+    <span class="cmt">// TypeScript knows: result.data is Agent[]</span>
+    console.<span class="fn">log</span>(<span class="str">`Loaded ${result.data.length} agents`</span>);
+    result.data.<span class="fn">forEach</span>(a => console.<span class="fn">log</span>(a.name));
+  } <span class="kw">else</span> {
+    <span class="cmt">// TypeScript knows: result.error is string</span>
+    console.<span class="fn">error</span>(<span class="str">`Failed: ${result.error}`</span>);
+  }
+}</div>
+
+  <div class="analogy">
+    <div class="analogy-label">Analogy</div>
+    <p><strong>A union type is like a package at your door.</strong> It might be the book you ordered or the return label you requested. Before you open it, you don't know which. But once you check the label (type guard), you know exactly what's inside and how to use it.</p>
+  </div>
+
+  <button class="next-btn" onclick="goToLesson(6)">Next: TypeScript in the Codebase &rarr;</button>
+</div>
+
+<!-- ============================================================ -->
+<!-- LESSON 7: TYPESCRIPT IN THE CODEBASE -->
+<!-- ============================================================ -->
+<div class="lesson" id="lesson6">
+  <h1>TypeScript in the Codebase</h1>
+  <p class="subtitle">Lesson 7 of 8 &mdash; Real patterns from Paperclip</p>
+
+  <h2>Types Flow Through Everything</h2>
+  <p>In the Paperclip codebase, TypeScript isn't just sprinkled on top &mdash; it flows through every layer. From the database schema, through the API routes, to the frontend components. This is where the real power shows up.</p>
+
+  <h2>Pattern 1: Typed Routes</h2>
+  <p>Every API route in Paperclip has typed request and response bodies. If someone changes the database schema, TypeScript immediately shows every route that needs to be updated:</p>
+
+  <div class="code-block"><span class="cmt">// Route definition with typed parameters and response</span>
+app.<span class="fn">get</span>(<span class="str">"/api/agents/:companyId"</span>, <span class="kw">async</span> (req, res) => {
+  <span class="kw">const</span> companyId: <span class="typ">number</span> = <span class="fn">parseInt</span>(req.params.companyId);
+
+  <span class="kw">const</span> agents: <span class="typ">Agent[]</span> = <span class="kw">await</span> db
+    .<span class="fn">select</span>()
+    .<span class="fn">from</span>(agentsTable)
+    .<span class="fn">where</span>(<span class="fn">eq</span>(agentsTable.companyId, companyId));
+
+  <span class="cmt">// TypeScript verifies this response matches what the frontend expects</span>
+  res.<span class="fn">json</span>({ agents, count: agents.length });
+});</div>
+
+  <h2>Pattern 2: Database Schema Types</h2>
+  <p>The database schema defines the types once, and they flow through the entire app. This is connected to what you learned in <a href="/lessons/databases.html">Course 01 (Databases)</a>:</p>
+
+  <div class="code-block"><span class="cmt">// Schema definition (Drizzle ORM)</span>
+<span class="kw">export const</span> agents = <span class="fn">pgTable</span>(<span class="str">"agents"</span>, {
+  id: <span class="fn">serial</span>(<span class="str">"id"</span>).<span class="fn">primaryKey</span>(),
+  name: <span class="fn">text</span>(<span class="str">"name"</span>).<span class="fn">notNull</span>(),
+  role: <span class="fn">text</span>(<span class="str">"role"</span>).<span class="fn">notNull</span>(),
+  adapter: <span class="fn">text</span>(<span class="str">"adapter"</span>).<span class="fn">notNull</span>(),
+  companyId: <span class="fn">integer</span>(<span class="str">"company_id"</span>).<span class="fn">references</span>(() => companies.id),
+});
+
+<span class="cmt">// TypeScript automatically generates the type:</span>
+<span class="kw">type</span> <span class="typ">Agent</span> = <span class="kw">typeof</span> agents.$inferSelect;
+<span class="cmt">// { id: number; name: string; role: string; adapter: string; companyId: number | null }</span>
+
+<span class="cmt">// Now EVERY function that touches agents uses the same type.</span>
+<span class="cmt">// Change the schema? TypeScript tells you everywhere to update.</span></div>
+
+  <h2>Pattern 3: Adapter Interfaces</h2>
+  <p>Paperclip supports multiple AI providers (OpenAI, Anthropic, etc). Each adapter must implement the same interface:</p>
+
+  <div class="code-block"><span class="kw">interface</span> <span class="typ">AIAdapter</span> {
+  name: <span class="typ">string</span>;
+  <span class="fn">sendMessage</span>(prompt: <span class="typ">string</span>, options: <span class="typ">AdapterOptions</span>): <span class="typ">Promise</span>&lt;<span class="typ">string</span>&gt;;
+  <span class="fn">streamMessage</span>(prompt: <span class="typ">string</span>, options: <span class="typ">AdapterOptions</span>): <span class="typ">AsyncGenerator</span>&lt;<span class="typ">string</span>&gt;;
+}
+
+<span class="cmt">// Every adapter must match this shape:</span>
+<span class="kw">const</span> openaiAdapter: <span class="typ">AIAdapter</span> = {
+  name: <span class="str">"openai"</span>,
+  <span class="kw">async</span> <span class="fn">sendMessage</span>(prompt, options) { <span class="cmt">/* ... */</span> },
+  <span class="kw">async</span> *<span class="fn">streamMessage</span>(prompt, options) { <span class="cmt">/* ... */</span> },
+};
+
+<span class="cmt">// Forget to implement streamMessage? TypeScript won't let you.</span>
+<span class="cmt">// Wrong return type? TypeScript catches it instantly.</span></div>
+
+  <h2>The Type System as Documentation</h2>
+  <div class="card">
+    <p>Here's the key insight that connects to <a href="/lessons/codebase.html">Course 02 (The Codebase)</a>: TypeScript types serve as <strong style="color:var(--text-primary)">documentation that never goes stale</strong>.</p>
+    <p>A comment might say "this returns an array of agents" but the code might have changed. A TypeScript type <em>is</em> the code &mdash; if it says <code>Agent[]</code>, that's what it returns. Period. If someone changes it and doesn't update the callers, the build breaks. You can't have outdated type documentation because the compiler enforces it.</p>
+  </div>
+
+  <h2>How Types Flow Through the Stack</h2>
+  <p>Click each layer to see how the same type travels from database to browser:</p>
+
+  <div class="btn-row">
+    <button class="ibtn" onclick="showTypeFlow(0, this)">Database Schema</button>
+    <button class="ibtn" onclick="showTypeFlow(1, this)">API Route</button>
+    <button class="ibtn" onclick="showTypeFlow(2, this)">Frontend Fetch</button>
+    <button class="ibtn" onclick="showTypeFlow(3, this)">UI Component</button>
+  </div>
+
+  <div id="typeFlowResult" class="result-box" style="display:none;"></div>
+
+  <div class="analogy">
+    <div class="analogy-label">Connection</div>
+    <p>This connects directly to the <strong>build process</strong> from <a href="/lessons/build.html" style="color:var(--accent-indigo);">Course 04</a>. When you run <code>tsc</code> (the TypeScript compiler), it checks every type across every file. If anything doesn't match, the build fails. This is why TypeScript errors show up during <code>pnpm build</code> &mdash; the compiler is verifying your entire type system.</p>
+  </div>
+
+  <button class="next-btn" onclick="goToLesson(7)">Next: Getting Started &rarr;</button>
+</div>
+
+<!-- ============================================================ -->
+<!-- LESSON 8: GETTING STARTED -->
+<!-- ============================================================ -->
+<div class="lesson" id="lesson7">
+  <h1>Getting Started</h1>
+  <p class="subtitle">Lesson 8 of 8 &mdash; Setting up TypeScript in a real project</p>
+
+  <h2>tsconfig.json</h2>
+  <p>Every TypeScript project has a <code>tsconfig.json</code> file at the root. It tells the compiler how to behave &mdash; how strict to be, where to find files, what version of JavaScript to output:</p>
+
+  <div class="code-block">{
+  <span class="fn">"compilerOptions"</span>: {
+    <span class="fn">"target"</span>: <span class="str">"ES2022"</span>,           <span class="cmt">// What JS version to output</span>
+    <span class="fn">"module"</span>: <span class="str">"commonjs"</span>,          <span class="cmt">// Module system</span>
+    <span class="fn">"strict"</span>: <span class="kw">true</span>,                 <span class="cmt">// Enable all strict checks</span>
+    <span class="fn">"outDir"</span>: <span class="str">"./dist"</span>,             <span class="cmt">// Where compiled JS goes</span>
+    <span class="fn">"rootDir"</span>: <span class="str">"./src"</span>,             <span class="cmt">// Where TS source files live</span>
+    <span class="fn">"esModuleInterop"</span>: <span class="kw">true</span>,        <span class="cmt">// Better import compatibility</span>
+    <span class="fn">"skipLibCheck"</span>: <span class="kw">true</span>,           <span class="cmt">// Skip checking node_modules</span>
+    <span class="fn">"forceConsistentCasingInFileNames"</span>: <span class="kw">true</span>
+  },
+  <span class="fn">"include"</span>: [<span class="str">"src/**/*"</span>],          <span class="cmt">// Which files to compile</span>
+  <span class="fn">"exclude"</span>: [<span class="str">"node_modules"</span>]       <span class="cmt">// Which files to ignore</span>
+}</div>
+
+  <h2>Compiling with tsc</h2>
+  <p>The TypeScript compiler (<code>tsc</code>) converts your <code>.ts</code> files into <code>.js</code> files that the browser or Node.js can run:</p>
+
+  <div class="code-block"><span class="cmt"># Install TypeScript</span>
+$ <span class="fn">npm install</span> typescript --save-dev
+
+<span class="cmt"># Compile all .ts files to .js</span>
+$ <span class="fn">npx tsc</span>
+
+<span class="cmt"># Watch mode: recompile whenever you save</span>
+$ <span class="fn">npx tsc</span> --watch</div>
+
+  <h2>The .ts to .js Relationship</h2>
+  <p>Every <code>.ts</code> file compiles to a corresponding <code>.js</code> file. The types are stripped away:</p>
+
+  <div class="compare-panels">
+    <div class="compare-panel ts-side">
+      <h4>src/agent.ts (you write)</h4>
+      <div class="code-block"><span class="kw">interface</span> <span class="typ">Agent</span> {
+  id: <span class="typ">number</span>;
+  name: <span class="typ">string</span>;
+}
+
+<span class="kw">function</span> <span class="fn">greet</span>(agent: <span class="typ">Agent</span>): <span class="typ">string</span> {
+  <span class="kw">return</span> <span class="str">`Hello, ${agent.name}`</span>;
+}</div>
+    </div>
+    <div class="compare-panel js-side">
+      <h4>dist/agent.js (compiler output)</h4>
+      <div class="code-block"><span class="cmt">// Interface is gone completely</span>
+
+<span class="kw">function</span> <span class="fn">greet</span>(agent) {
+  <span class="kw">return</span> <span class="str">`Hello, ${agent.name}`</span>;
+}</div>
+    </div>
+  </div>
+
+  <p>Notice: the interface is completely removed. The type annotation on the parameter is removed. The return type is removed. What's left is plain JavaScript. The types only exist at compile time.</p>
+
+  <h2>How Paperclip Uses tsx</h2>
+  <p>Instead of compiling with <code>tsc</code> and then running with <code>node</code>, Paperclip uses <code>tsx</code> &mdash; a tool that compiles and runs TypeScript in one step:</p>
+
+  <div class="code-block"><span class="cmt"># Instead of this two-step process:</span>
+$ <span class="fn">npx tsc</span>                <span class="cmt"># step 1: compile .ts to .js</span>
+$ <span class="fn">node</span> dist/server.js    <span class="cmt"># step 2: run the .js</span>
+
+<span class="cmt"># Paperclip uses this one-step process:</span>
+$ <span class="fn">npx tsx</span> src/server.ts   <span class="cmt"># compile + run in one step</span>
+
+<span class="cmt"># In package.json, you'll see:</span>
+<span class="fn">"scripts"</span>: {
+  <span class="fn">"dev"</span>: <span class="str">"tsx watch src/server.ts"</span>
+}</div>
+
+  <h2>Project Structure</h2>
+  <div class="file-tree">
+    <div><span class="folder">paperclip/</span></div>
+    <div class="indent"><span class="config-file">tsconfig.json</span> &mdash; TypeScript configuration</div>
+    <div class="indent"><span class="config-file">package.json</span> &mdash; uses tsx for dev</div>
+    <div class="indent"><span class="folder">src/</span></div>
+    <div class="indent2"><span class="ts-file">server.ts</span> &mdash; entry point</div>
+    <div class="indent2"><span class="ts-file">routes/agents.ts</span> &mdash; typed API routes</div>
+    <div class="indent2"><span class="ts-file">db/schema.ts</span> &mdash; database schema (generates types)</div>
+    <div class="indent2"><span class="ts-file">adapters/openai.ts</span> &mdash; implements AIAdapter interface</div>
+    <div class="indent2"><span class="ts-file">adapters/anthropic.ts</span> &mdash; implements AIAdapter interface</div>
+    <div class="indent"><span class="folder">dist/</span> &mdash; compiled .js files (git-ignored)</div>
+  </div>
+
+  <h2>Practical Patterns</h2>
+  <div class="card">
+    <h3>Start Gradually</h3>
+    <p>You don't have to type everything at once. TypeScript supports <code>.js</code> files alongside <code>.ts</code> files. You can migrate one file at a time. Just rename <code>server.js</code> to <code>server.ts</code> and start adding types.</p>
+  </div>
+
+  <div class="card">
+    <h3>Use "strict" Mode</h3>
+    <p>In <code>tsconfig.json</code>, set <code>"strict": true</code>. This enables the strictest checks. It catches more bugs. Yes, it means more red underlines at first, but every one of those is a potential runtime bug you're preventing.</p>
+  </div>
+
+  <div class="card">
+    <h3>Let TypeScript Infer When It Can</h3>
+    <p>Don't annotate everything. If TypeScript can figure out the type, let it. Annotate function parameters (TypeScript can't infer those) and complex return types. Let inference handle the rest.</p>
+  </div>
+
+  <h2>What You've Learned</h2>
+  <div class="analogy">
+    <div class="analogy-label">Summary</div>
+    <p><strong>TypeScript adds a safety layer to JavaScript</strong> that catches bugs before your code runs. Types, interfaces, generics, and unions give you a precise vocabulary to describe your data. The compiler checks everything at build time and then strips the types away, leaving clean JavaScript. In a real codebase like Paperclip, types flow from the database through the API to the frontend &mdash; acting as documentation that the compiler enforces.</p>
+  </div>
+
+  <div style="text-align:center; margin-top:40px; padding:40px 0; border-top: 1px solid var(--border-primary);">
+    <h2 style="margin:0 0 8px;">Tutorial Complete!</h2>
+    <p style="color:var(--text-muted); font-size:15px;">You've learned how TypeScript works &mdash; from basic types to generics to real codebase patterns.</p>
+  </div>
+
+  <div class="next-course-banner">
+    <h3>Up Next</h3>
+    <p>Continue to Course 09: How React Works &mdash; Components, state, and building user interfaces.</p>
+    <a href="/lessons/react.html">Start How React Works &rarr;</a>
+  </div>
+</div>
+
+</div><!-- /container -->
+
+</div><!-- end content-wrapper -->
+
+<script>
+// -- Lesson Navigation --
+function goToLesson(n) {
+  const lessons = document.querySelectorAll('.lesson');
+  const buttons = document.querySelectorAll('.nav-btn');
+  lessons.forEach((l, i) => {
+    l.classList.toggle('active', i === n);
+  });
+  buttons.forEach((b, i) => {
+    b.classList.toggle('active', i === n);
+  });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ============================================================
+// LESSON 1: JS vs TS Demo
+// ============================================================
+function runJSDemo(btn) {
+  const btns = btn.parentElement.querySelectorAll('.ibtn');
+  btns.forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  const el = document.getElementById('jsTsResult');
+  el.style.display = 'block';
+  el.innerHTML = `<div class="fade-in">
+    <p style="color:var(--accent-yellow); font-weight:600; margin-bottom:8px;">JavaScript: Running...</p>
+    <div class="code-block"><span class="kw">function</span> <span class="fn">calculateTotal</span>(price, quantity) {
+  <span class="kw">return</span> price * quantity;
+}
+
+<span class="kw">const</span> result = <span class="fn">calculateTotal</span>(<span class="str">"twenty"</span>, <span class="num">3</span>);
+console.<span class="fn">log</span>(result);</div>
+    <div class="error-display">
+      <strong>Console output:</strong><br>
+      NaN<br><br>
+      <strong>What happened:</strong> JavaScript tried to multiply "twenty" * 3.<br>
+      No error. No warning. Just NaN silently flowing through your app.<br>
+      The user sees a blank total. The order fails. Nobody knows why.
+    </div>
+  </div>`;
+}
+
+function runTSDemo(btn) {
+  const btns = btn.parentElement.querySelectorAll('.ibtn');
+  btns.forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  const el = document.getElementById('jsTsResult');
+  el.style.display = 'block';
+  el.innerHTML = `<div class="fade-in">
+    <p style="color:var(--accent-blue); font-weight:600; margin-bottom:8px;">TypeScript: Checking...</p>
+    <div class="code-block"><span class="kw">function</span> <span class="fn">calculateTotal</span>(price: <span class="typ">number</span>, quantity: <span class="typ">number</span>): <span class="typ">number</span> {
+  <span class="kw">return</span> price * quantity;
+}
+
+<span class="kw">const</span> result = <span class="fn">calculateTotal</span>(<span class="str">"twenty"</span>, <span class="num">3</span>);
+                              <span class="err">~~~~~~~~</span></div>
+    <div class="error-display" style="border-color:var(--accent-blue); background: #0a0a1a;">
+      <span style="color:var(--accent-blue);">TypeScript Error (compile time):</span><br><br>
+      Argument of type 'string' is not assignable to parameter of type 'number'.<br>
+      &nbsp;&nbsp;at line 5, column 31<br><br>
+      <span style="color:var(--accent-green);">The code never runs. The bug is caught before anyone sees it.</span><br>
+      <span style="color:var(--accent-green);">Your editor shows a red underline the moment you type it.</span>
+    </div>
+  </div>`;
+}
+
+// ============================================================
+// LESSON 2: Type Examples
+// ============================================================
+const typeExamples = {
+  string: {
+    color: 'var(--accent-green)',
+    code: `<div class="code-block"><span class="kw">let</span> username: <span class="typ">string</span> = <span class="str">"Jared"</span>;
+<span class="kw">let</span> greeting: <span class="typ">string</span> = <span class="str">\`Hello, \${username}\`</span>;
+
+<span class="cmt">// String methods work &mdash; TypeScript knows it's a string</span>
+username.<span class="fn">toUpperCase</span>();     <span class="cmt">// "JARED"</span>
+username.<span class="fn">includes</span>(<span class="str">"ar"</span>);  <span class="cmt">// true</span>
+username.length;            <span class="cmt">// 5</span>
+
+<span class="cmt">// This would fail:</span>
+username = <span class="num">42</span>;  <span class="err">// Error: Type 'number' is not assignable to type 'string'</span></div>`,
+    desc: 'Text data. Any sequence of characters: names, emails, messages, IDs.'
+  },
+  number: {
+    color: 'var(--accent-blue)',
+    code: `<div class="code-block"><span class="kw">let</span> age: <span class="typ">number</span> = <span class="num">28</span>;
+<span class="kw">let</span> price: <span class="typ">number</span> = <span class="num">29.99</span>;
+<span class="kw">let</span> hex: <span class="typ">number</span> = <span class="num">0xff</span>;
+
+<span class="cmt">// Math works &mdash; TypeScript knows it's a number</span>
+age.<span class="fn">toFixed</span>(<span class="num">2</span>);         <span class="cmt">// "28.00"</span>
+Math.<span class="fn">round</span>(price);      <span class="cmt">// 30</span>
+
+<span class="cmt">// This would fail:</span>
+age = <span class="str">"twenty-eight"</span>;  <span class="err">// Error: Type 'string' is not assignable to type 'number'</span></div>`,
+    desc: 'Numeric data. Integers, decimals, hex &mdash; all are just "number" in TypeScript.'
+  },
+  boolean: {
+    color: 'var(--accent-purple)',
+    code: `<div class="code-block"><span class="kw">let</span> isActive: <span class="typ">boolean</span> = <span class="kw">true</span>;
+<span class="kw">let</span> hasAccess: <span class="typ">boolean</span> = <span class="kw">false</span>;
+
+<span class="cmt">// Use in conditionals</span>
+<span class="kw">if</span> (isActive) {
+  console.<span class="fn">log</span>(<span class="str">"User is active"</span>);
+}
+
+<span class="cmt">// This would fail:</span>
+isActive = <span class="str">"yes"</span>;  <span class="err">// Error: Type 'string' is not assignable to type 'boolean'</span>
+isActive = <span class="num">1</span>;      <span class="err">// Error: Type 'number' is not assignable to type 'boolean'</span></div>`,
+    desc: 'True or false. Not "yes"/"no", not 0/1 &mdash; only true or false.'
+  },
+  array: {
+    color: 'var(--accent-yellow)',
+    code: `<div class="code-block"><span class="kw">let</span> scores: <span class="typ">number[]</span> = [<span class="num">95</span>, <span class="num">87</span>, <span class="num">92</span>];
+<span class="kw">let</span> names: <span class="typ">string[]</span> = [<span class="str">"Alice"</span>, <span class="str">"Bob"</span>];
+
+<span class="cmt">// Array methods are type-safe</span>
+scores.<span class="fn">push</span>(<span class="num">88</span>);          <span class="cmt">// works</span>
+scores.<span class="fn">map</span>(s => s * <span class="num">2</span>);    <span class="cmt">// returns number[]</span>
+names.<span class="fn">filter</span>(n => n.<span class="fn">startsWith</span>(<span class="str">"A"</span>)); <span class="cmt">// returns string[]</span>
+
+<span class="cmt">// This would fail:</span>
+scores.<span class="fn">push</span>(<span class="str">"A+"</span>);  <span class="err">// Error: Argument of type 'string' is not assignable</span>
+names.<span class="fn">push</span>(<span class="num">42</span>);     <span class="err">// Error: Argument of type 'number' is not assignable</span></div>`,
+    desc: 'A list of values, all the same type. number[] means every item is a number.'
+  }
+};
+
+function showTypeExample(type, btn) {
+  const badges = document.querySelectorAll('.type-badge');
+  badges.forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  const ex = typeExamples[type];
+  const el = document.getElementById('typeExampleResult');
+  el.style.display = 'block';
+  el.innerHTML = `<div class="fade-in">
+    <p style="color:${ex.color}; font-weight:600; margin-bottom:4px;">${type}</p>
+    <p style="color:var(--text-muted); font-size:14px; margin-bottom:12px;">${ex.desc}</p>
+    ${ex.code}
+  </div>`;
+}
+
+// ============================================================
+// LESSON 3: Interface Demo
+// ============================================================
+const fieldState = [true, true, true, true];
+const fieldNames = ['id', 'name', 'role', 'adapter'];
+
+function toggleField(index) {
+  fieldState[index] = !fieldState[index];
+  const fields = document.querySelectorAll('.interface-field');
+  const field = fields[index];
+
+  if (fieldState[index]) {
+    field.classList.remove('missing');
+    field.classList.add('present');
+    field.querySelector('span:last-child').innerHTML = '&#10003;';
+    field.querySelector('span:last-child').style.color = 'var(--accent-green)';
+  } else {
+    field.classList.remove('present');
+    field.classList.add('missing');
+    field.querySelector('span:last-child').innerHTML = '&#10007;';
+    field.querySelector('span:last-child').style.color = '#f87171';
+  }
+
+  updateInterfaceResult();
+}
+
+function updateInterfaceResult() {
+  const missing = [];
+  fieldState.forEach((present, i) => {
+    if (!present) missing.push(fieldNames[i]);
+  });
+
+  const el = document.getElementById('interfaceResult');
+  if (missing.length === 0) {
+    el.innerHTML = `<div class="success-display fade-in">
+      <strong>TypeScript: OK</strong><br>
+      All required fields are present. This object matches the Agent interface.
+    </div>`;
+  } else {
+    const missingStr = missing.map(m => `'${m}'`).join(', ');
+    el.innerHTML = `<div class="error-display fade-in">
+      <strong>TypeScript Error:</strong><br>
+      Property ${missingStr} ${missing.length === 1 ? 'is' : 'are'} missing in type<br>
+      but required in type 'Agent'.<br><br>
+      <span style="color:var(--text-muted);">Click the missing field${missing.length === 1 ? '' : 's'} to add ${missing.length === 1 ? 'it' : 'them'} back.</span>
+    </div>`;
+  }
+}
+
+// ============================================================
+// LESSON 4: Return Type Demo
+// ============================================================
+const returnDemos = [
+  {
+    code: `<div class="code-block"><span class="kw">function</span> <span class="fn">calculateTotal</span>(price: <span class="typ">number</span>, qty: <span class="typ">number</span>): <span class="typ">number</span> {
+  <span class="kw">return</span> price * qty;  <span class="cmt">// number * number = number</span>
+}</div>`,
+    ok: true,
+    msg: 'Correct. price * qty returns a number, which matches the declared return type of number.'
+  },
+  {
+    code: `<div class="code-block"><span class="kw">function</span> <span class="fn">calculateTotal</span>(price: <span class="typ">number</span>, qty: <span class="typ">number</span>): <span class="typ">number</span> {
+  <span class="kw">return</span> <span class="str">"total: "</span> + price;  <span class="err">// returns a string!</span>
+}</div>`,
+    ok: false,
+    msg: "Error: Type 'string' is not assignable to type 'number'. String concatenation always returns a string, but the function promises to return a number."
+  },
+  {
+    code: `<div class="code-block"><span class="kw">function</span> <span class="fn">calculateTotal</span>(price: <span class="typ">number</span>, qty: <span class="typ">number</span>): <span class="typ">number</span> {
+  <span class="kw">return</span> <span class="kw">true</span>;  <span class="err">// returns a boolean!</span>
+}</div>`,
+    ok: false,
+    msg: "Error: Type 'boolean' is not assignable to type 'number'. The function says it returns a number, but you're returning a boolean."
+  },
+  {
+    code: `<div class="code-block"><span class="kw">function</span> <span class="fn">calculateTotal</span>(price: <span class="typ">number</span>, qty: <span class="typ">number</span>): <span class="typ">number</span> {
+  <span class="kw">return</span> [price, qty];  <span class="err">// returns an array!</span>
+}</div>`,
+    ok: false,
+    msg: "Error: Type 'number[]' is not assignable to type 'number'. An array is not a number, even if it contains numbers."
+  }
+];
+
+function showReturnDemo(index, btn) {
+  const btns = btn.parentElement.querySelectorAll('.ibtn');
+  btns.forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  const demo = returnDemos[index];
+  const el = document.getElementById('returnDemoResult');
+  el.style.display = 'block';
+
+  if (demo.ok) {
+    el.innerHTML = `<div class="fade-in">
+      ${demo.code}
+      <div class="success-display">${demo.msg}</div>
+    </div>`;
+  } else {
+    el.innerHTML = `<div class="fade-in">
+      ${demo.code}
+      <div class="error-display">${demo.msg}</div>
+    </div>`;
+  }
+}
+
+// ============================================================
+// LESSON 5: Generic Demo
+// ============================================================
+const genericDemos = {
+  string: {
+    code: `<div class="code-block"><span class="cmt">// T is replaced with string:</span>
+<span class="kw">function</span> <span class="fn">getFirst</span>&lt;<span class="typ">string</span>&gt;(items: <span class="typ">string[]</span>): <span class="typ">string</span>
+
+<span class="kw">const</span> result = <span class="fn">getFirst</span>([<span class="str">"Alice"</span>, <span class="str">"Bob"</span>, <span class="str">"Charlie"</span>]);
+<span class="cmt">// result is type: string</span>
+<span class="cmt">// value: "Alice"</span>
+
+<span class="cmt">// Available methods (string):</span>
+result.<span class="fn">toUpperCase</span>();   <span class="cmt">// "ALICE"</span>
+result.<span class="fn">includes</span>(<span class="str">"li"</span>); <span class="cmt">// true</span>
+result.length;          <span class="cmt">// 5</span></div>`,
+    label: 'string',
+    color: 'var(--accent-green)'
+  },
+  number: {
+    code: `<div class="code-block"><span class="cmt">// T is replaced with number:</span>
+<span class="kw">function</span> <span class="fn">getFirst</span>&lt;<span class="typ">number</span>&gt;(items: <span class="typ">number[]</span>): <span class="typ">number</span>
+
+<span class="kw">const</span> result = <span class="fn">getFirst</span>([<span class="num">42</span>, <span class="num">100</span>, <span class="num">7</span>]);
+<span class="cmt">// result is type: number</span>
+<span class="cmt">// value: 42</span>
+
+<span class="cmt">// Available methods (number):</span>
+result.<span class="fn">toFixed</span>(<span class="num">2</span>);      <span class="cmt">// "42.00"</span>
+result.<span class="fn">toString</span>(<span class="num">16</span>);    <span class="cmt">// "2a" (hex)</span>
+Math.<span class="fn">round</span>(result);     <span class="cmt">// 42</span></div>`,
+    label: 'number',
+    color: 'var(--accent-blue)'
+  },
+  Agent: {
+    code: `<div class="code-block"><span class="cmt">// T is replaced with Agent:</span>
+<span class="kw">function</span> <span class="fn">getFirst</span>&lt;<span class="typ">Agent</span>&gt;(items: <span class="typ">Agent[]</span>): <span class="typ">Agent</span>
+
+<span class="kw">const</span> result = <span class="fn">getFirst</span>(agentsList);
+<span class="cmt">// result is type: Agent</span>
+<span class="cmt">// value: { id: 1, name: "Research Assistant", ... }</span>
+
+<span class="cmt">// Available properties (Agent):</span>
+result.id;       <span class="cmt">// number</span>
+result.name;     <span class="cmt">// string</span>
+result.role;     <span class="cmt">// string</span>
+result.adapter;  <span class="cmt">// string</span>
+result.foo;      <span class="err">// Error: Property 'foo' does not exist on type 'Agent'</span></div>`,
+    label: 'Agent',
+    color: 'var(--accent-yellow)'
+  },
+  boolean: {
+    code: `<div class="code-block"><span class="cmt">// T is replaced with boolean:</span>
+<span class="kw">function</span> <span class="fn">getFirst</span>&lt;<span class="typ">boolean</span>&gt;(items: <span class="typ">boolean[]</span>): <span class="typ">boolean</span>
+
+<span class="kw">const</span> result = <span class="fn">getFirst</span>([<span class="kw">true</span>, <span class="kw">false</span>, <span class="kw">true</span>]);
+<span class="cmt">// result is type: boolean</span>
+<span class="cmt">// value: true</span>
+
+<span class="cmt">// Available methods (boolean):</span>
+result.<span class="fn">toString</span>();    <span class="cmt">// "true"</span>
+result.<span class="fn">valueOf</span>();     <span class="cmt">// true</span>
+result.<span class="fn">toFixed</span>();     <span class="err">// Error: Property 'toFixed' does not exist on type 'boolean'</span></div>`,
+    label: 'boolean',
+    color: 'var(--accent-purple)'
+  }
+};
+
+function showGenericDemo(type, btn) {
+  const btns = btn.parentElement.querySelectorAll('.ibtn');
+  btns.forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  const demo = genericDemos[type];
+  const el = document.getElementById('genericDemoResult');
+  el.style.display = 'block';
+  el.innerHTML = `<div class="fade-in">
+    <p style="color:${demo.color}; font-weight:600; margin-bottom:4px;">T = ${demo.label}</p>
+    <p style="color:var(--text-muted); font-size:14px; margin-bottom:12px;">The generic function adapts &mdash; same function, but TypeScript tracks the specific type:</p>
+    ${demo.code}
+  </div>`;
+}
+
+// ============================================================
+// LESSON 6: Union Type Demo
+// ============================================================
+function narrowUnion(branch, el) {
+  document.querySelectorAll('.union-branch').forEach(b => b.classList.remove('active-branch'));
+  el.classList.add('active-branch');
+  const resultEl = document.getElementById('unionResult');
+
+  if (branch === 'success') {
+    resultEl.innerHTML = `<div class="fade-in">
+      <div class="success-display">
+        <strong>Type narrowed to: { success: true; data: Agent[]; count: number }</strong><br><br>
+        Available properties inside this branch:<br>
+        &nbsp;&nbsp;result.<strong>data</strong> &mdash; Agent[] (the array of agents)<br>
+        &nbsp;&nbsp;result.<strong>count</strong> &mdash; number (how many agents)<br>
+        &nbsp;&nbsp;result.<strong>data[0].name</strong> &mdash; string<br>
+        &nbsp;&nbsp;result.<strong>data[0].adapter</strong> &mdash; string<br><br>
+        <span style="color:var(--text-muted);">result.error &mdash; <span style="color:#f87171;">Error: Property 'error' does not exist</span></span><br>
+        <span style="color:var(--text-muted);">TypeScript knows there's no 'error' on the success branch.</span>
+      </div>
+    </div>`;
+  } else {
+    resultEl.innerHTML = `<div class="fade-in">
+      <div class="error-display" style="border-color:var(--accent-yellow); background: #1a1a0a;">
+        <strong style="color:var(--accent-yellow);">Type narrowed to: { success: false; error: string; code: number }</strong><br><br>
+        <span style="color:var(--text-body);">Available properties inside this branch:</span><br>
+        <span style="color:var(--text-body);">&nbsp;&nbsp;result.<strong>error</strong> &mdash; string ("Not found", "Unauthorized", etc.)</span><br>
+        <span style="color:var(--text-body);">&nbsp;&nbsp;result.<strong>code</strong> &mdash; number (404, 401, 500, etc.)</span><br><br>
+        <span style="color:var(--text-muted);">result.data &mdash; <span style="color:#f87171;">Error: Property 'data' does not exist</span></span><br>
+        <span style="color:var(--text-muted);">TypeScript knows there's no 'data' on the error branch.</span>
+      </div>
+    </div>`;
+  }
+}
+
+// ============================================================
+// LESSON 7: Type Flow Demo
+// ============================================================
+const typeFlowSteps = [
+  {
+    label: 'Database Schema',
+    color: 'var(--accent-purple)',
+    code: `<div class="code-block"><span class="cmt">// db/schema.ts &mdash; Single source of truth</span>
+<span class="kw">export const</span> agents = <span class="fn">pgTable</span>(<span class="str">"agents"</span>, {
+  id: <span class="fn">serial</span>(<span class="str">"id"</span>).<span class="fn">primaryKey</span>(),
+  name: <span class="fn">text</span>(<span class="str">"name"</span>).<span class="fn">notNull</span>(),
+  role: <span class="fn">text</span>(<span class="str">"role"</span>).<span class="fn">notNull</span>(),
+  adapter: <span class="fn">text</span>(<span class="str">"adapter"</span>).<span class="fn">notNull</span>(),
+  companyId: <span class="fn">integer</span>(<span class="str">"company_id"</span>).<span class="fn">references</span>(() => companies.id),
+});
+
+<span class="cmt">// Type is generated automatically from the schema:</span>
+<span class="kw">export type</span> <span class="typ">Agent</span> = <span class="kw">typeof</span> agents.$inferSelect;
+<span class="cmt">// { id: number; name: string; role: string; adapter: string; companyId: number | null }</span></div>`,
+    desc: 'The type is born here. The schema defines the shape, and TypeScript infers the type from it. Every layer below imports this same type.'
+  },
+  {
+    label: 'API Route',
+    color: 'var(--accent-blue)',
+    code: `<div class="code-block"><span class="cmt">// routes/agents.ts &mdash; Uses the same Agent type</span>
+<span class="kw">import</span> { <span class="typ">Agent</span> } <span class="kw">from</span> <span class="str">"../db/schema"</span>;
+
+app.<span class="fn">get</span>(<span class="str">"/api/agents"</span>, <span class="kw">async</span> (req, res) => {
+  <span class="kw">const</span> agents: <span class="typ">Agent[]</span> = <span class="kw">await</span> db.<span class="fn">select</span>().<span class="fn">from</span>(agentsTable);
+
+  <span class="cmt">// TypeScript guarantees 'agents' matches the schema</span>
+  res.<span class="fn">json</span>({ data: agents });
+});</div>`,
+    desc: 'The route imports the Agent type from the schema. If a column is added or renamed, TypeScript shows errors here until the route is updated.'
+  },
+  {
+    label: 'Frontend Fetch',
+    color: 'var(--accent-green)',
+    code: `<div class="code-block"><span class="cmt">// lib/api.ts &mdash; Same type on the frontend</span>
+<span class="kw">import type</span> { <span class="typ">Agent</span> } <span class="kw">from</span> <span class="str">"@shared/types"</span>;
+
+<span class="kw">async function</span> <span class="fn">fetchAgents</span>(): <span class="typ">Promise</span>&lt;<span class="typ">Agent[]</span>&gt; {
+  <span class="kw">const</span> res = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">"/api/agents"</span>);
+  <span class="kw">const</span> json = <span class="kw">await</span> res.<span class="fn">json</span>();
+  <span class="kw">return</span> json.data <span class="kw">as</span> <span class="typ">Agent[]</span>;
+}</div>`,
+    desc: 'The frontend uses the same Agent type. If the shape changes on the backend, TypeScript catches the mismatch on the frontend too.'
+  },
+  {
+    label: 'UI Component',
+    color: 'var(--accent-yellow)',
+    code: `<div class="code-block"><span class="cmt">// components/AgentCard.tsx &mdash; Type-safe props</span>
+<span class="kw">import type</span> { <span class="typ">Agent</span> } <span class="kw">from</span> <span class="str">"@shared/types"</span>;
+
+<span class="kw">function</span> <span class="fn">AgentCard</span>({ agent }: { agent: <span class="typ">Agent</span> }) {
+  <span class="kw">return</span> (
+    &lt;div&gt;
+      &lt;h3&gt;{agent.name}&lt;/h3&gt;        <span class="cmt">// TypeScript knows: string</span>
+      &lt;p&gt;Role: {agent.role}&lt;/p&gt;    <span class="cmt">// TypeScript knows: string</span>
+      &lt;p&gt;{agent.salary}&lt;/p&gt;        <span class="err">// Error: 'salary' does not exist on Agent</span>
+    &lt;/div&gt;
+  );
+}</div>`,
+    desc: 'The component receives a typed prop. TypeScript prevents you from accessing properties that do not exist. Autocomplete shows only valid fields.'
+  }
+];
+
+function showTypeFlow(index, btn) {
+  const btns = btn.parentElement.querySelectorAll('.ibtn');
+  btns.forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  const step = typeFlowSteps[index];
+  const el = document.getElementById('typeFlowResult');
+  el.style.display = 'block';
+
+  // Build the flow indicator
+  const layers = ['Schema', 'Route', 'Fetch', 'UI'];
+  let flowHtml = '<div style="display:flex; align-items:center; gap:8px; margin-bottom:16px; flex-wrap:wrap;">';
+  layers.forEach((layer, i) => {
+    const isActive = i === index;
+    const isPast = i < index;
+    const color = isActive ? step.color : (isPast ? 'var(--accent-green)' : 'var(--text-faint)');
+    flowHtml += `<span style="padding:4px 12px; border-radius:20px; font-size:12px; font-weight:600; border:1px solid ${color}; color:${color}; ${isActive ? 'background:rgba(96,165,250,0.1);' : ''}">${layer}</span>`;
+    if (i < layers.length - 1) {
+      flowHtml += `<span style="color:${isPast ? 'var(--accent-green)' : 'var(--text-faint)'};">&#8594;</span>`;
+    }
+  });
+  flowHtml += '</div>';
+
+  el.innerHTML = `<div class="fade-in">
+    ${flowHtml}
+    <p style="color:${step.color}; font-weight:600; margin-bottom:4px;">${step.label}</p>
+    <p style="color:var(--text-muted); font-size:14px; margin-bottom:12px;">${step.desc}</p>
+    ${step.code}
+  </div>`;
+}
+</script>
+<script src="/js/shared.js"></script>
+</body>
+</html>

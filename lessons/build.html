@@ -1,0 +1,1536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Build a Mini App — The Fundamentals</title>
+<link rel="stylesheet" href="/css/shared.css">
+<style>
+  /* LESSON-SPECIFIC styles only — converted to use CSS variables */
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg-primary); color: var(--text-secondary); }
+
+  .nav { position: fixed; top: 0; left: 0; right: 0; background: var(--bg-secondary); border-bottom: 1px solid var(--border-primary); padding: 12px 32px; display: flex; align-items: center; gap: 16px; z-index: 100; flex-wrap: wrap; }
+  @media (min-width: 1024px) {
+    .nav { left: 280px; }
+  }
+  .nav h1 { font-size: 16px; color: var(--text-primary); margin-right: 24px; white-space: nowrap; }
+  .nav button { background: var(--bg-tertiary); border: 1px solid var(--border-nav-btn); color: var(--text-dim); padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; transition: all 0.2s; white-space: nowrap; }
+  .nav button:hover { background: #252525; color: var(--text-primary); border-color: #444; }
+  .nav button.active { background: var(--accent-blue-bg); border-color: #3b82f6; color: var(--text-primary); }
+  .progress { margin-left: auto; font-size: 13px; color: var(--text-faint); }
+
+  .container { max-width: 960px; margin: 0 auto; padding: 80px 32px 60px; }
+
+  .lesson { display: none; }
+  .lesson.active { display: block; }
+  .lesson h2 { font-size: 28px; color: var(--text-primary); margin-bottom: 8px; }
+  .lesson .subtitle { color: var(--text-muted); font-size: 16px; margin-bottom: 32px; }
+  .lesson p { color: var(--text-tertiary); line-height: 1.7; margin-bottom: 16px; font-size: 15px; }
+  .lesson h3 { color: var(--text-primary); font-size: 20px; margin: 28px 0 12px; }
+  .lesson .analogy { background: var(--bg-analogy); border: 1px solid var(--border-analogy); border-radius: 10px; padding: 20px 24px; margin: 20px 0; }
+  .lesson .analogy strong { color: var(--accent-indigo); }
+
+  .db-table { margin: 24px 0; border-radius: 10px; overflow: hidden; border: 1px solid var(--border-tertiary); }
+  .db-table .table-header { background: var(--bg-table-header); padding: 10px 16px; font-weight: 600; font-size: 14px; color: var(--accent-blue); display: flex; align-items: center; gap: 8px; }
+  .db-table .table-header .icon { font-size: 12px; }
+  .db-table table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .db-table th { background: var(--bg-table-th); padding: 10px 16px; text-align: left; color: var(--text-table-header); font-weight: 500; border-bottom: 1px solid var(--border-table); }
+  .db-table td { padding: 10px 16px; border-bottom: 1px solid var(--border-table-row); color: var(--text-body); }
+  .db-table tr:last-child td { border-bottom: none; }
+  .db-table tr:hover td { background: var(--bg-table-hover); }
+  .db-table .pk { color: var(--accent-yellow); font-weight: 600; }
+
+  .arch-box { background: var(--bg-card); border: 1px solid var(--border-secondary); border-radius: 10px; padding: 24px; margin: 20px 0; font-family: 'SF Mono', Monaco, monospace; font-size: 12px; line-height: 1.8; white-space: pre; overflow-x: auto; }
+  .arch-box .layer { color: var(--accent-purple); font-weight: 600; }
+  .arch-box .component { color: var(--accent-blue); }
+  .arch-box .arrow { color: var(--text-faint); }
+  .arch-box .note { color: var(--text-faint); font-family: -apple-system, sans-serif; }
+  .arch-box .data { color: var(--accent-green); }
+  .arch-box .highlight { color: var(--accent-yellow); }
+
+  .code-block { background: var(--bg-code); border: 1px solid var(--border-secondary); border-radius: 8px; padding: 16px 20px; margin: 16px 0; font-family: 'SF Mono', Monaco, monospace; font-size: 13px; line-height: 1.7; overflow-x: auto; white-space: pre; }
+  .code-block .kw { color: var(--accent-purple); font-weight: 600; }
+  .code-block .fn { color: var(--accent-blue); }
+  .code-block .str { color: var(--accent-green); }
+  .code-block .comment { color: var(--text-faint); }
+  .code-block .type { color: var(--accent-yellow); }
+  .code-block .var { color: var(--text-secondary); }
+
+  .btn-row { display: flex; gap: 10px; margin: 24px 0; flex-wrap: wrap; }
+  .btn { background: var(--bg-btn); border: 1px solid var(--border-btn); color: var(--text-nav); padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; transition: all 0.2s; }
+  .btn:hover { background: #253349; color: var(--text-primary); border-color: #4b6a9b; }
+  .btn.selected { background: var(--bg-btn-selected); border-color: var(--border-btn-selected); color: var(--accent-blue); }
+
+  .detail-box { background: var(--bg-card); border: 1px solid #1a2332; border-radius: 10px; padding: 20px; margin: 16px 0; min-height: 60px; transition: all 0.3s; }
+  .detail-box .label { color: var(--text-faint); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+
+  .result-box { background: var(--bg-card); border: 1px solid #1a2332; border-radius: 10px; padding: 20px; margin: 16px 0; min-height: 60px; transition: all 0.3s; }
+  .result-box .label { color: var(--text-faint); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+  .result-box.flash { border-color: #3b82f6; }
+
+  .next-btn { display: inline-block; margin-top: 32px; background: var(--accent-blue-bg); border: none; color: var(--text-primary); padding: 12px 28px; border-radius: 8px; cursor: pointer; font-size: 15px; font-weight: 500; transition: all 0.2s; }
+  .next-btn:hover { background: #3b82f6; }
+
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin: 24px 0; }
+  .stat-card { background: var(--bg-secondary); border: 1px solid var(--border-primary); border-radius: 10px; padding: 16px; text-align: center; }
+  .stat-card .number { font-size: 28px; font-weight: 700; color: var(--text-primary); }
+  .stat-card .label { font-size: 12px; color: #666; margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
+
+  .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
+  .compare-card { background: var(--bg-secondary); border: 1px solid var(--border-primary); border-radius: 10px; padding: 20px; }
+  .compare-card h4 { color: var(--text-primary); margin-bottom: 8px; font-size: 15px; }
+  .compare-card p { color: var(--text-muted); font-size: 14px; margin: 0; }
+
+  .flow-step { display: flex; align-items: flex-start; gap: 16px; margin: 16px 0; }
+  .flow-num { background: var(--accent-blue-bg); color: var(--text-primary); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0; }
+  .flow-content { flex: 1; }
+  .flow-content h4 { color: var(--text-primary); margin-bottom: 4px; font-size: 15px; }
+  .flow-content p { color: var(--text-muted); font-size: 14px; margin: 0; }
+  .flow-content code { background: var(--bg-btn); padding: 2px 6px; border-radius: 4px; font-size: 13px; color: var(--accent-blue); }
+
+  .file-tree { background: var(--bg-card); border: 1px solid var(--border-secondary); border-radius: 10px; padding: 20px 24px; margin: 20px 0; font-family: 'SF Mono', Monaco, monospace; font-size: 13px; line-height: 2; }
+  .file-tree .folder { color: var(--accent-blue); cursor: pointer; }
+  .file-tree .file { color: var(--text-table-header); }
+  .file-tree .desc { color: var(--text-faint); font-family: -apple-system, sans-serif; font-size: 12px; }
+  .file-tree .highlight { color: var(--accent-yellow); }
+  .file-tree .indent { padding-left: 24px; }
+
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-left: 6px; }
+  .tag-db { background: #1e1b4b; color: var(--accent-indigo); }
+  .tag-server { background: #422006; color: var(--accent-yellow); }
+  .tag-ui { background: #052e16; color: var(--accent-green); }
+
+  .key-label { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-left: 6px; }
+  .key-label.pk-label { background: #422006; color: var(--accent-yellow); }
+
+  .mockup { background: var(--bg-secondary); border: 1px solid var(--border-primary); border-radius: 10px; overflow: hidden; margin: 20px 0; }
+  .mockup-bar { background: var(--bg-tertiary); padding: 10px 16px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border-primary); }
+  .mockup-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .mockup-dot.red { background: #ff5f57; }
+  .mockup-dot.yellow { background: #febc2e; }
+  .mockup-dot.green { background: #28c840; }
+  .mockup-url { background: var(--bg-code); border: 1px solid var(--border-nav-btn); border-radius: 4px; padding: 4px 12px; margin-left: 12px; font-size: 12px; color: var(--text-muted); font-family: 'SF Mono', Monaco, monospace; flex: 1; }
+  .mockup-body { padding: 20px; }
+  .mockup-title { font-size: 18px; font-weight: 700; color: var(--text-primary); margin-bottom: 16px; }
+  .mockup-input-row { display: flex; gap: 8px; margin-bottom: 16px; }
+  .mockup-input { flex: 1; background: var(--bg-tertiary); border: 1px solid var(--border-nav-btn); border-radius: 6px; padding: 8px 12px; color: var(--text-body); font-size: 14px; font-family: inherit; outline: none; }
+  .mockup-input:focus { border-color: #3b82f6; }
+  .mockup-add-btn { background: var(--accent-blue-bg); border: none; color: var(--text-primary); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; }
+  .mockup-add-btn:hover { background: #3b82f6; }
+  .mockup-task { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--border-primary); border-radius: 6px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s; }
+  .mockup-task:hover { border-color: var(--border-btn); background: var(--bg-table-hover); }
+  .mockup-check { width: 20px; height: 20px; border: 2px solid #444; border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s; }
+  .mockup-check.done { background: var(--accent-blue-bg); border-color: #3b82f6; }
+  .mockup-check.done::after { content: ''; display: block; width: 5px; height: 9px; border: solid var(--text-primary); border-width: 0 2px 2px 0; transform: rotate(45deg); margin-bottom: 2px; }
+  .mockup-task-text { color: var(--text-body); font-size: 14px; flex: 1; }
+  .mockup-task-text.done { text-decoration: line-through; color: var(--text-faint); }
+  .mockup-task-date { color: var(--text-faint); font-size: 12px; }
+
+  .line-annotation { display: flex; gap: 0; margin: 16px 0; border: 1px solid var(--border-secondary); border-radius: 8px; overflow: hidden; }
+  .line-code { flex: 1; background: var(--bg-code); padding: 12px 16px; font-family: 'SF Mono', Monaco, monospace; font-size: 13px; line-height: 1.7; white-space: pre; overflow-x: auto; }
+  .line-explain { width: 320px; background: var(--bg-secondary); padding: 12px 16px; font-size: 13px; color: var(--text-muted); line-height: 1.6; border-left: 1px solid var(--border-secondary); flex-shrink: 0; }
+  .line-explain strong { color: var(--text-primary); }
+
+  .diagram-flow { display: flex; align-items: center; gap: 0; margin: 24px 0; flex-wrap: wrap; justify-content: center; }
+  .diagram-box { background: var(--bg-secondary); border: 1px solid var(--border-primary); border-radius: 10px; padding: 16px 20px; text-align: center; min-width: 120px; }
+  .diagram-box .diagram-label { font-size: 11px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .diagram-box .diagram-name { font-size: 15px; font-weight: 600; }
+  .diagram-arrow { font-size: 20px; color: var(--text-faint); padding: 0 8px; }
+
+  .copy-btn { position: absolute; top: 8px; right: 8px; background: var(--bg-btn); border: 1px solid var(--border-btn); color: var(--text-nav); padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; transition: all 0.2s; }
+  .copy-btn:hover { background: #253349; color: var(--text-primary); }
+  .code-wrapper { position: relative; }
+
+  .checklist { list-style: none; padding: 0; margin: 16px 0; }
+  .checklist li { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; color: var(--text-tertiary); font-size: 14px; }
+  .checklist li::before { content: ''; display: inline-block; width: 18px; height: 18px; border: 2px solid var(--border-btn); border-radius: 4px; flex-shrink: 0; margin-top: 1px; }
+  .checklist li.checked::before { background: var(--accent-blue-bg); border-color: #3b82f6; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E"); background-size: 14px; background-repeat: no-repeat; background-position: center; }
+
+  .summary-card { background: var(--bg-secondary); border: 1px solid var(--border-primary); border-radius: 10px; padding: 20px 24px; margin: 12px 0; }
+  .summary-card h4 { color: var(--text-primary); margin-bottom: 8px; font-size: 15px; display: flex; align-items: center; gap: 8px; }
+  .summary-card p { color: var(--text-muted); font-size: 14px; margin: 0; line-height: 1.6; }
+
+  .highlight-row td { background: var(--bg-highlight-row) !important; }
+
+  .breadcrumb { margin-top: 64px; padding-top: 8px; }
+
+  .next-course-banner { background: var(--bg-secondary); border: 1px solid var(--border-primary); border-radius: 10px; padding: 24px; margin-top: 32px; text-align: center; }
+  .next-course-banner h3 { color: var(--text-primary); margin: 0 0 8px; font-size: 18px; }
+  .next-course-banner p { color: var(--text-muted); font-size: 15px; margin: 0 0 16px; }
+  .next-course-banner a { display: inline-block; background: var(--accent-blue-bg); color: var(--text-primary); padding: 10px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px; transition: background 0.2s; }
+  .next-course-banner a:hover { background: #3b82f6; }
+
+  @media (max-width: 800px) {
+    .line-annotation { flex-direction: column; }
+    .line-explain { width: 100%; border-left: none; border-top: 1px solid var(--border-secondary); }
+    .compare-grid { grid-template-columns: 1fr; }
+    .nav { padding: 10px 16px; gap: 8px; }
+    .container { padding: 80px 16px 40px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <a href="/index.html" class="sidebar-logo">The Fundamentals</a>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="sidebar-section-title">Courses</div>
+    <a href="/lessons/databases.html" class="sidebar-link" data-course="databases">
+      <span class="sidebar-num">01</span> How Databases Work
+    </a>
+    <a href="/lessons/codebase.html" class="sidebar-link" data-course="codebase">
+      <span class="sidebar-num">02</span> The Codebase
+    </a>
+    <a href="/lessons/apis.html" class="sidebar-link" data-course="apis">
+      <span class="sidebar-num">03</span> APIs &amp; HTTP
+    </a>
+    <a href="/lessons/build.html" class="sidebar-link" data-course="build" aria-current="page">
+      <span class="sidebar-num">04</span> Build a Mini App
+    </a>
+    <a href="/lessons/deployment.html" class="sidebar-link" data-course="deployment">
+      <span class="sidebar-num">05</span> How Deployment Works
+    </a>
+    <a href="/lessons/git.html" class="sidebar-link" data-course="git">
+      <span class="sidebar-num">06</span> How Git Works
+    </a>
+  </nav>
+      <a href="/lessons/authentication.html" class="sidebar-link" data-course="authentication">
+        <span class="sidebar-num">07</span> How Auth Works
+      </a>
+      <a href="/lessons/typescript.html" class="sidebar-link" data-course="typescript">
+        <span class="sidebar-num">08</span> How TypeScript Works
+      </a>
+      <a href="/lessons/react.html" class="sidebar-link" data-course="react">
+        <span class="sidebar-num">09</span> How React Works
+      </a>
+      <a href="/lessons/testing.html" class="sidebar-link" data-course="testing">
+        <span class="sidebar-num">10</span> How Testing Works
+      </a>
+      <a href="/lessons/ai-agents.html" class="sidebar-link" data-course="ai-agents">
+        <span class="sidebar-num">11</span> How AI Agents Work
+      </a>
+      <a href="/lessons/shipping.html" class="sidebar-link" data-course="shipping">
+        <span class="sidebar-num">12</span> How to Ship a Product
+      </a>
+  <div class="sidebar-footer">
+    <button class="theme-toggle" id="theme-toggle">
+      <span class="theme-icon" id="theme-icon">☀️</span>
+      <span class="theme-label" id="theme-label">Light Mode</span>
+    </button>
+  </div>
+</aside>
+<button class="sidebar-toggle" id="sidebar-toggle">☰</button>
+
+<div class="content-wrapper">
+
+<div class="breadcrumb"><a href="/index.html">Home</a><span class="sep">›</span><span>Build a Mini App</span></div>
+
+<div class="nav">
+  <h1>Build an App</h1>
+  <button onclick="goTo(0)" id="nav0" class="active">1. Overview</button>
+  <button onclick="goTo(1)" id="nav1">2. Database</button>
+  <button onclick="goTo(2)" id="nav2">3. Server</button>
+  <button onclick="goTo(3)" id="nav3">4. UI</button>
+  <button onclick="goTo(4)" id="nav4">5. Connected</button>
+  <button onclick="goTo(5)" id="nav5">6. Scale Up</button>
+  <button onclick="goTo(6)" id="nav6">7. Full Code</button>
+  <button onclick="goTo(7)" id="nav7">8. Summary</button>
+  <span class="progress" id="progress">1 / 8</span>
+</div>
+
+<div class="container">
+
+  <!-- ============================================================ -->
+  <!-- LESSON 1: What We're Building -->
+  <!-- ============================================================ -->
+  <div class="lesson active" id="lesson0">
+    <h2>What We're Building</h2>
+    <p class="subtitle">A complete working app in 3 files.</p>
+
+    <p>You've learned how <strong style="color:var(--text-primary)">databases</strong> store data, how <strong style="color:var(--text-primary)">APIs</strong> let programs talk to each other, and how <strong style="color:var(--text-primary)">codebases</strong> are organized. Now you're going to build something that uses all three.</p>
+
+    <p>We're building a <strong style="color:var(--accent-blue)">task manager</strong>. It lets you add tasks, see them in a list, and mark them as done. Simple enough to understand in one sitting, but it uses the exact same architecture as Paperclip and every other modern web app.</p>
+
+    <div class="stat-grid">
+      <div class="stat-card"><div class="number">3</div><div class="label">Files</div></div>
+      <div class="stat-card"><div class="number">1</div><div class="label">Database Table</div></div>
+      <div class="stat-card"><div class="number">3</div><div class="label">API Endpoints</div></div>
+      <div class="stat-card"><div class="number">~120</div><div class="label">Lines of Code</div></div>
+    </div>
+
+    <p>Here's a live preview of what the finished app looks like. Try it -- add tasks and click them to mark as done:</p>
+
+    <div class="mockup" id="live-mockup">
+      <div class="mockup-bar">
+        <div class="mockup-dot red"></div>
+        <div class="mockup-dot yellow"></div>
+        <div class="mockup-dot green"></div>
+        <div class="mockup-url">localhost:3000</div>
+      </div>
+      <div class="mockup-body">
+        <div class="mockup-title">My Tasks</div>
+        <div class="mockup-input-row">
+          <input class="mockup-input" type="text" id="mockup-input" placeholder="What needs to be done?" onkeydown="if(event.key==='Enter') addMockupTask()">
+          <button class="mockup-add-btn" onclick="addMockupTask()">Add</button>
+        </div>
+        <div id="mockup-tasks">
+          <div class="mockup-task" onclick="toggleMockupTask(this)">
+            <div class="mockup-check"></div>
+            <span class="mockup-task-text">Learn how databases work</span>
+            <span class="mockup-task-date">2 hours ago</span>
+          </div>
+          <div class="mockup-task" onclick="toggleMockupTask(this)">
+            <div class="mockup-check"></div>
+            <span class="mockup-task-text">Understand APIs and HTTP</span>
+            <span class="mockup-task-date">1 hour ago</span>
+          </div>
+          <div class="mockup-task" onclick="toggleMockupTask(this)">
+            <div class="mockup-check"></div>
+            <span class="mockup-task-text">Read the Paperclip codebase</span>
+            <span class="mockup-task-date">30 min ago</span>
+          </div>
+          <div class="mockup-task" onclick="toggleMockupTask(this)">
+            <div class="mockup-check"></div>
+            <span class="mockup-task-text">Build my own mini app</span>
+            <span class="mockup-task-date">Just now</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p>Behind this simple UI, three pieces are working together:</p>
+
+    <div class="diagram-flow">
+      <div class="diagram-box">
+        <div class="diagram-label">File 1</div>
+        <div class="diagram-name" style="color:var(--accent-indigo)">schema.sql</div>
+        <div style="font-size:12px; color:var(--text-faint); margin-top:4px">Database</div>
+      </div>
+      <div class="diagram-arrow">&larr;&rarr;</div>
+      <div class="diagram-box">
+        <div class="diagram-label">File 2</div>
+        <div class="diagram-name" style="color:var(--accent-yellow)">server.js</div>
+        <div style="font-size:12px; color:var(--text-faint); margin-top:4px">API Server</div>
+      </div>
+      <div class="diagram-arrow">&larr;&rarr;</div>
+      <div class="diagram-box">
+        <div class="diagram-label">File 3</div>
+        <div class="diagram-name" style="color:var(--accent-green)">index.html</div>
+        <div style="font-size:12px; color:var(--text-faint); margin-top:4px">User Interface</div>
+      </div>
+    </div>
+
+    <div class="analogy">
+      <strong>The Paperclip parallel:</strong> Paperclip has the exact same architecture -- a database (PostgreSQL), a server (Node.js/Express), and a UI (React). The difference? Paperclip has 102 database migrations, 43 route files, 726 UI components, and 11 agent adapters. We have 1 table, 3 endpoints, and 1 HTML page. Same pattern, 1/1000th the size.
+    </div>
+
+    <p>Let's build each piece, one at a time.</p>
+
+    <button class="next-btn" onclick="goTo(1)">Next: The Database &rarr;</button>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- LESSON 2: File 1 -- The Database -->
+  <!-- ============================================================ -->
+  <div class="lesson" id="lesson1">
+    <h2>File 1: The Database</h2>
+    <p class="subtitle">A single table that stores every task.</p>
+
+    <p>The first file is <strong style="color:var(--accent-indigo)">schema.sql</strong>. It defines what our database looks like -- the blueprint. If you did the database tutorial, you already know this concept. A schema is a set of <code style="color:var(--accent-purple)">CREATE TABLE</code> statements that tell the database what columns to have and what types of data they hold.</p>
+
+    <p>Our task manager needs exactly one table. Click each line to see what it does:</p>
+
+    <div class="code-block" style="cursor:default" id="schema-code">
+<span class="line-hover" data-line="1"><span class="kw">CREATE TABLE IF NOT EXISTS</span> <span class="fn">tasks</span> (</span>
+<span class="line-hover" data-line="2">  <span class="var">id</span>         <span class="type">INTEGER</span> <span class="kw">PRIMARY KEY AUTOINCREMENT</span>,</span>
+<span class="line-hover" data-line="3">  <span class="var">title</span>      <span class="type">TEXT</span>    <span class="kw">NOT NULL</span>,</span>
+<span class="line-hover" data-line="4">  <span class="var">status</span>     <span class="type">TEXT</span>    <span class="kw">DEFAULT</span> <span class="str">'todo'</span>,</span>
+<span class="line-hover" data-line="5">  <span class="var">created_at</span> <span class="type">TEXT</span>    <span class="kw">DEFAULT</span> (<span class="fn">datetime</span>(<span class="str">'now'</span>))</span>
+<span class="line-hover" data-line="6">);</span>
+    </div>
+
+    <div class="result-box" id="schema-explain">
+      <div class="label">Click a line above</div>
+      <p style="color:var(--text-muted)">Click any line to see what it does.</p>
+    </div>
+
+    <h3>The empty table</h3>
+    <p>When we first create the database, the table exists but has no data. It's like a spreadsheet with column headers but no rows:</p>
+
+    <div class="db-table">
+      <div class="table-header"><span class="icon">&#9634;</span> tasks (empty)</div>
+      <table>
+        <tr><th>id <span class="key-label pk-label">PK</span></th><th>title</th><th>status</th><th>created_at</th></tr>
+        <tr><td colspan="4" style="text-align:center; color:var(--text-faint); padding:20px">No rows yet</td></tr>
+      </table>
+    </div>
+
+    <h3>After adding some tasks</h3>
+    <p>Once the app is running and users start adding tasks, the table fills up. Click to add tasks one by one:</p>
+
+    <div class="btn-row">
+      <button class="btn" onclick="addSchemaRow(1)" id="add-row-1">Add first task</button>
+      <button class="btn" onclick="addSchemaRow(2)" id="add-row-2">Add second task</button>
+      <button class="btn" onclick="addSchemaRow(3)" id="add-row-3">Add third task</button>
+      <button class="btn" onclick="addSchemaRow(0)" id="add-row-0">Reset</button>
+    </div>
+
+    <div class="db-table">
+      <div class="table-header"><span class="icon">&#9634;</span> tasks <span style="margin-left:auto; font-size:12px; color:var(--text-muted)" id="row-count">0 rows</span></div>
+      <table id="schema-table">
+        <tr><th>id <span class="key-label pk-label">PK</span></th><th>title</th><th>status</th><th>created_at</th></tr>
+      </table>
+    </div>
+
+    <div class="analogy">
+      <strong>Remember from the database tutorial?</strong> The <code style="color:var(--accent-yellow)">id</code> column is the primary key -- every row gets a unique number, automatically. <code style="color:var(--accent-purple)">NOT NULL</code> means a task must have a title -- the database will refuse to save one without it. <code style="color:var(--accent-purple)">DEFAULT</code> means "if no value is provided, use this." So new tasks automatically start as "todo" with the current timestamp.
+    </div>
+
+    <p>That's the entire database. One table, four columns, six lines of SQL. Paperclip's database has 50+ tables and 102 migration files -- but they're all just more of this.</p>
+
+    <button class="next-btn" onclick="goTo(2)">Next: The Server &rarr;</button>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- LESSON 3: File 2 -- The Server -->
+  <!-- ============================================================ -->
+  <div class="lesson" id="lesson2">
+    <h2>File 2: The Server</h2>
+    <p class="subtitle">A Node.js API that connects the database to the world.</p>
+
+    <p>The server is the middleman. The UI can't talk to the database directly -- it needs an API. Our server uses <strong style="color:var(--accent-blue)">Express</strong> (a popular Node.js framework) and <strong style="color:var(--accent-blue)">better-sqlite3</strong> (an SQLite database library).</p>
+
+    <p>We'll build it step by step. Click each section to see the code:</p>
+
+    <div class="btn-row">
+      <button class="btn selected" onclick="showServerStep('setup')" id="ss-setup">1. Setup</button>
+      <button class="btn" onclick="showServerStep('get')" id="ss-get">2. GET /tasks</button>
+      <button class="btn" onclick="showServerStep('post')" id="ss-post">3. POST /tasks</button>
+      <button class="btn" onclick="showServerStep('patch')" id="ss-patch">4. PATCH /tasks/:id</button>
+      <button class="btn" onclick="showServerStep('listen')" id="ss-listen">5. Start</button>
+    </div>
+
+    <div id="server-steps">
+      <!-- Setup -->
+      <div id="step-setup">
+        <div class="line-annotation">
+          <div class="line-code">
+<span class="kw">const</span> <span class="var">express</span> = <span class="fn">require</span>(<span class="str">'express'</span>);
+<span class="kw">const</span> <span class="var">Database</span> = <span class="fn">require</span>(<span class="str">'better-sqlite3'</span>);
+<span class="kw">const</span> <span class="var">path</span> = <span class="fn">require</span>(<span class="str">'path'</span>);
+
+<span class="comment">// Create app and database</span>
+<span class="kw">const</span> <span class="var">app</span> = <span class="fn">express</span>();
+<span class="kw">const</span> <span class="var">db</span> = <span class="kw">new</span> <span class="fn">Database</span>(<span class="str">'tasks.db'</span>);
+
+<span class="comment">// Parse JSON request bodies</span>
+<span class="var">app</span>.<span class="fn">use</span>(<span class="var">express</span>.<span class="fn">json</span>());
+
+<span class="comment">// Serve the UI files</span>
+<span class="var">app</span>.<span class="fn">use</span>(<span class="var">express</span>.<span class="fn">static</span>(<span class="str">'public'</span>));
+
+<span class="comment">// Create the tasks table if it doesn't exist</span>
+<span class="var">db</span>.<span class="fn">exec</span>(<span class="str">`
+  CREATE TABLE IF NOT EXISTS tasks (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    title      TEXT    NOT NULL,
+    status     TEXT    DEFAULT 'todo',
+    created_at TEXT    DEFAULT (datetime('now'))
+  )
+`</span>);
+          </div>
+          <div class="line-explain">
+            <strong>What's happening:</strong><br><br>
+            We import three things: Express (web framework), better-sqlite3 (database), and path (file paths).<br><br>
+            <code style="color:var(--accent-blue)">express()</code> creates our web server.<br><br>
+            <code style="color:var(--accent-blue)">new Database('tasks.db')</code> creates (or opens) an SQLite database file.<br><br>
+            <code style="color:var(--accent-blue)">express.json()</code> tells Express to parse JSON in request bodies.<br><br>
+            <code style="color:var(--accent-blue)">express.static('public')</code> serves our HTML file from a <code style="color:var(--accent-green)">public/</code> folder.<br><br>
+            Finally, we run the schema SQL to create the table.
+          </div>
+        </div>
+      </div>
+
+      <!-- GET -->
+      <div id="step-get" style="display:none">
+        <div class="line-annotation">
+          <div class="line-code">
+<span class="comment">// GET /api/tasks - Read all tasks</span>
+<span class="var">app</span>.<span class="fn">get</span>(<span class="str">'/api/tasks'</span>, (<span class="var">req</span>, <span class="var">res</span>) => {
+  <span class="kw">const</span> <span class="var">tasks</span> = <span class="var">db</span>
+    .<span class="fn">prepare</span>(<span class="str">'SELECT * FROM tasks ORDER BY created_at DESC'</span>)
+    .<span class="fn">all</span>();
+  <span class="var">res</span>.<span class="fn">json</span>(<span class="var">tasks</span>);
+});
+          </div>
+          <div class="line-explain">
+            <strong>Remember from the API tutorial?</strong><br><br>
+            <code style="color:var(--accent-purple)">GET</code> means "read data." The client is asking for all tasks.<br><br>
+            <code style="color:var(--accent-blue)">db.prepare(...).all()</code> runs a SQL query and returns all rows as an array.<br><br>
+            <code style="color:var(--accent-blue)">res.json(tasks)</code> sends the array back as JSON.<br><br>
+            When the UI loads, the first thing it does is <code style="color:var(--accent-green)">GET /api/tasks</code> to fetch all existing tasks. This is the same pattern Paperclip uses: <code style="color:var(--accent-green)">GET /api/agents</code> returns all agents.
+          </div>
+        </div>
+      </div>
+
+      <!-- POST -->
+      <div id="step-post" style="display:none">
+        <div class="line-annotation">
+          <div class="line-code">
+<span class="comment">// POST /api/tasks - Create a new task</span>
+<span class="var">app</span>.<span class="fn">post</span>(<span class="str">'/api/tasks'</span>, (<span class="var">req</span>, <span class="var">res</span>) => {
+  <span class="kw">const</span> { <span class="var">title</span> } = <span class="var">req</span>.<span class="var">body</span>;
+  <span class="kw">if</span> (!<span class="var">title</span>) {
+    <span class="kw">return</span> <span class="var">res</span>.<span class="fn">status</span>(<span class="type">400</span>).<span class="fn">json</span>({ <span class="var">error</span>: <span class="str">'Title is required'</span> });
+  }
+  <span class="kw">const</span> <span class="var">result</span> = <span class="var">db</span>
+    .<span class="fn">prepare</span>(<span class="str">'INSERT INTO tasks (title) VALUES (?)'</span>)
+    .<span class="fn">run</span>(<span class="var">title</span>);
+  <span class="kw">const</span> <span class="var">task</span> = <span class="var">db</span>
+    .<span class="fn">prepare</span>(<span class="str">'SELECT * FROM tasks WHERE id = ?'</span>)
+    .<span class="fn">get</span>(<span class="var">result</span>.<span class="var">lastInsertRowid</span>);
+  <span class="var">res</span>.<span class="fn">status</span>(<span class="type">201</span>).<span class="fn">json</span>(<span class="var">task</span>);
+});
+          </div>
+          <div class="line-explain">
+            <strong>POST means "create."</strong><br><br>
+            <code style="color:var(--accent-blue)">req.body</code> contains the JSON the client sent. We extract the <code style="color:var(--text-secondary)">title</code>.<br><br>
+            If no title was provided, we send back a <code style="color:var(--accent-yellow)">400</code> error (bad request).<br><br>
+            <code style="color:var(--accent-blue)">INSERT INTO tasks</code> creates a new row. The <code style="color:var(--accent-purple)">?</code> is a placeholder -- the actual value goes in safely via <code style="color:var(--accent-blue)">.run(title)</code>. This prevents SQL injection attacks.<br><br>
+            Then we fetch the newly created task and return it with status <code style="color:var(--accent-yellow)">201</code> (created).<br><br>
+            Same pattern as Paperclip's <code style="color:var(--accent-green)">POST /api/issues</code>.
+          </div>
+        </div>
+      </div>
+
+      <!-- PATCH -->
+      <div id="step-patch" style="display:none">
+        <div class="line-annotation">
+          <div class="line-code">
+<span class="comment">// PATCH /api/tasks/:id - Update a task</span>
+<span class="var">app</span>.<span class="fn">patch</span>(<span class="str">'/api/tasks/:id'</span>, (<span class="var">req</span>, <span class="var">res</span>) => {
+  <span class="kw">const</span> { <span class="var">status</span> } = <span class="var">req</span>.<span class="var">body</span>;
+  <span class="kw">const</span> { <span class="var">id</span> } = <span class="var">req</span>.<span class="var">params</span>;
+  <span class="var">db</span>
+    .<span class="fn">prepare</span>(<span class="str">'UPDATE tasks SET status = ? WHERE id = ?'</span>)
+    .<span class="fn">run</span>(<span class="var">status</span>, <span class="var">id</span>);
+  <span class="kw">const</span> <span class="var">task</span> = <span class="var">db</span>
+    .<span class="fn">prepare</span>(<span class="str">'SELECT * FROM tasks WHERE id = ?'</span>)
+    .<span class="fn">get</span>(<span class="var">id</span>);
+  <span class="var">res</span>.<span class="fn">json</span>(<span class="var">task</span>);
+});
+          </div>
+          <div class="line-explain">
+            <strong>PATCH means "update part of something."</strong><br><br>
+            The <code style="color:var(--accent-green)">:id</code> in the URL is a parameter. If the client calls <code style="color:var(--accent-green)">PATCH /api/tasks/3</code>, then <code style="color:var(--accent-blue)">req.params.id</code> is <code style="color:var(--accent-yellow)">3</code>.<br><br>
+            We extract the new <code style="color:var(--text-secondary)">status</code> from the request body and run an <code style="color:var(--accent-purple)">UPDATE</code> query to change just that field.<br><br>
+            Then we fetch and return the updated task.<br><br>
+            This is how the "mark as done" button works: the UI sends <code style="color:var(--accent-green)">PATCH /api/tasks/3</code> with <code style="color:var(--accent-green)">{ status: "done" }</code>.
+          </div>
+        </div>
+      </div>
+
+      <!-- Listen -->
+      <div id="step-listen" style="display:none">
+        <div class="line-annotation">
+          <div class="line-code">
+<span class="comment">// Start the server</span>
+<span class="kw">const</span> <span class="var">PORT</span> = <span class="type">3000</span>;
+<span class="var">app</span>.<span class="fn">listen</span>(<span class="var">PORT</span>, () => {
+  <span class="var">console</span>.<span class="fn">log</span>(<span class="str">`Server running at http://localhost:</span><span class="var">${PORT}</span><span class="str">`</span>);
+});
+          </div>
+          <div class="line-explain">
+            <strong>This starts the server.</strong><br><br>
+            <code style="color:var(--accent-blue)">app.listen(3000)</code> tells Express to start listening for requests on port 3000.<br><br>
+            When you run <code style="color:var(--accent-green)">node server.js</code>, this line executes and the server begins accepting connections.<br><br>
+            Open <code style="color:var(--accent-green)">http://localhost:3000</code> in a browser and the server will serve your HTML page (because of the <code style="color:var(--accent-blue)">express.static</code> middleware we set up earlier).
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="analogy">
+      <strong>Paperclip comparison:</strong> Our server has 3 endpoints in one file. Paperclip's server has 43 route files with hundreds of endpoints. But the pattern is identical: define a URL path, read from or write to the database, send back JSON. The route for <code style="color:var(--accent-green)">GET /api/agents</code> in Paperclip looks almost exactly like our <code style="color:var(--accent-green)">GET /api/tasks</code>.
+    </div>
+
+    <button class="next-btn" onclick="goTo(3)">Next: The UI &rarr;</button>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- LESSON 4: File 3 -- The UI -->
+  <!-- ============================================================ -->
+  <div class="lesson" id="lesson3">
+    <h2>File 3: The UI</h2>
+    <p class="subtitle">An HTML page that talks to the API.</p>
+
+    <p>The UI is a single HTML file with some JavaScript inside it. It does four things: fetch tasks when the page loads, render them as a list, let you add new tasks, and let you mark tasks as done.</p>
+
+    <p>Click each section to see how it works:</p>
+
+    <div class="btn-row">
+      <button class="btn selected" onclick="showUIStep('html')" id="us-html">HTML Structure</button>
+      <button class="btn" onclick="showUIStep('fetch')" id="us-fetch">Fetch Tasks</button>
+      <button class="btn" onclick="showUIStep('render')" id="us-render">Render List</button>
+      <button class="btn" onclick="showUIStep('add')" id="us-add">Add a Task</button>
+      <button class="btn" onclick="showUIStep('toggle')" id="us-toggle">Toggle Done</button>
+    </div>
+
+    <div id="ui-steps">
+      <!-- HTML Structure -->
+      <div id="ui-html">
+        <div class="line-annotation">
+          <div class="line-code">
+<span class="kw">&lt;!DOCTYPE html&gt;</span>
+<span class="kw">&lt;html&gt;</span>
+<span class="kw">&lt;head&gt;</span>
+  <span class="kw">&lt;title&gt;</span><span class="var">Task Manager</span><span class="kw">&lt;/title&gt;</span>
+  <span class="kw">&lt;style&gt;</span>
+    <span class="comment">/* styling omitted for clarity */</span>
+  <span class="kw">&lt;/style&gt;</span>
+<span class="kw">&lt;/head&gt;</span>
+<span class="kw">&lt;body&gt;</span>
+  <span class="kw">&lt;h1&gt;</span><span class="var">My Tasks</span><span class="kw">&lt;/h1&gt;</span>
+  <span class="kw">&lt;form</span> <span class="type">id</span>=<span class="str">"task-form"</span><span class="kw">&gt;</span>
+    <span class="kw">&lt;input</span> <span class="type">id</span>=<span class="str">"task-input"</span>
+           <span class="type">placeholder</span>=<span class="str">"What needs to be done?"</span><span class="kw">&gt;</span>
+    <span class="kw">&lt;button</span> <span class="type">type</span>=<span class="str">"submit"</span><span class="kw">&gt;</span><span class="var">Add</span><span class="kw">&lt;/button&gt;</span>
+  <span class="kw">&lt;/form&gt;</span>
+  <span class="kw">&lt;ul</span> <span class="type">id</span>=<span class="str">"task-list"</span><span class="kw">&gt;&lt;/ul&gt;</span>
+  <span class="kw">&lt;script&gt;</span> <span class="comment">/* JavaScript goes here */</span> <span class="kw">&lt;/script&gt;</span>
+<span class="kw">&lt;/body&gt;</span>
+<span class="kw">&lt;/html&gt;</span>
+          </div>
+          <div class="line-explain">
+            <strong>The HTML skeleton.</strong><br><br>
+            A heading, a form with an input and button, and an empty <code style="color:var(--accent-purple)">&lt;ul&gt;</code> (unordered list) where tasks will appear.<br><br>
+            The <code style="color:var(--accent-yellow)">id</code> attributes let our JavaScript find these elements later.<br><br>
+            This is the same principle as Paperclip's UI: the HTML defines the structure, JavaScript fills it with data from the API.
+          </div>
+        </div>
+      </div>
+
+      <!-- Fetch Tasks -->
+      <div id="ui-fetch" style="display:none">
+        <div class="line-annotation">
+          <div class="line-code">
+<span class="comment">// Fetch all tasks from the API</span>
+<span class="kw">async function</span> <span class="fn">loadTasks</span>() {
+  <span class="kw">const</span> <span class="var">response</span> = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">'/api/tasks'</span>);
+  <span class="kw">const</span> <span class="var">tasks</span> = <span class="kw">await</span> <span class="var">response</span>.<span class="fn">json</span>();
+  <span class="fn">renderTasks</span>(<span class="var">tasks</span>);
+}
+
+<span class="comment">// Load tasks when the page opens</span>
+<span class="fn">loadTasks</span>();
+          </div>
+          <div class="line-explain">
+            <strong>This is the API call.</strong><br><br>
+            <code style="color:var(--accent-blue)">fetch('/api/tasks')</code> sends a GET request to the server. This is the browser calling the endpoint we defined in server.js.<br><br>
+            <code style="color:var(--accent-blue)">response.json()</code> parses the JSON response into a JavaScript array.<br><br>
+            Then we pass the array to <code style="color:var(--accent-blue)">renderTasks()</code> to display them.<br><br>
+            <strong style="color:var(--accent-indigo)">Remember from the codebase tutorial?</strong> Paperclip's UI does the exact same thing: <code style="color:var(--accent-green)">fetch('/api/agents')</code> to load agents on the dashboard.
+          </div>
+        </div>
+      </div>
+
+      <!-- Render List -->
+      <div id="ui-render" style="display:none">
+        <div class="line-annotation">
+          <div class="line-code">
+<span class="comment">// Turn the tasks array into HTML</span>
+<span class="kw">function</span> <span class="fn">renderTasks</span>(<span class="var">tasks</span>) {
+  <span class="kw">const</span> <span class="var">list</span> = <span class="var">document</span>
+    .<span class="fn">getElementById</span>(<span class="str">'task-list'</span>);
+
+  <span class="var">list</span>.<span class="var">innerHTML</span> = <span class="var">tasks</span>.<span class="fn">map</span>(<span class="var">task</span> => <span class="str">`
+    &lt;li class="${task.status}"
+        onclick="toggleTask(${task.id},
+                 '${task.status}')">
+      ${task.title}
+    &lt;/li>
+  `</span>).<span class="fn">join</span>(<span class="str">''</span>);
+}
+          </div>
+          <div class="line-explain">
+            <strong>Turning data into UI.</strong><br><br>
+            <code style="color:var(--accent-blue)">.map()</code> loops through every task and creates an HTML <code style="color:var(--accent-purple)">&lt;li&gt;</code> for each one.<br><br>
+            Each <code style="color:var(--accent-purple)">&lt;li&gt;</code> gets a CSS class matching its status (so "done" tasks can be styled with a strikethrough).<br><br>
+            Each <code style="color:var(--accent-purple)">&lt;li&gt;</code> also gets an <code style="color:var(--accent-purple)">onclick</code> handler that calls <code style="color:var(--accent-blue)">toggleTask()</code> with the task's id and current status.<br><br>
+            <code style="color:var(--accent-blue)">.join('')</code> combines all the <code style="color:var(--accent-purple)">&lt;li&gt;</code> strings into one big HTML string.<br><br>
+            Setting <code style="color:var(--accent-blue)">list.innerHTML</code> replaces the entire list at once.
+          </div>
+        </div>
+      </div>
+
+      <!-- Add Task -->
+      <div id="ui-add" style="display:none">
+        <div class="line-annotation">
+          <div class="line-code">
+<span class="comment">// Handle the form submission</span>
+<span class="var">document</span>
+  .<span class="fn">getElementById</span>(<span class="str">'task-form'</span>)
+  .<span class="fn">addEventListener</span>(<span class="str">'submit'</span>,
+    <span class="kw">async</span> (<span class="var">e</span>) => {
+
+  <span class="var">e</span>.<span class="fn">preventDefault</span>();
+  <span class="kw">const</span> <span class="var">input</span> = <span class="var">document</span>
+    .<span class="fn">getElementById</span>(<span class="str">'task-input'</span>);
+
+  <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">'/api/tasks'</span>, {
+    <span class="var">method</span>: <span class="str">'POST'</span>,
+    <span class="var">headers</span>: {
+      <span class="str">'Content-Type'</span>: <span class="str">'application/json'</span>
+    },
+    <span class="var">body</span>: <span class="var">JSON</span>.<span class="fn">stringify</span>({
+      <span class="var">title</span>: <span class="var">input</span>.<span class="var">value</span>
+    })
+  });
+
+  <span class="var">input</span>.<span class="var">value</span> = <span class="str">''</span>;
+  <span class="fn">loadTasks</span>();
+});
+          </div>
+          <div class="line-explain">
+            <strong>Creating a new task via the API.</strong><br><br>
+            When the form is submitted, we prevent the default page reload with <code style="color:var(--accent-blue)">preventDefault()</code>.<br><br>
+            Then we send a <code style="color:var(--accent-purple)">POST</code> request to <code style="color:var(--accent-green)">/api/tasks</code> with the title in the body as JSON.<br><br>
+            Notice the structure: <code style="color:var(--accent-blue)">method</code>, <code style="color:var(--accent-blue)">headers</code>, <code style="color:var(--accent-blue)">body</code> -- this is the HTTP request we learned about in the API tutorial, now in actual code.<br><br>
+            After the task is created, we clear the input and reload the full task list so the new task appears.
+          </div>
+        </div>
+      </div>
+
+      <!-- Toggle Done -->
+      <div id="ui-toggle" style="display:none">
+        <div class="line-annotation">
+          <div class="line-code">
+<span class="comment">// Toggle a task between todo and done</span>
+<span class="kw">async function</span> <span class="fn">toggleTask</span>(<span class="var">id</span>, <span class="var">currentStatus</span>) {
+  <span class="kw">const</span> <span class="var">newStatus</span> = <span class="var">currentStatus</span> === <span class="str">'done'</span>
+    ? <span class="str">'todo'</span>
+    : <span class="str">'done'</span>;
+
+  <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">`/api/tasks/</span><span class="var">${id}</span><span class="str">`</span>, {
+    <span class="var">method</span>: <span class="str">'PATCH'</span>,
+    <span class="var">headers</span>: {
+      <span class="str">'Content-Type'</span>: <span class="str">'application/json'</span>
+    },
+    <span class="var">body</span>: <span class="var">JSON</span>.<span class="fn">stringify</span>({
+      <span class="var">status</span>: <span class="var">newStatus</span>
+    })
+  });
+
+  <span class="fn">loadTasks</span>();
+}
+          </div>
+          <div class="line-explain">
+            <strong>Updating a task via the API.</strong><br><br>
+            If the task is currently "done," flip it to "todo." If it's "todo," flip to "done."<br><br>
+            Send a <code style="color:var(--accent-purple)">PATCH</code> request to <code style="color:var(--accent-green)">/api/tasks/5</code> (where 5 is the task's id) with the new status.<br><br>
+            The <code style="color:var(--accent-green)">:id</code> URL parameter we defined in the server knows how to extract the <code style="color:var(--accent-yellow)">5</code> and update only that row in the database.<br><br>
+            Then reload the list to show the updated state.<br><br>
+            This is the exact same flow as clicking "done" on a Paperclip issue.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="analogy">
+      <strong>The pattern is always the same:</strong> User does something in the UI &rarr; JavaScript calls the API with <code style="color:var(--accent-blue)">fetch()</code> &rarr; Server receives the request &rarr; Server talks to the database &rarr; Server sends back JSON &rarr; JavaScript updates the page. Every web app ever built follows this loop.
+    </div>
+
+    <button class="next-btn" onclick="goTo(4)">Next: How They Connect &rarr;</button>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- LESSON 5: How They Connect -->
+  <!-- ============================================================ -->
+  <div class="lesson" id="lesson4">
+    <h2>How They Connect</h2>
+    <p class="subtitle">Tracing a complete request from click to database and back.</p>
+
+    <p>Let's trace exactly what happens when you type "Buy groceries" and click Add. Click each step to follow the data:</p>
+
+    <div class="btn-row">
+      <button class="btn selected" onclick="showFlowStep(1)" id="fs-1">Step 1</button>
+      <button class="btn" onclick="showFlowStep(2)" id="fs-2">Step 2</button>
+      <button class="btn" onclick="showFlowStep(3)" id="fs-3">Step 3</button>
+      <button class="btn" onclick="showFlowStep(4)" id="fs-4">Step 4</button>
+      <button class="btn" onclick="showFlowStep(5)" id="fs-5">Step 5</button>
+      <button class="btn" onclick="showFlowStep(6)" id="fs-6">Step 6</button>
+      <button class="btn" onclick="showFlowStep(0)" id="fs-0">All</button>
+    </div>
+
+    <div class="arch-box" id="flow-diagram"><span class="highlight">User types "Buy groceries" and clicks Add</span>
+<span class="arrow">  |</span>
+<span class="arrow">  v</span>
+<span class="layer" id="fd-1">UI (index.html)</span>
+  <span class="note" id="fd-1n">JavaScript calls fetch('/api/tasks', { method: 'POST', body: '{"title":"Buy groceries"}' })</span>
+<span class="arrow">  |</span>
+<span class="arrow">  v</span>
+<span class="layer" id="fd-2">SERVER (server.js)</span>
+  <span class="note" id="fd-2n">Express receives POST /api/tasks. Extracts title from req.body.</span>
+<span class="arrow">  |</span>
+<span class="arrow">  v</span>
+<span class="data" id="fd-3">DATABASE (tasks.db)</span>
+  <span class="note" id="fd-3n">INSERT INTO tasks (title) VALUES ('Buy groceries')</span>
+  <span class="note" id="fd-3n2">Database creates row: { id: 5, title: 'Buy groceries', status: 'todo', created_at: '2026-06-17' }</span>
+<span class="arrow">  |</span>
+<span class="arrow">  v</span>
+<span class="layer" id="fd-4">SERVER (server.js)</span>
+  <span class="note" id="fd-4n">SELECT * FROM tasks WHERE id = 5. Sends the new task back as JSON with status 201.</span>
+<span class="arrow">  |</span>
+<span class="arrow">  v</span>
+<span class="layer" id="fd-5">UI (index.html)</span>
+  <span class="note" id="fd-5n">JavaScript calls loadTasks(). This fires GET /api/tasks.</span>
+<span class="arrow">  |</span>
+<span class="arrow">  v</span>
+<span class="highlight" id="fd-6">SCREEN UPDATES</span>
+  <span class="note" id="fd-6n">"Buy groceries" appears in the task list. The whole round trip took ~10ms.</span></div>
+
+    <div class="result-box" id="flow-explain">
+      <div class="label">Request lifecycle</div>
+      <p style="color:var(--text-body)">Every interaction in a web app follows this cycle. Data flows down from the UI to the database, then back up to the screen. The server is always in the middle, acting as the gatekeeper.</p>
+    </div>
+
+    <h3>The complete architecture</h3>
+    <p>Here's the full picture of how the three files interact:</p>
+
+    <div class="arch-box"><span class="component">index.html</span>                    <span class="component">server.js</span>                    <span class="data">tasks.db</span>
+<span class="note">  (in the browser)</span>               <span class="note">  (on the server)</span>                <span class="note">  (on disk)</span>
+<span class="arrow">       |                             |                            |</span>
+<span class="arrow">       |</span>  <span class="str">GET /api/tasks</span>             <span class="arrow">|</span>                            <span class="arrow">|</span>
+<span class="arrow">       |</span><span class="arrow">-----------------------------></span><span class="arrow">|</span>                            <span class="arrow">|</span>
+<span class="arrow">       |</span>                             <span class="arrow">|</span>  <span class="str">SELECT * FROM tasks</span>      <span class="arrow">|</span>
+<span class="arrow">       |</span>                             <span class="arrow">|</span><span class="arrow">---------------------------></span><span class="arrow">|</span>
+<span class="arrow">       |</span>                             <span class="arrow">|</span>  <span class="data">[{id:1, title:...}, ...]</span>  <span class="arrow">|</span>
+<span class="arrow">       |</span>                             <span class="arrow">|</span><span class="arrow"><---------------------------</span><span class="arrow">|</span>
+<span class="arrow">       |</span>  <span class="data">JSON array of tasks</span>       <span class="arrow">|</span>                            <span class="arrow">|</span>
+<span class="arrow">       |</span><span class="arrow"><-----------------------------</span><span class="arrow">|</span>                            <span class="arrow">|</span>
+<span class="arrow">       |</span>                             <span class="arrow">|</span>                            <span class="arrow">|</span>
+<span class="arrow">       |</span>  <span class="str">POST /api/tasks</span>            <span class="arrow">|</span>                            <span class="arrow">|</span>
+<span class="arrow">       |</span>  <span class="highlight">{title:"Buy groceries"}</span>    <span class="arrow">|</span>                            <span class="arrow">|</span>
+<span class="arrow">       |</span><span class="arrow">-----------------------------></span><span class="arrow">|</span>                            <span class="arrow">|</span>
+<span class="arrow">       |</span>                             <span class="arrow">|</span>  <span class="str">INSERT INTO tasks...</span>     <span class="arrow">|</span>
+<span class="arrow">       |</span>                             <span class="arrow">|</span><span class="arrow">---------------------------></span><span class="arrow">|</span>
+<span class="arrow">       |</span>                             <span class="arrow">|</span>  <span class="data">{ id: 5 }</span>                <span class="arrow">|</span>
+<span class="arrow">       |</span>                             <span class="arrow">|</span><span class="arrow"><---------------------------</span><span class="arrow">|</span>
+<span class="arrow">       |</span>  <span class="data">201 {id:5, title:...}</span>     <span class="arrow">|</span>                            <span class="arrow">|</span>
+<span class="arrow">       |</span><span class="arrow"><-----------------------------</span><span class="arrow">|</span>                            <span class="arrow">|</span>
+<span class="arrow">       |</span>                             <span class="arrow">|</span>                            <span class="arrow">|</span>
+<span class="arrow">       |</span>  <span class="str">PATCH /api/tasks/5</span>         <span class="arrow">|</span>                            <span class="arrow">|</span>
+<span class="arrow">       |</span>  <span class="highlight">{status:"done"}</span>            <span class="arrow">|</span>                            <span class="arrow">|</span>
+<span class="arrow">       |</span><span class="arrow">-----------------------------></span><span class="arrow">|</span>                            <span class="arrow">|</span>
+<span class="arrow">       |</span>                             <span class="arrow">|</span>  <span class="str">UPDATE tasks SET...</span>      <span class="arrow">|</span>
+<span class="arrow">       |</span>                             <span class="arrow">|</span><span class="arrow">---------------------------></span><span class="arrow">|</span>
+<span class="arrow">       |</span>                             <span class="arrow">|</span>  <span class="data">OK</span>                       <span class="arrow">|</span>
+<span class="arrow">       |</span>                             <span class="arrow">|</span><span class="arrow"><---------------------------</span><span class="arrow">|</span>
+<span class="arrow">       |</span>  <span class="data">{id:5, status:"done"}</span>     <span class="arrow">|</span>                            <span class="arrow">|</span>
+<span class="arrow">       |</span><span class="arrow"><-----------------------------</span><span class="arrow">|</span>                            <span class="arrow">|</span></div>
+
+    <div class="analogy">
+      <strong>This is the entire internet in one diagram.</strong> Every web app you use -- Google, Twitter, your bank -- has this same three-part structure. The UI is in your browser. The server is in a data center somewhere. The database is on a disk next to the server. They communicate over HTTP using JSON. That's it.
+    </div>
+
+    <button class="next-btn" onclick="goTo(5)">Next: What Makes It Real &rarr;</button>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- LESSON 6: What Makes It Real -->
+  <!-- ============================================================ -->
+  <div class="lesson" id="lesson5">
+    <h2>What Makes It Real</h2>
+    <p class="subtitle">From 3 files to 2,000: what you'd add to grow.</p>
+
+    <p>Our task manager works. But it's a toy. Let's compare it to Paperclip and see what you'd need to add to make it a real product.</p>
+
+    <div class="btn-row">
+      <button class="btn selected" onclick="showScaleSection('compare')" id="sc-compare">Side by Side</button>
+      <button class="btn" onclick="showScaleSection('growth')" id="sc-growth">Growth Path</button>
+      <button class="btn" onclick="showScaleSection('real')" id="sc-real">Real-World Adds</button>
+    </div>
+
+    <div id="scale-sections">
+      <!-- Compare -->
+      <div id="scale-compare">
+        <div class="db-table">
+          <div class="table-header">Our App vs Paperclip</div>
+          <table>
+            <tr><th>Feature</th><th style="color:var(--accent-green)">Our App</th><th style="color:var(--accent-blue)">Paperclip</th></tr>
+            <tr><td>Database</td><td>SQLite, 1 table</td><td>PostgreSQL, 50+ tables</td></tr>
+            <tr><td>Server</td><td>1 file, 3 endpoints</td><td>43 route files, hundreds of endpoints</td></tr>
+            <tr><td>UI</td><td>1 HTML file</td><td>726 React components, 70+ pages</td></tr>
+            <tr><td>Authentication</td><td style="color:#ef4444">None</td><td>API keys, JWT, sessions</td></tr>
+            <tr><td>Real-time updates</td><td style="color:#ef4444">None (manual refresh)</td><td>WebSocket push</td></tr>
+            <tr><td>Users</td><td style="color:#ef4444">Single user</td><td>Multi-tenant (many companies)</td></tr>
+            <tr><td>Deployment</td><td>localhost only</td><td>Docker, cloud hosting</td></tr>
+            <tr><td>Total lines</td><td>~120</td><td>~200,000+</td></tr>
+          </table>
+        </div>
+
+        <div class="analogy">
+          <strong>But the architecture is identical.</strong> Paperclip's <code style="color:var(--accent-blue)">GET /api/agents</code> does the same thing as our <code style="color:var(--accent-blue)">GET /api/tasks</code>: query the database, return JSON. They just have more tables, more endpoints, more UI components, and more infrastructure. It's the same pattern, scaled up.
+        </div>
+      </div>
+
+      <!-- Growth Path -->
+      <div id="scale-growth" style="display:none">
+        <p>If you wanted to grow this app from a toy into a real product, here's the path. Click each stage:</p>
+
+        <div class="btn-row">
+          <button class="btn selected" onclick="showGrowthStage(1)" id="gs-1">Stage 1</button>
+          <button class="btn" onclick="showGrowthStage(2)" id="gs-2">Stage 2</button>
+          <button class="btn" onclick="showGrowthStage(3)" id="gs-3">Stage 3</button>
+          <button class="btn" onclick="showGrowthStage(4)" id="gs-4">Stage 4</button>
+        </div>
+
+        <div id="growth-stages">
+          <div id="growth-1">
+            <h3 style="color:var(--accent-green)">Stage 1: Make it useful</h3>
+            <div class="flow-step"><div class="flow-num">1</div><div class="flow-content"><h4>Add more fields</h4><p>Due dates, priority, description. Just more columns in the tasks table.</p></div></div>
+            <div class="flow-step"><div class="flow-num">2</div><div class="flow-content"><h4>Add a DELETE endpoint</h4><p><code>DELETE /api/tasks/:id</code> -- one more route, one more SQL query.</p></div></div>
+            <div class="flow-step"><div class="flow-num">3</div><div class="flow-content"><h4>Better UI</h4><p>CSS styling, animations, mobile-friendly layout. No architecture changes needed.</p></div></div>
+          </div>
+          <div id="growth-2" style="display:none">
+            <h3 style="color:var(--accent-yellow)">Stage 2: Add users</h3>
+            <div class="flow-step"><div class="flow-num">4</div><div class="flow-content"><h4>Users table</h4><p>A new <code>users</code> table with id, email, password_hash. Same CREATE TABLE as before.</p></div></div>
+            <div class="flow-step"><div class="flow-num">5</div><div class="flow-content"><h4>Authentication</h4><p>Login/signup endpoints. Add middleware that checks "who is this user?" on every request. Just like Paperclip's <code>auth.ts</code> middleware.</p></div></div>
+            <div class="flow-step"><div class="flow-num">6</div><div class="flow-content"><h4>Foreign key: tasks.user_id</h4><p>Add a <code>user_id</code> column to tasks. Each user only sees their own tasks. Remember foreign keys from the database tutorial?</p></div></div>
+          </div>
+          <div id="growth-3" style="display:none">
+            <h3 style="color:var(--accent-purple)">Stage 3: Scale the database</h3>
+            <div class="flow-step"><div class="flow-num">7</div><div class="flow-content"><h4>Switch to PostgreSQL</h4><p>SQLite is a single file. PostgreSQL is a real database server that can handle thousands of concurrent users. The SQL is almost identical.</p></div></div>
+            <div class="flow-step"><div class="flow-num">8</div><div class="flow-content"><h4>Add migrations</h4><p>Instead of one schema.sql, you write numbered migration files that change the schema over time. Paperclip has 102 of these.</p></div></div>
+            <div class="flow-step"><div class="flow-num">9</div><div class="flow-content"><h4>Use an ORM</h4><p>Instead of raw SQL strings, use Drizzle or Prisma -- write queries in TypeScript with autocomplete and type safety. Exactly what Paperclip does.</p></div></div>
+          </div>
+          <div id="growth-4" style="display:none">
+            <h3 style="color:var(--accent-blue)">Stage 4: Go to production</h3>
+            <div class="flow-step"><div class="flow-num">10</div><div class="flow-content"><h4>Deploy</h4><p>Put the server on a cloud provider (Vercel, Railway, AWS). Put the database on a managed service. Buy a domain.</p></div></div>
+            <div class="flow-step"><div class="flow-num">11</div><div class="flow-content"><h4>Add real-time updates</h4><p>WebSockets so that if another user adds a task, everyone sees it instantly. Paperclip uses this for the live dashboard.</p></div></div>
+            <div class="flow-step"><div class="flow-num">12</div><div class="flow-content"><h4>Use a framework</h4><p>Switch the UI to React or Vue. Split into components. Add routing for different pages. This is how you get to Paperclip's 726-component UI.</p></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Real-World Additions -->
+      <div id="scale-real" style="display:none">
+        <p>Here's what separates a toy app from a production app. Every single one of these is just more of the same patterns you've already seen:</p>
+
+        <div class="compare-grid">
+          <div class="compare-card">
+            <h4 style="color:#ef4444">Security</h4>
+            <p>Authentication (who are you?), authorization (are you allowed?), input validation, rate limiting, HTTPS. Paperclip has a full <code style="color:var(--accent-blue)">middleware/</code> folder for this.</p>
+          </div>
+          <div class="compare-card">
+            <h4 style="color:var(--accent-yellow)">Error Handling</h4>
+            <p>What if the database is down? What if the user sends garbage data? What if the server runs out of memory? Production apps handle every failure case.</p>
+          </div>
+          <div class="compare-card">
+            <h4 style="color:var(--accent-green)">Testing</h4>
+            <p>Automated tests that verify every endpoint works. Paperclip has end-to-end Playwright tests that click through the UI and verify the results.</p>
+          </div>
+          <div class="compare-card">
+            <h4 style="color:var(--accent-blue)">Logging & Monitoring</h4>
+            <p>Record what happens so you can debug problems. Track response times, error rates, database queries. Paperclip logs every request.</p>
+          </div>
+          <div class="compare-card">
+            <h4 style="color:var(--accent-purple)">Caching</h4>
+            <p>Don't hit the database for the same data every time. Store frequently-read data in memory. Redis is a popular tool for this.</p>
+          </div>
+          <div class="compare-card">
+            <h4 style="color:var(--accent-indigo)">Background Jobs</h4>
+            <p>Some work takes too long for a request (sending emails, processing files). Queue it up and do it in the background. Paperclip's heartbeat is a background job.</p>
+          </div>
+        </div>
+
+        <div class="analogy">
+          <strong>The takeaway:</strong> Production software is 10% building the feature and 90% handling everything that can go wrong. But every one of those additions is built on the same foundation: routes, database queries, and UI updates.
+        </div>
+      </div>
+    </div>
+
+    <button class="next-btn" onclick="goTo(6)">Next: The Full Code &rarr;</button>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- LESSON 7: The Full Code -->
+  <!-- ============================================================ -->
+  <div class="lesson" id="lesson6">
+    <h2>The Full Code</h2>
+    <p class="subtitle">All three files, complete and working. Copy, paste, run.</p>
+
+    <p>Here's everything you need. Three files, about 120 lines total. This is a real, working app you can run on your computer.</p>
+
+    <h3>Step 1: Set up the project</h3>
+    <div class="code-wrapper">
+      <div class="code-block" id="setup-code"><span class="comment"># Create a new folder and initialize the project</span>
+<span class="fn">mkdir</span> task-manager
+<span class="fn">cd</span> task-manager
+<span class="fn">npm</span> init -y
+<span class="fn">npm</span> install express better-sqlite3
+
+<span class="comment"># Create the public folder for the UI</span>
+<span class="fn">mkdir</span> public</div>
+    </div>
+
+    <h3>Step 2: Create <span style="color:var(--accent-yellow)">server.js</span></h3>
+    <p>Create this file in the root of your project folder:</p>
+    <div class="code-wrapper">
+      <div class="code-block" id="server-full-code"><span class="kw">const</span> <span class="var">express</span> = <span class="fn">require</span>(<span class="str">'express'</span>);
+<span class="kw">const</span> <span class="var">Database</span> = <span class="fn">require</span>(<span class="str">'better-sqlite3'</span>);
+
+<span class="comment">// Create the Express app and SQLite database</span>
+<span class="kw">const</span> <span class="var">app</span> = <span class="fn">express</span>();
+<span class="kw">const</span> <span class="var">db</span> = <span class="kw">new</span> <span class="fn">Database</span>(<span class="str">'tasks.db'</span>);
+
+<span class="comment">// Middleware</span>
+<span class="var">app</span>.<span class="fn">use</span>(<span class="var">express</span>.<span class="fn">json</span>());
+<span class="var">app</span>.<span class="fn">use</span>(<span class="var">express</span>.<span class="fn">static</span>(<span class="str">'public'</span>));
+
+<span class="comment">// Create the tasks table</span>
+<span class="var">db</span>.<span class="fn">exec</span>(<span class="str">`
+  CREATE TABLE IF NOT EXISTS tasks (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    title      TEXT    NOT NULL,
+    status     TEXT    DEFAULT 'todo',
+    created_at TEXT    DEFAULT (datetime('now'))
+  )
+`</span>);
+
+<span class="comment">// GET /api/tasks - Read all tasks</span>
+<span class="var">app</span>.<span class="fn">get</span>(<span class="str">'/api/tasks'</span>, (<span class="var">req</span>, <span class="var">res</span>) =&gt; {
+  <span class="kw">const</span> <span class="var">tasks</span> = <span class="var">db</span>.<span class="fn">prepare</span>(<span class="str">'SELECT * FROM tasks ORDER BY created_at DESC'</span>).<span class="fn">all</span>();
+  <span class="var">res</span>.<span class="fn">json</span>(<span class="var">tasks</span>);
+});
+
+<span class="comment">// POST /api/tasks - Create a new task</span>
+<span class="var">app</span>.<span class="fn">post</span>(<span class="str">'/api/tasks'</span>, (<span class="var">req</span>, <span class="var">res</span>) =&gt; {
+  <span class="kw">const</span> { <span class="var">title</span> } = <span class="var">req</span>.<span class="var">body</span>;
+  <span class="kw">if</span> (!<span class="var">title</span>) {
+    <span class="kw">return</span> <span class="var">res</span>.<span class="fn">status</span>(<span class="type">400</span>).<span class="fn">json</span>({ <span class="var">error</span>: <span class="str">'Title is required'</span> });
+  }
+  <span class="kw">const</span> <span class="var">result</span> = <span class="var">db</span>.<span class="fn">prepare</span>(<span class="str">'INSERT INTO tasks (title) VALUES (?)'</span>).<span class="fn">run</span>(<span class="var">title</span>);
+  <span class="kw">const</span> <span class="var">task</span> = <span class="var">db</span>.<span class="fn">prepare</span>(<span class="str">'SELECT * FROM tasks WHERE id = ?'</span>).<span class="fn">get</span>(<span class="var">result</span>.<span class="var">lastInsertRowid</span>);
+  <span class="var">res</span>.<span class="fn">status</span>(<span class="type">201</span>).<span class="fn">json</span>(<span class="var">task</span>);
+});
+
+<span class="comment">// PATCH /api/tasks/:id - Update a task's status</span>
+<span class="var">app</span>.<span class="fn">patch</span>(<span class="str">'/api/tasks/:id'</span>, (<span class="var">req</span>, <span class="var">res</span>) =&gt; {
+  <span class="kw">const</span> { <span class="var">status</span> } = <span class="var">req</span>.<span class="var">body</span>;
+  <span class="kw">const</span> { <span class="var">id</span> } = <span class="var">req</span>.<span class="var">params</span>;
+  <span class="var">db</span>.<span class="fn">prepare</span>(<span class="str">'UPDATE tasks SET status = ? WHERE id = ?'</span>).<span class="fn">run</span>(<span class="var">status</span>, <span class="var">id</span>);
+  <span class="kw">const</span> <span class="var">task</span> = <span class="var">db</span>.<span class="fn">prepare</span>(<span class="str">'SELECT * FROM tasks WHERE id = ?'</span>).<span class="fn">get</span>(<span class="var">id</span>);
+  <span class="var">res</span>.<span class="fn">json</span>(<span class="var">task</span>);
+});
+
+<span class="comment">// Start the server</span>
+<span class="kw">const</span> <span class="var">PORT</span> = <span class="type">3000</span>;
+<span class="var">app</span>.<span class="fn">listen</span>(<span class="var">PORT</span>, () =&gt; {
+  <span class="var">console</span>.<span class="fn">log</span>(<span class="str">`Server running at http://localhost:${PORT}`</span>);
+});</div>
+    </div>
+
+    <h3>Step 3: Create <span style="color:var(--accent-green)">public/index.html</span></h3>
+    <p>Create this file inside the <code style="color:var(--accent-blue)">public/</code> folder:</p>
+    <div class="code-wrapper">
+      <div class="code-block" id="ui-full-code"><span class="kw">&lt;!DOCTYPE html&gt;</span>
+<span class="kw">&lt;html lang=<span class="str">"en"</span>&gt;</span>
+<span class="kw">&lt;head&gt;</span>
+  <span class="kw">&lt;meta</span> <span class="type">charset</span>=<span class="str">"UTF-8"</span><span class="kw">&gt;</span>
+  <span class="kw">&lt;meta</span> <span class="type">name</span>=<span class="str">"viewport"</span> <span class="type">content</span>=<span class="str">"width=device-width, initial-scale=1.0"</span><span class="kw">&gt;</span>
+  <span class="kw">&lt;title&gt;</span>Task Manager<span class="kw">&lt;/title&gt;</span>
+  <span class="kw">&lt;style&gt;</span>
+    <span class="var">*</span> { <span class="var">margin</span>: <span class="type">0</span>; <span class="var">padding</span>: <span class="type">0</span>; <span class="var">box-sizing</span>: border-box; }
+    <span class="var">body</span> {
+      <span class="var">font-family</span>: -apple-system, sans-serif;
+      <span class="var">background</span>: <span class="str">#0a0a0a</span>; <span class="var">color</span>: <span class="str">#e0e0e0</span>;
+      <span class="var">max-width</span>: <span class="type">600px</span>; <span class="var">margin</span>: <span class="type">40px</span> auto; <span class="var">padding</span>: <span class="type">0 20px</span>;
+    }
+    <span class="var">h1</span> { <span class="var">margin-bottom</span>: <span class="type">20px</span>; }
+    <span class="var">form</span> { <span class="var">display</span>: flex; <span class="var">gap</span>: <span class="type">8px</span>; <span class="var">margin-bottom</span>: <span class="type">20px</span>; }
+    <span class="var">input</span> {
+      <span class="var">flex</span>: <span class="type">1</span>; <span class="var">padding</span>: <span class="type">10px</span>; <span class="var">border-radius</span>: <span class="type">6px</span>;
+      <span class="var">border</span>: <span class="type">1px</span> solid <span class="str">#333</span>; <span class="var">background</span>: <span class="str">#1a1a1a</span>;
+      <span class="var">color</span>: <span class="str">#fff</span>; <span class="var">font-size</span>: <span class="type">14px</span>; <span class="var">outline</span>: none;
+    }
+    <span class="var">input:focus</span> { <span class="var">border-color</span>: <span class="str">#3b82f6</span>; }
+    <span class="var">button</span> {
+      <span class="var">padding</span>: <span class="type">10px 20px</span>; <span class="var">border-radius</span>: <span class="type">6px</span>; <span class="var">border</span>: none;
+      <span class="var">background</span>: <span class="str">#2563eb</span>; <span class="var">color</span>: <span class="str">#fff</span>;
+      <span class="var">cursor</span>: pointer; <span class="var">font-size</span>: <span class="type">14px</span>;
+    }
+    <span class="var">button:hover</span> { <span class="var">background</span>: <span class="str">#3b82f6</span>; }
+    <span class="var">ul</span> { <span class="var">list-style</span>: none; }
+    <span class="var">li</span> {
+      <span class="var">padding</span>: <span class="type">12px</span>; <span class="var">border</span>: <span class="type">1px</span> solid <span class="str">#222</span>;
+      <span class="var">border-radius</span>: <span class="type">6px</span>; <span class="var">margin-bottom</span>: <span class="type">8px</span>;
+      <span class="var">cursor</span>: pointer; <span class="var">transition</span>: all <span class="type">0.2s</span>;
+    }
+    <span class="var">li:hover</span> { <span class="var">border-color</span>: <span class="str">#444</span>; }
+    <span class="var">li.done</span> { <span class="var">text-decoration</span>: line-through; <span class="var">color</span>: <span class="str">#555</span>; }
+  <span class="kw">&lt;/style&gt;</span>
+<span class="kw">&lt;/head&gt;</span>
+<span class="kw">&lt;body&gt;</span>
+  <span class="kw">&lt;h1&gt;</span>My Tasks<span class="kw">&lt;/h1&gt;</span>
+  <span class="kw">&lt;form</span> <span class="type">id</span>=<span class="str">"task-form"</span><span class="kw">&gt;</span>
+    <span class="kw">&lt;input</span> <span class="type">id</span>=<span class="str">"task-input"</span> <span class="type">placeholder</span>=<span class="str">"What needs to be done?"</span> <span class="type">required</span><span class="kw">&gt;</span>
+    <span class="kw">&lt;button</span> <span class="type">type</span>=<span class="str">"submit"</span><span class="kw">&gt;</span>Add<span class="kw">&lt;/button&gt;</span>
+  <span class="kw">&lt;/form&gt;</span>
+  <span class="kw">&lt;ul</span> <span class="type">id</span>=<span class="str">"task-list"</span><span class="kw">&gt;&lt;/ul&gt;</span>
+
+  <span class="kw">&lt;script&gt;</span>
+    <span class="kw">async function</span> <span class="fn">loadTasks</span>() {
+      <span class="kw">const</span> <span class="var">res</span> = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">'/api/tasks'</span>);
+      <span class="kw">const</span> <span class="var">tasks</span> = <span class="kw">await</span> <span class="var">res</span>.<span class="fn">json</span>();
+      <span class="var">document</span>.<span class="fn">getElementById</span>(<span class="str">'task-list'</span>).<span class="var">innerHTML</span> =
+        <span class="var">tasks</span>.<span class="fn">map</span>(<span class="var">t</span> =&gt; <span class="str">`
+          &lt;li class="${t.status}"
+              onclick="toggleTask(${t.id}, '${t.status}')">
+            ${t.title}
+          &lt;/li>`</span>).<span class="fn">join</span>(<span class="str">''</span>);
+    }
+
+    <span class="var">document</span>.<span class="fn">getElementById</span>(<span class="str">'task-form'</span>)
+      .<span class="fn">addEventListener</span>(<span class="str">'submit'</span>, <span class="kw">async</span> (<span class="var">e</span>) =&gt; {
+        <span class="var">e</span>.<span class="fn">preventDefault</span>();
+        <span class="kw">const</span> <span class="var">input</span> = <span class="var">document</span>.<span class="fn">getElementById</span>(<span class="str">'task-input'</span>);
+        <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">'/api/tasks'</span>, {
+          <span class="var">method</span>: <span class="str">'POST'</span>,
+          <span class="var">headers</span>: { <span class="str">'Content-Type'</span>: <span class="str">'application/json'</span> },
+          <span class="var">body</span>: <span class="var">JSON</span>.<span class="fn">stringify</span>({ <span class="var">title</span>: <span class="var">input</span>.<span class="var">value</span> })
+        });
+        <span class="var">input</span>.<span class="var">value</span> = <span class="str">''</span>;
+        <span class="fn">loadTasks</span>();
+      });
+
+    <span class="kw">async function</span> <span class="fn">toggleTask</span>(<span class="var">id</span>, <span class="var">currentStatus</span>) {
+      <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">`/api/tasks/${id}`</span>, {
+        <span class="var">method</span>: <span class="str">'PATCH'</span>,
+        <span class="var">headers</span>: { <span class="str">'Content-Type'</span>: <span class="str">'application/json'</span> },
+        <span class="var">body</span>: <span class="var">JSON</span>.<span class="fn">stringify</span>({
+          <span class="var">status</span>: <span class="var">currentStatus</span> === <span class="str">'done'</span> ? <span class="str">'todo'</span> : <span class="str">'done'</span>
+        })
+      });
+      <span class="fn">loadTasks</span>();
+    }
+
+    <span class="fn">loadTasks</span>();
+  <span class="kw">&lt;/script&gt;</span>
+<span class="kw">&lt;/body&gt;</span>
+<span class="kw">&lt;/html&gt;</span></div>
+    </div>
+
+    <h3>Step 4: Run it</h3>
+    <div class="code-wrapper">
+      <div class="code-block"><span class="comment"># From the task-manager folder:</span>
+<span class="fn">node</span> server.js
+
+<span class="comment"># You should see:</span>
+<span class="str">Server running at http://localhost:3000</span>
+
+<span class="comment"># Open your browser to:</span>
+<span class="str">http://localhost:3000</span></div>
+    </div>
+
+    <h3>Your project structure</h3>
+    <div class="file-tree">
+<span class="folder">task-manager/</span>
+<div class="indent"><span class="highlight">server.js</span> <span class="desc">-- The API server (40 lines)</span></div>
+<div class="indent"><span class="folder">public/</span></div>
+<div class="indent" style="padding-left:48px"><span class="highlight">index.html</span> <span class="desc">-- The UI (70 lines)</span></div>
+<div class="indent"><span class="file">package.json</span> <span class="desc">-- Created by npm init</span></div>
+<div class="indent"><span class="file">node_modules/</span> <span class="desc">-- Dependencies (installed by npm)</span></div>
+<div class="indent"><span class="file">tasks.db</span> <span class="desc">-- Created automatically when the server starts</span></div>
+    </div>
+
+    <div class="analogy">
+      <strong>That's it.</strong> Three files. The database is created automatically by the server. No separate database setup required -- SQLite stores everything in a single <code style="color:var(--accent-green)">tasks.db</code> file. The server serves the HTML, handles the API, and manages the database. The HTML page calls the API and renders the results.
+    </div>
+
+    <button class="next-btn" onclick="goTo(7)">Next: What You Now Know &rarr;</button>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- LESSON 8: What You Now Know -->
+  <!-- ============================================================ -->
+  <div class="lesson" id="lesson7">
+    <h2>What You Now Know</h2>
+    <p class="subtitle">The full stack, from database to browser.</p>
+
+    <p>You've completed all four tutorials. Let's connect everything you've learned.</p>
+
+    <div class="summary-card">
+      <h4><span style="color:var(--accent-indigo)">Tutorial 1:</span> Databases</h4>
+      <p>Tables, rows, columns, primary keys, foreign keys, SQL queries. You learned <em>how data is stored</em>. In this tutorial, you used that knowledge to create the <code style="color:var(--accent-indigo)">tasks</code> table with a primary key, column types, and defaults.</p>
+    </div>
+
+    <div class="summary-card">
+      <h4><span style="color:var(--accent-blue)">Tutorial 2:</span> APIs & HTTP</h4>
+      <p>GET, POST, PATCH, DELETE, status codes, JSON, request/response. You learned <em>how programs talk to each other</em>. In this tutorial, you built three endpoints and called them from the browser using <code style="color:var(--accent-blue)">fetch()</code>.</p>
+    </div>
+
+    <div class="summary-card">
+      <h4><span style="color:var(--accent-green)">Tutorial 3:</span> Codebases</h4>
+      <p>File structure, routes, services, middleware, components. You learned <em>how real software is organized</em>. In this tutorial, you saw how even a 3-file app mirrors Paperclip's architecture.</p>
+    </div>
+
+    <div class="summary-card">
+      <h4><span style="color:var(--accent-yellow)">Tutorial 4:</span> Building</h4>
+      <p>Database + server + UI = a working app. You learned <em>how all the pieces connect</em>. You can now look at any web application and understand its architecture.</p>
+    </div>
+
+    <h3>The mental model</h3>
+    <p>Every web application in the world has three parts. Click each one to review:</p>
+
+    <div class="btn-row">
+      <button class="btn selected" onclick="showSummaryPart('db')" id="sp-db">Database</button>
+      <button class="btn" onclick="showSummaryPart('server')" id="sp-server">Server</button>
+      <button class="btn" onclick="showSummaryPart('ui')" id="sp-ui">UI</button>
+    </div>
+
+    <div id="summary-parts">
+      <div id="summary-db">
+        <div class="detail-box">
+          <div class="label">The Database</div>
+          <p style="color:var(--text-body); margin-bottom:12px"><strong style="color:var(--accent-indigo)">What it does:</strong> Stores data permanently. Tables, rows, columns.</p>
+          <p style="color:var(--text-muted); margin-bottom:12px"><strong style="color:var(--text-primary)">In our app:</strong> A single <code style="color:var(--accent-indigo)">tasks</code> table in SQLite.</p>
+          <p style="color:var(--text-muted); margin-bottom:12px"><strong style="color:var(--text-primary)">In Paperclip:</strong> 50+ tables in PostgreSQL -- agents, issues, costs, approvals, companies, users...</p>
+          <p style="color:var(--text-muted)"><strong style="color:var(--text-primary)">The skill:</strong> Designing schemas, writing queries, understanding relationships between tables.</p>
+        </div>
+      </div>
+      <div id="summary-server" style="display:none">
+        <div class="detail-box">
+          <div class="label">The Server</div>
+          <p style="color:var(--text-body); margin-bottom:12px"><strong style="color:var(--accent-yellow)">What it does:</strong> Sits between the UI and database. Receives requests, runs logic, returns responses.</p>
+          <p style="color:var(--text-muted); margin-bottom:12px"><strong style="color:var(--text-primary)">In our app:</strong> 3 Express endpoints in one file.</p>
+          <p style="color:var(--text-muted); margin-bottom:12px"><strong style="color:var(--text-primary)">In Paperclip:</strong> 43 route files, 130+ service files, middleware for auth and security, WebSocket server for real-time updates, adapter system for 11 agent types.</p>
+          <p style="color:var(--text-muted)"><strong style="color:var(--text-primary)">The skill:</strong> Designing APIs, handling errors, implementing business logic, managing security.</p>
+        </div>
+      </div>
+      <div id="summary-ui" style="display:none">
+        <div class="detail-box">
+          <div class="label">The UI</div>
+          <p style="color:var(--text-body); margin-bottom:12px"><strong style="color:var(--accent-green)">What it does:</strong> Shows data to the user and captures their input. Talks to the server via API calls.</p>
+          <p style="color:var(--text-muted); margin-bottom:12px"><strong style="color:var(--text-primary)">In our app:</strong> One HTML page with inline JavaScript.</p>
+          <p style="color:var(--text-muted); margin-bottom:12px"><strong style="color:var(--text-primary)">In Paperclip:</strong> 726 React components, 70+ pages, real-time WebSocket updates, complex state management.</p>
+          <p style="color:var(--text-muted)"><strong style="color:var(--text-primary)">The skill:</strong> HTML, CSS, JavaScript, component architecture, state management, API integration.</p>
+        </div>
+      </div>
+    </div>
+
+    <h3>What you can do now</h3>
+
+    <ul class="checklist">
+      <li class="checked">Read a database schema and understand what data an app stores</li>
+      <li class="checked">Look at an API endpoint and know what it does</li>
+      <li class="checked">Open a codebase and find where things live</li>
+      <li class="checked">Understand how UI, server, and database connect</li>
+      <li class="checked">Build a working app from scratch</li>
+      <li class="checked">See how a 3-file toy and a 2,000-file product share the same architecture</li>
+    </ul>
+
+    <div class="analogy">
+      <strong>You've gone from zero to understanding the full stack.</strong> Databases store data. APIs let programs communicate. Codebases organize everything into files and folders. And when you wire all three together, you get a working application. Every app, from a weekend project to a company worth billions, is built on these same fundamentals. The only difference is scale.
+    </div>
+
+    <div class="arch-box" style="text-align:center; white-space:normal; font-family:-apple-system,sans-serif; font-size:15px; line-height:1.8; padding:32px;">
+<span style="color:var(--accent-indigo); font-weight:600; font-size:18px">The Full Stack</span>
+
+<span style="color:var(--text-muted)">Database</span> <span style="color:var(--text-faint)">&rarr;</span> <span style="color:var(--text-muted)">Server</span> <span style="color:var(--text-faint)">&rarr;</span> <span style="color:var(--text-muted)">UI</span>
+
+<span style="color:var(--text-faint)">SQL tables</span> <span style="color:var(--border-nav-btn)">|</span> <span style="color:var(--text-faint)">API endpoints</span> <span style="color:var(--border-nav-btn)">|</span> <span style="color:var(--text-faint)">HTML + JavaScript</span>
+
+<span style="color:var(--border-nav-btn)">--------------------------------------------</span>
+
+<span style="color:var(--accent-yellow); font-size:13px">You started with zero knowledge of how software works.</span>
+<span style="color:var(--accent-green); font-size:13px">Now you can read code, understand architecture, and build things.</span>
+<span style="color:var(--accent-blue); font-size:13px">That's a real skill. Go build something.</span>
+    </div>
+
+    <div class="next-course-banner">
+      <h3>Up Next</h3>
+      <p>Continue to Course 05: How Deployment Works — From localhost to a live URL.</p>
+      <a href="/lessons/deployment.html">Start How Deployment Works →</a>
+    </div>
+  </div>
+
+</div>
+
+</div><!-- end content-wrapper -->
+
+<script>
+let current = 0;
+const total = 8;
+
+function goTo(n) {
+  document.getElementById('lesson' + current).classList.remove('active');
+  document.getElementById('nav' + current).classList.remove('active');
+  current = n;
+  document.getElementById('lesson' + current).classList.add('active');
+  document.getElementById('nav' + current).classList.add('active');
+  document.getElementById('progress').textContent = (n + 1) + ' / ' + total;
+  window.scrollTo(0, 0);
+}
+
+// ========================================
+// Lesson 1: Live mockup interactions
+// ========================================
+function addMockupTask() {
+  const input = document.getElementById('mockup-input');
+  const title = input.value.trim();
+  if (!title) return;
+
+  const container = document.getElementById('mockup-tasks');
+  const task = document.createElement('div');
+  task.className = 'mockup-task';
+  task.onclick = function() { toggleMockupTask(this); };
+  task.innerHTML = `
+    <div class="mockup-check"></div>
+    <span class="mockup-task-text">${title}</span>
+    <span class="mockup-task-date">Just now</span>
+  `;
+  container.insertBefore(task, container.firstChild);
+  input.value = '';
+}
+
+function toggleMockupTask(el) {
+  const check = el.querySelector('.mockup-check');
+  const text = el.querySelector('.mockup-task-text');
+  check.classList.toggle('done');
+  text.classList.toggle('done');
+}
+
+// ========================================
+// Lesson 2: Schema line explanation
+// ========================================
+const schemaExplanations = {
+  1: {
+    title: 'CREATE TABLE IF NOT EXISTS tasks (',
+    text: '<strong style="color:var(--accent-purple)">CREATE TABLE</strong> tells the database to make a new table. <strong style="color:var(--accent-purple)">IF NOT EXISTS</strong> means "only create it if it\'s not already there" -- so running this twice won\'t cause an error. <strong style="color:var(--accent-blue)">tasks</strong> is the name we\'re giving the table.'
+  },
+  2: {
+    title: 'id INTEGER PRIMARY KEY AUTOINCREMENT',
+    text: 'The <strong style="color:var(--accent-yellow)">id</strong> column is an integer that serves as the <strong style="color:var(--accent-yellow)">primary key</strong> -- every row gets a unique number. <strong style="color:var(--accent-purple)">AUTOINCREMENT</strong> means the database assigns the next number automatically: 1, 2, 3, 4... Remember primary keys from the database tutorial? Here\'s one in action.'
+  },
+  3: {
+    title: 'title TEXT NOT NULL',
+    text: 'The <strong style="color:var(--text-secondary)">title</strong> column stores text -- the task\'s name. <strong style="color:var(--accent-purple)">NOT NULL</strong> means this field is required. If you try to insert a task without a title, the database will reject it. This is data validation at the database level.'
+  },
+  4: {
+    title: 'status TEXT DEFAULT \'todo\'',
+    text: 'The <strong style="color:var(--text-secondary)">status</strong> column tracks whether a task is "todo" or "done". <strong style="color:var(--accent-purple)">DEFAULT \'todo\'</strong> means if you don\'t specify a status when creating a task, it automatically starts as "todo". You don\'t have to set it manually.'
+  },
+  5: {
+    title: 'created_at TEXT DEFAULT (datetime(\'now\'))',
+    text: 'The <strong style="color:var(--text-secondary)">created_at</strong> column records when the task was created. <strong style="color:var(--accent-blue)">datetime(\'now\')</strong> is an SQLite function that returns the current date and time. So every new task automatically gets timestamped.'
+  },
+  6: {
+    title: ');',
+    text: 'This closes the CREATE TABLE statement. The semicolon marks the end of the SQL command. Our table is defined -- one line for the table name, four lines for columns. That\'s the entire database.'
+  }
+};
+
+document.addEventListener('click', function(e) {
+  const lineEl = e.target.closest('.line-hover');
+  if (!lineEl) return;
+  const line = lineEl.getAttribute('data-line');
+  if (!line || !schemaExplanations[line]) return;
+
+  // Highlight the clicked line
+  document.querySelectorAll('.line-hover').forEach(el => {
+    el.style.background = 'transparent';
+    el.style.borderRadius = '0';
+  });
+  lineEl.style.background = 'var(--bg-highlight-row)';
+  lineEl.style.borderRadius = '4px';
+
+  const info = schemaExplanations[line];
+  document.getElementById('schema-explain').innerHTML =
+    '<div class="label">Line ' + line + '</div>' +
+    '<p style="color:var(--text-body)">' + info.text + '</p>';
+});
+
+// ========================================
+// Lesson 2: Add rows to table
+// ========================================
+const sampleRows = [
+  { id: 1, title: 'Buy groceries', status: 'todo', created_at: '2026-06-17 10:30:00' },
+  { id: 2, title: 'Read database tutorial', status: 'done', created_at: '2026-06-17 11:15:00' },
+  { id: 3, title: 'Build a mini app', status: 'todo', created_at: '2026-06-17 12:00:00' }
+];
+
+let currentRows = 0;
+
+function addSchemaRow(n) {
+  if (n === 0) {
+    currentRows = 0;
+    renderSchemaTable();
+    // Reset button states
+    for (let i = 0; i <= 3; i++) {
+      document.getElementById('add-row-' + i).classList.remove('selected');
+    }
+    document.getElementById('add-row-0').classList.add('selected');
+    return;
+  }
+
+  currentRows = n;
+  renderSchemaTable();
+
+  // Update button states
+  for (let i = 0; i <= 3; i++) {
+    document.getElementById('add-row-' + i).classList.remove('selected');
+  }
+  document.getElementById('add-row-' + n).classList.add('selected');
+}
+
+function renderSchemaTable() {
+  const table = document.getElementById('schema-table');
+  // Keep header row
+  while (table.rows.length > 1) {
+    table.deleteRow(1);
+  }
+
+  if (currentRows === 0) {
+    const row = table.insertRow();
+    const cell = row.insertCell();
+    cell.colSpan = 4;
+    cell.style.textAlign = 'center';
+    cell.style.color = 'var(--text-faint)';
+    cell.style.padding = '20px';
+    cell.textContent = 'No rows yet';
+  } else {
+    for (let i = 0; i < currentRows; i++) {
+      const data = sampleRows[i];
+      const row = table.insertRow();
+      const c1 = row.insertCell(); c1.className = 'pk'; c1.textContent = data.id;
+      const c2 = row.insertCell(); c2.textContent = data.title;
+      const c3 = row.insertCell(); c3.textContent = data.status;
+      c3.style.color = data.status === 'done' ? '#34d399' : '#fbbf24';
+      const c4 = row.insertCell(); c4.textContent = data.created_at;
+    }
+  }
+
+  document.getElementById('row-count').textContent = currentRows + ' row' + (currentRows !== 1 ? 's' : '');
+}
+
+// ========================================
+// Lesson 3: Server steps
+// ========================================
+function showServerStep(name) {
+  const steps = ['setup', 'get', 'post', 'patch', 'listen'];
+  steps.forEach(s => {
+    document.getElementById('step-' + s).style.display = s === name ? 'block' : 'none';
+    document.getElementById('ss-' + s).classList.toggle('selected', s === name);
+  });
+}
+
+// ========================================
+// Lesson 4: UI steps
+// ========================================
+function showUIStep(name) {
+  const steps = ['html', 'fetch', 'render', 'add', 'toggle'];
+  steps.forEach(s => {
+    document.getElementById('ui-' + s).style.display = s === name ? 'block' : 'none';
+    document.getElementById('us-' + s).classList.toggle('selected', s === name);
+  });
+}
+
+// ========================================
+// Lesson 5: Flow steps
+// ========================================
+const flowExplanations = {
+  1: '<strong style="color:var(--accent-purple)">Step 1: The UI makes a request.</strong><br><br>When you click "Add," the JavaScript in index.html calls <code style="color:var(--accent-green)">fetch(\'/api/tasks\', { method: \'POST\', body: JSON.stringify({title: "Buy groceries"}) })</code>. This sends an HTTP POST request to the server with the task title in the body.',
+  2: '<strong style="color:var(--accent-purple)">Step 2: The server receives and processes.</strong><br><br>Express matches the request to the <code style="color:var(--accent-blue)">app.post(\'/api/tasks\')</code> handler. It extracts <code style="color:var(--accent-blue)">req.body.title</code> ("Buy groceries"), validates it\'s not empty, and prepares a SQL query.',
+  3: '<strong style="color:var(--accent-purple)">Step 3: The database stores it.</strong><br><br>The server runs <code style="color:var(--accent-green)">INSERT INTO tasks (title) VALUES (\'Buy groceries\')</code>. The database creates a new row with an auto-generated id, status "todo", and the current timestamp. The data is now permanently saved to disk.',
+  4: '<strong style="color:var(--accent-purple)">Step 4: The server responds.</strong><br><br>The server fetches the newly created row (<code style="color:var(--accent-green)">SELECT * FROM tasks WHERE id = 5</code>) and sends it back to the UI as JSON with HTTP status 201 (created). The response body is: <code style="color:var(--accent-green)">{id: 5, title: "Buy groceries", status: "todo", created_at: "2026-06-17 14:30:00"}</code>.',
+  5: '<strong style="color:var(--accent-purple)">Step 5: The UI refreshes.</strong><br><br>After the POST succeeds, the JavaScript calls <code style="color:var(--accent-blue)">loadTasks()</code>, which fires a second request: <code style="color:var(--accent-green)">GET /api/tasks</code>. The server queries all tasks and returns the full list as JSON. The UI receives the array and rebuilds the entire task list.',
+  6: '<strong style="color:var(--accent-purple)">Step 6: The screen updates.</strong><br><br>The <code style="color:var(--accent-blue)">renderTasks()</code> function converts each task object into an HTML <code style="color:var(--accent-purple)">&lt;li&gt;</code> element. The new task "Buy groceries" appears at the top of the list. The entire round trip -- from click to screen update -- took about 10 milliseconds.'
+};
+
+function showFlowStep(n) {
+  // Update buttons
+  for (let i = 0; i <= 6; i++) {
+    const btn = document.getElementById('fs-' + i);
+    if (btn) btn.classList.toggle('selected', i === n);
+  }
+
+  if (n === 0) {
+    // Show all
+    const ids = ['fd-1','fd-1n','fd-2','fd-2n','fd-3','fd-3n','fd-3n2','fd-4','fd-4n','fd-5','fd-5n','fd-6','fd-6n'];
+    ids.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.opacity = '1';
+    });
+    document.getElementById('flow-explain').innerHTML =
+      '<div class="label">Full request lifecycle</div>' +
+      '<p style="color:var(--text-body)">The complete journey: UI calls server, server queries database, database returns data, server sends response, UI updates the screen. Six steps, three files, one round trip.</p>';
+    return;
+  }
+
+  // Dim all, highlight selected
+  const allIds = ['fd-1','fd-1n','fd-2','fd-2n','fd-3','fd-3n','fd-3n2','fd-4','fd-4n','fd-5','fd-5n','fd-6','fd-6n'];
+  const stepMap = {
+    1: ['fd-1','fd-1n'],
+    2: ['fd-2','fd-2n'],
+    3: ['fd-3','fd-3n','fd-3n2'],
+    4: ['fd-4','fd-4n'],
+    5: ['fd-5','fd-5n'],
+    6: ['fd-6','fd-6n']
+  };
+
+  allIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.opacity = '0.3';
+  });
+  stepMap[n].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.opacity = '1';
+  });
+
+  document.getElementById('flow-explain').innerHTML =
+    '<div class="label">Step ' + n + ' of 6</div>' +
+    '<p style="color:var(--text-body)">' + flowExplanations[n] + '</p>';
+}
+
+// ========================================
+// Lesson 6: Scale sections
+// ========================================
+function showScaleSection(name) {
+  const sections = ['compare', 'growth', 'real'];
+  sections.forEach(s => {
+    document.getElementById('scale-' + s).style.display = s === name ? 'block' : 'none';
+    document.getElementById('sc-' + s).classList.toggle('selected', s === name);
+  });
+}
+
+function showGrowthStage(n) {
+  for (let i = 1; i <= 4; i++) {
+    document.getElementById('growth-' + i).style.display = i === n ? 'block' : 'none';
+    document.getElementById('gs-' + i).classList.toggle('selected', i === n);
+  }
+}
+
+// ========================================
+// Lesson 8: Summary parts
+// ========================================
+function showSummaryPart(name) {
+  const parts = ['db', 'server', 'ui'];
+  parts.forEach(p => {
+    document.getElementById('summary-' + p).style.display = p === name ? 'block' : 'none';
+    document.getElementById('sp-' + p).classList.toggle('selected', p === name);
+  });
+}
+
+
+</script>
+
+<script src="/js/shared.js"></script>
+
+</body>
+</html>

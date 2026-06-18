@@ -1,0 +1,2497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How Deployment Works — The Fundamentals</title>
+<link rel="stylesheet" href="/css/shared.css">
+<style>
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  line-height: 1.7;
+  min-height: 100vh;
+}
+
+/* ===== TOP NAV ===== */
+.top-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-primary);
+  z-index: 1000;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+}
+
+@media (min-width: 1024px) {
+  .top-nav { left: 280px; }
+}
+
+.top-nav .nav-title {
+  font-weight: 700;
+  font-size: 14px;
+  color: #3b82f6;
+  white-space: nowrap;
+  margin-right: 8px;
+}
+
+.top-nav button {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-nav-btn);
+  color: var(--text-secondary);
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+
+.top-nav button:hover {
+  background: #252525;
+  border-color: var(--text-faint);
+}
+
+.top-nav button.active {
+  background: var(--accent-blue-bg);
+  border-color: var(--accent-blue-bg);
+  color: var(--text-primary);
+}
+
+/* ===== CONTAINER ===== */
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 80px 24px 60px;
+}
+
+/* ===== LESSON ===== */
+.lesson {
+  display: none;
+}
+
+.lesson.active {
+  display: block;
+}
+
+.lesson h1 {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+}
+
+.lesson .subtitle {
+  font-size: 16px;
+  color: var(--text-muted);
+  margin-bottom: 32px;
+}
+
+.lesson h2 {
+  font-size: 22px;
+  font-weight: 600;
+  margin-top: 36px;
+  margin-bottom: 14px;
+  color: var(--text-secondary);
+}
+
+.lesson h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin-top: 28px;
+  margin-bottom: 10px;
+  color: #d0d0d0;
+}
+
+.lesson p {
+  margin-bottom: 16px;
+  font-size: 15.5px;
+  color: var(--text-body);
+}
+
+/* ===== CARDS ===== */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-secondary);
+  border-radius: 10px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.card-dark {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+/* ===== ANALOGY BOX ===== */
+.analogy {
+  background: var(--bg-analogy);
+  border: 1px solid var(--border-analogy);
+  border-radius: 10px;
+  padding: 20px 24px;
+  margin: 20px 0;
+}
+
+.analogy strong {
+  color: var(--accent-indigo);
+}
+
+.analogy p {
+  color: #c0c0d8;
+  margin-bottom: 0;
+}
+
+.analogy .analogy-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--accent-indigo);
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+/* ===== CODE BLOCKS ===== */
+.code-block {
+  background: var(--bg-code);
+  border: 1px solid var(--border-secondary);
+  border-radius: 8px;
+  padding: 18px 20px;
+  margin: 16px 0;
+  overflow-x: auto;
+  font-family: 'SF Mono', Monaco, monospace;
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+.code-block .kw { color: var(--accent-purple); }
+.code-block .fn { color: var(--accent-blue); }
+.code-block .str { color: var(--accent-green); }
+.code-block .typ { color: var(--accent-yellow); }
+.code-block .cm { color: var(--text-faint); }
+.code-block .op { color: var(--text-secondary); }
+.code-block .num { color: var(--accent-pink); }
+
+/* ===== INTERACTIVE BUTTON ROW ===== */
+.btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.btn-row button {
+  background: var(--bg-btn);
+  border: 1px solid var(--border-btn);
+  color: var(--text-secondary);
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+
+.btn-row button:hover {
+  background: #263548;
+  border-color: #4a6a8a;
+}
+
+.btn-row button.selected {
+  background: var(--bg-btn-selected);
+  border-color: var(--border-btn-selected);
+  color: #93c5fd;
+}
+
+/* ===== NEXT BUTTON ===== */
+.next-btn {
+  display: inline-block;
+  background: var(--accent-blue-bg);
+  color: var(--text-primary);
+  border: none;
+  padding: 12px 32px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 36px;
+  font-family: inherit;
+  transition: background 0.2s;
+}
+
+.next-btn:hover {
+  background: #1d4ed8;
+}
+
+/* ===== COMPARISON GRID ===== */
+.compare-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 20px 0;
+}
+
+@media (max-width: 640px) {
+  .compare-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.compare-col {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.compare-col h4 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--text-secondary);
+}
+
+.compare-col ul {
+  list-style: none;
+  padding: 0;
+}
+
+.compare-col ul li {
+  padding: 6px 0;
+  font-size: 14px;
+  color: var(--text-dim);
+  border-bottom: 1px solid var(--bg-tertiary);
+}
+
+.compare-col ul li:last-child {
+  border-bottom: none;
+}
+
+.compare-col.good { border-color: #22c55e33; }
+.compare-col.good h4 { color: #4ade80; }
+.compare-col.bad { border-color: #ef444433; }
+.compare-col.bad h4 { color: #f87171; }
+
+/* ===== TIMELINE / FLOW ===== */
+.flow-container {
+  margin: 24px 0;
+}
+
+.flow-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 0;
+  position: relative;
+  padding-bottom: 24px;
+}
+
+.flow-step:last-child {
+  padding-bottom: 0;
+}
+
+.flow-step::before {
+  content: '';
+  position: absolute;
+  left: 19px;
+  top: 40px;
+  bottom: 0;
+  width: 2px;
+  background: var(--border-secondary);
+}
+
+.flow-step:last-child::before {
+  display: none;
+}
+
+.flow-dot {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--bg-btn);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  color: #3b82f6;
+  flex-shrink: 0;
+  border: 2px solid var(--border-btn);
+  transition: all 0.4s;
+  position: relative;
+  z-index: 1;
+}
+
+.flow-dot.active {
+  background: var(--bg-btn-selected);
+  border-color: #3b82f6;
+  color: #93c5fd;
+}
+
+.flow-dot.done {
+  background: #14532d;
+  border-color: #22c55e;
+  color: #4ade80;
+}
+
+.flow-content {
+  flex: 1;
+  padding-top: 6px;
+}
+
+.flow-content h4 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.flow-content p {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 0;
+}
+
+/* ===== INTERACTIVE DIAGRAM ===== */
+.diagram-box {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  padding: 24px;
+  margin: 20px 0;
+  text-align: center;
+}
+
+.diagram-arrow {
+  font-size: 24px;
+  color: #3b82f6;
+  margin: 12px 0;
+}
+
+.diagram-node {
+  display: inline-block;
+  background: var(--bg-btn);
+  border: 1px solid var(--border-btn);
+  border-radius: 8px;
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  transition: all 0.3s;
+}
+
+.diagram-node.highlight {
+  background: var(--bg-btn-selected);
+  border-color: #3b82f6;
+  color: #93c5fd;
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
+}
+
+/* ===== REVEAL SECTION ===== */
+.reveal-trigger {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-nav-btn);
+  border-radius: 8px;
+  padding: 14px 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 12px 0;
+  transition: all 0.2s;
+}
+
+.reveal-trigger:hover {
+  background: var(--border-primary);
+  border-color: #444;
+}
+
+.reveal-trigger span {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.reveal-trigger .arrow {
+  transition: transform 0.3s;
+  font-size: 12px;
+  color: #666;
+}
+
+.reveal-trigger.open .arrow {
+  transform: rotate(90deg);
+}
+
+.reveal-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease;
+}
+
+.reveal-content.open {
+  max-height: 2000px;
+}
+
+.reveal-inner {
+  padding: 16px 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-secondary);
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  margin-top: -8px;
+  margin-bottom: 12px;
+}
+
+/* ===== WORLD MAP ===== */
+.world-map {
+  position: relative;
+  width: 100%;
+  height: 320px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-secondary);
+  border-radius: 10px;
+  margin: 20px 0;
+  overflow: hidden;
+}
+
+.map-dot {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--border-btn);
+  transform: translate(-50%, -50%);
+  transition: all 0.4s;
+  cursor: pointer;
+}
+
+.map-dot.active {
+  background: #3b82f6;
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.6), 0 0 24px rgba(59, 130, 246, 0.3);
+  width: 14px;
+  height: 14px;
+}
+
+.map-dot .map-label {
+  position: absolute;
+  top: -24px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+
+.map-dot.active .map-label {
+  opacity: 1;
+  color: #93c5fd;
+}
+
+.map-dot:hover .map-label {
+  opacity: 1;
+}
+
+.map-user {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #22c55e;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.5);
+  z-index: 2;
+  transition: all 0.6s ease;
+}
+
+.map-user .map-label {
+  position: absolute;
+  top: -24px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  color: #4ade80;
+  white-space: nowrap;
+}
+
+.map-line {
+  position: absolute;
+  height: 2px;
+  background: linear-gradient(90deg, #22c55e, #3b82f6);
+  transform-origin: left center;
+  opacity: 0;
+  transition: opacity 0.4s;
+  z-index: 1;
+}
+
+.map-line.visible {
+  opacity: 0.6;
+}
+
+.map-legend {
+  position: absolute;
+  bottom: 12px;
+  left: 16px;
+  display: flex;
+  gap: 16px;
+  font-size: 11px;
+  color: #666;
+}
+
+.map-legend span::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
+.map-legend .edge::before { background: #3b82f6; }
+.map-legend .user::before { background: #22c55e; }
+
+/* ===== ENV TABLE ===== */
+.env-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+}
+
+.env-table th, .env-table td {
+  text-align: left;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border-secondary);
+  font-size: 14px;
+}
+
+.env-table th {
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.env-table td {
+  color: var(--text-body);
+}
+
+.env-table tr:last-child td {
+  border-bottom: none;
+}
+
+.env-table .env-dev { color: var(--accent-yellow); }
+.env-table .env-staging { color: var(--accent-orange); }
+.env-table .env-prod { color: #22c55e; }
+
+/* ===== ANIMATION CLASSES ===== */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-in {
+  animation: slideDown 0.3s ease;
+}
+
+.pulse {
+  animation: pulse 2s infinite;
+}
+
+/* ===== PROGRESS BAR ===== */
+.progress-bar-container {
+  width: 100%;
+  height: 4px;
+  background: var(--bg-tertiary);
+  position: fixed;
+  top: 48px;
+  left: 0;
+  z-index: 999;
+}
+
+@media (min-width: 1024px) {
+  .progress-bar-container { left: 280px; }
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #2563eb, #7c3aed);
+  transition: width 0.4s ease;
+  border-radius: 0 2px 2px 0;
+}
+
+/* ===== DEPLOY SIMULATOR ===== */
+.deploy-sim {
+  background: var(--bg-code);
+  border: 1px solid var(--border-secondary);
+  border-radius: 10px;
+  padding: 20px;
+  margin: 20px 0;
+  font-family: 'SF Mono', Monaco, monospace;
+  font-size: 13px;
+}
+
+.deploy-sim .sim-line {
+  padding: 3px 0;
+  opacity: 0;
+  transition: opacity 0.3s;
+  color: var(--text-muted);
+}
+
+.deploy-sim .sim-line.visible {
+  opacity: 1;
+}
+
+.deploy-sim .sim-line .sim-ok { color: #4ade80; }
+.deploy-sim .sim-line .sim-info { color: #3b82f6; }
+.deploy-sim .sim-line .sim-warn { color: var(--accent-yellow); }
+.deploy-sim .sim-line .sim-url { color: var(--accent-purple); text-decoration: underline; }
+
+.sim-btn {
+  background: var(--accent-blue-bg);
+  color: var(--text-primary);
+  border: none;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.2s;
+  margin-top: 12px;
+}
+
+.sim-btn:hover { background: #1d4ed8; }
+.sim-btn:disabled { background: var(--border-nav-btn); cursor: not-allowed; color: #666; }
+
+/* ===== TABS ===== */
+.tab-row {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border-primary);
+  margin-bottom: 20px;
+}
+
+.tab-btn {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted);
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+
+.tab-btn:hover { color: var(--text-body); }
+
+.tab-btn.active {
+  color: #3b82f6;
+  border-bottom-color: #3b82f6;
+}
+
+.tab-pane {
+  display: none;
+}
+
+.tab-pane.active {
+  display: block;
+  animation: slideDown 0.3s ease;
+}
+
+/* ===== DNS LOOKUP SIM ===== */
+.dns-input-row {
+  display: flex;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.dns-input {
+  flex: 1;
+  background: var(--bg-code);
+  border: 1px solid var(--border-btn);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: var(--text-secondary);
+  font-family: 'SF Mono', Monaco, monospace;
+  font-size: 14px;
+  outline: none;
+}
+
+.dns-input:focus {
+  border-color: #3b82f6;
+}
+
+/* ===== INLINE BADGES ===== */
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'SF Mono', Monaco, monospace;
+}
+
+.badge-blue { background: #1e3a5f; color: #93c5fd; }
+.badge-green { background: #14532d; color: #4ade80; }
+.badge-yellow { background: #422006; color: var(--accent-yellow); }
+.badge-purple { background: #2e1065; color: var(--accent-purple); }
+
+/* ===== JOURNEY PIPELINE ===== */
+.pipeline {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  overflow-x: auto;
+  padding: 16px 0;
+  margin: 20px 0;
+}
+
+.pipeline-stage {
+  background: var(--bg-btn);
+  border: 1px solid var(--border-btn);
+  border-radius: 8px;
+  padding: 14px 16px;
+  min-width: 120px;
+  text-align: center;
+  flex-shrink: 0;
+  transition: all 0.4s;
+}
+
+.pipeline-stage h5 {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.pipeline-stage p {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.pipeline-stage.lit {
+  background: var(--bg-btn-selected);
+  border-color: #3b82f6;
+}
+
+.pipeline-stage.lit h5 { color: #93c5fd; }
+.pipeline-stage.lit p { color: var(--text-primary); }
+
+.pipeline-arrow {
+  font-size: 18px;
+  color: var(--border-btn);
+  padding: 0 6px;
+  flex-shrink: 0;
+  transition: color 0.4s;
+}
+
+.pipeline-arrow.lit {
+  color: #3b82f6;
+}
+
+/* ===== MISC ===== */
+.spacer { height: 20px; }
+.text-blue { color: #3b82f6; }
+.text-green { color: #4ade80; }
+.text-yellow { color: var(--accent-yellow); }
+.text-purple { color: var(--accent-purple); }
+.text-dim { color: #666; }
+.text-sm { font-size: 13px; }
+.mt-2 { margin-top: 16px; }
+.mb-2 { margin-bottom: 16px; }
+
+.icon-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 12px 0;
+}
+
+.icon-circle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.highlight-box {
+  background: var(--bg-secondary);
+  border-left: 3px solid #3b82f6;
+  padding: 14px 18px;
+  margin: 16px 0;
+  border-radius: 0 8px 8px 0;
+  font-size: 14px;
+  color: var(--text-tertiary);
+}
+
+/* ===== BUILD ANIMATION ===== */
+.build-visual {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 16px;
+  align-items: center;
+  margin: 24px 0;
+}
+
+.build-col {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.build-col h5 {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: var(--text-muted);
+}
+
+.build-col .file-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 13px;
+  font-family: 'SF Mono', Monaco, monospace;
+  color: var(--text-dim);
+}
+
+.build-arrow-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.build-gear {
+  font-size: 28px;
+  transition: transform 0.5s;
+}
+
+.build-gear.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 640px) {
+  .build-visual {
+    grid-template-columns: 1fr;
+  }
+  .build-arrow-col {
+    flex-direction: row;
+    justify-content: center;
+  }
+}
+
+.breadcrumb { margin-top: 64px; padding-top: 8px; }
+
+.next-course-banner { background: var(--bg-secondary); border: 1px solid var(--border-primary); border-radius: 10px; padding: 24px; margin-top: 32px; text-align: center; }
+.next-course-banner h3 { color: var(--text-primary); margin: 0 0 8px; font-size: 18px; }
+.next-course-banner p { color: var(--text-muted); font-size: 15px; margin: 0 0 16px; }
+.next-course-banner a { display: inline-block; background: var(--accent-blue-bg); color: var(--text-primary); padding: 10px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px; transition: background 0.2s; }
+.next-course-banner a:hover { background: #3b82f6; }
+</style>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <a href="/index.html" class="sidebar-logo">The Fundamentals</a>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="sidebar-section-title">Courses</div>
+    <a href="/lessons/databases.html" class="sidebar-link" data-course="databases">
+      <span class="sidebar-num">01</span> How Databases Work
+    </a>
+    <a href="/lessons/codebase.html" class="sidebar-link" data-course="codebase">
+      <span class="sidebar-num">02</span> The Codebase
+    </a>
+    <a href="/lessons/apis.html" class="sidebar-link" data-course="apis">
+      <span class="sidebar-num">03</span> APIs &amp; HTTP
+    </a>
+    <a href="/lessons/build.html" class="sidebar-link" data-course="build">
+      <span class="sidebar-num">04</span> Build a Mini App
+    </a>
+    <a href="/lessons/deployment.html" class="sidebar-link" data-course="deployment" aria-current="page">
+      <span class="sidebar-num">05</span> How Deployment Works
+    </a>
+    <a href="/lessons/git.html" class="sidebar-link" data-course="git">
+      <span class="sidebar-num">06</span> How Git Works
+    </a>
+  </nav>
+      <a href="/lessons/authentication.html" class="sidebar-link" data-course="authentication">
+        <span class="sidebar-num">07</span> How Auth Works
+      </a>
+      <a href="/lessons/typescript.html" class="sidebar-link" data-course="typescript">
+        <span class="sidebar-num">08</span> How TypeScript Works
+      </a>
+      <a href="/lessons/react.html" class="sidebar-link" data-course="react">
+        <span class="sidebar-num">09</span> How React Works
+      </a>
+      <a href="/lessons/testing.html" class="sidebar-link" data-course="testing">
+        <span class="sidebar-num">10</span> How Testing Works
+      </a>
+      <a href="/lessons/ai-agents.html" class="sidebar-link" data-course="ai-agents">
+        <span class="sidebar-num">11</span> How AI Agents Work
+      </a>
+      <a href="/lessons/shipping.html" class="sidebar-link" data-course="shipping">
+        <span class="sidebar-num">12</span> How to Ship a Product
+      </a>
+  <div class="sidebar-footer">
+    <button class="theme-toggle" id="theme-toggle">
+      <span class="theme-icon" id="theme-icon">☀️</span>
+      <span class="theme-label" id="theme-label">Light Mode</span>
+    </button>
+  </div>
+</aside>
+<button class="sidebar-toggle" id="sidebar-toggle">☰</button>
+
+<div class="content-wrapper">
+
+<div class="breadcrumb"><a href="/index.html">Home</a><span class="sep">›</span><span>How Deployment Works</span></div>
+
+<!-- ===== TOP NAV ===== -->
+<nav class="top-nav" id="topNav">
+  <span class="nav-title">Deployment</span>
+</nav>
+<div class="progress-bar-container">
+  <div class="progress-bar" id="progressBar" style="width: 12.5%"></div>
+</div>
+
+<!-- ===== CONTAINER ===== -->
+<div class="container">
+
+<!-- ============================================================ -->
+<!-- LESSON 1: localhost vs The World -->
+<!-- ============================================================ -->
+<div class="lesson active" id="lesson-1">
+  <h1>localhost vs The World</h1>
+  <p class="subtitle">Lesson 1 of 8 &mdash; Why nobody else can see your app (yet)</p>
+
+  <p>When you ran <span class="badge badge-purple">pnpm dev</span> for Paperclip and opened <span class="badge badge-blue">localhost:3100</span> in your browser, you saw your app working. That felt like magic. But here is the thing: <strong style="color:var(--text-primary)">nobody else can see it.</strong></p>
+
+  <p>Try sending that link to a friend. Go ahead, text them "localhost:3100." They will get nothing. A blank page. An error. Why?</p>
+
+  <div class="card">
+    <h3>What is "localhost"?</h3>
+    <p><span class="badge badge-blue">localhost</span> is a special name that means <strong style="color:var(--text-primary)">"this computer, right here."</strong> Every computer has it. When your browser goes to localhost:3100, it is talking to software running on your own machine. It never touches the internet.</p>
+    <p>It is like talking to yourself. Useful for practice, but nobody else hears you.</p>
+  </div>
+
+  <div class="analogy">
+    <div class="analogy-label">Analogy</div>
+    <p><strong>localhost = cooking dinner at home.</strong> You can eat it. Your family at the table can eat it. But nobody walking down the street can taste your food. <strong>Deployment = opening a restaurant.</strong> Now anyone with the address can walk in and eat. That is what we are learning to do.</p>
+  </div>
+
+  <h2>What does "deployment" actually mean?</h2>
+  <p>Deployment is the process of taking code from your computer and putting it on a server that anyone in the world can reach. That is it. The whole concept in one sentence.</p>
+
+  <div class="btn-row">
+    <button onclick="revealDeployDiff(this, 'local')" class="selected">localhost (your laptop)</button>
+    <button onclick="revealDeployDiff(this, 'deployed')">Deployed (a server)</button>
+  </div>
+
+  <div id="deploy-diff-local" class="card animate-in">
+    <div class="icon-row">
+      <div class="icon-circle" style="background:var(--bg-btn);">&#128187;</div>
+      <div>
+        <strong style="color:var(--text-primary)">Your Laptop</strong>
+        <p class="text-sm text-dim" style="margin:0">Only you can access it. Turns off when you close the lid.</p>
+      </div>
+    </div>
+    <div class="code-block">
+      <span class="cm">$ pnpm dev</span><br>
+      <span class="fn">ready</span> - started server on <span class="str">localhost:3100</span><br>
+      <span class="cm"># only YOUR browser can open this</span>
+    </div>
+    <p class="text-sm" style="color:var(--text-muted)">URL: <span class="badge badge-yellow">http://localhost:3100</span> &mdash; works on your machine only</p>
+  </div>
+
+  <div id="deploy-diff-deployed" class="card animate-in" style="display:none;">
+    <div class="icon-row">
+      <div class="icon-circle" style="background:#14532d;">&#127758;</div>
+      <div>
+        <strong style="color:var(--text-primary)">A Server (Vercel)</strong>
+        <p class="text-sm text-dim" style="margin:0">Anyone on earth can access it. Runs 24/7. Never sleeps.</p>
+      </div>
+    </div>
+    <div class="code-block">
+      <span class="cm">$ vercel deploy</span><br>
+      <span class="fn">Deploying...</span><br>
+      <span class="sim-ok">Ready!</span> <span class="str">https://paperclip-abc123.vercel.app</span><br>
+      <span class="cm"># anyone with this URL can open it</span>
+    </div>
+    <p class="text-sm" style="color:var(--text-muted)">URL: <span class="badge badge-green">https://paperclip-abc123.vercel.app</span> &mdash; works for everyone, everywhere</p>
+  </div>
+
+  <h2>The gap we need to bridge</h2>
+  <p>Right now your Paperclip code lives on your laptop. By the end of this tutorial, you will understand every step between "code on your laptop" and "app anyone can visit." Click through each question below.</p>
+
+  <div class="reveal-trigger" onclick="toggleReveal(this)">
+    <span>Where does the code go?</span>
+    <span class="arrow">&#9654;</span>
+  </div>
+  <div class="reveal-content">
+    <div class="reveal-inner">
+      <p>Your code gets uploaded to a server in the cloud &mdash; a computer in a data center run by a company like Vercel. We will cover this in Lesson 4.</p>
+    </div>
+  </div>
+
+  <div class="reveal-trigger" onclick="toggleReveal(this)">
+    <span>How does the code run there?</span>
+    <span class="arrow">&#9654;</span>
+  </div>
+  <div class="reveal-content">
+    <div class="reveal-inner">
+      <p>The server runs a "build" step (compiling, bundling) and then serves the output. Think of it like <span class="badge badge-purple">pnpm dev</span> but for production. Lesson 3 covers this.</p>
+    </div>
+  </div>
+
+  <div class="reveal-trigger" onclick="toggleReveal(this)">
+    <span>How does someone find it?</span>
+    <span class="arrow">&#9654;</span>
+  </div>
+  <div class="reveal-content">
+    <div class="reveal-inner">
+      <p>Through a URL and DNS &mdash; the system that turns names like "google.com" into the actual address of the server. Lesson 5 dives deep into this.</p>
+    </div>
+  </div>
+
+  <button class="next-btn" onclick="goToLesson(2)">Next: What is a Server? &#8594;</button>
+</div>
+
+<!-- ============================================================ -->
+<!-- LESSON 2: What is a Server? -->
+<!-- ============================================================ -->
+<div class="lesson" id="lesson-2">
+  <h1>What is a Server?</h1>
+  <p class="subtitle">Lesson 2 of 8 &mdash; Just a computer that never sleeps</p>
+
+  <p>The word "server" sounds fancy and technical. It is not. <strong style="color:var(--text-primary)">A server is just a computer that serves things to other computers.</strong> When you go to google.com, your browser (the "client") asks Google's server for the webpage, and the server sends it back.</p>
+
+  <p>Your laptop could technically be a server. But it would be a terrible one. Here is why:</p>
+
+  <div class="compare-grid">
+    <div class="compare-col bad">
+      <h4>&#128187; Your Laptop as a Server</h4>
+      <ul>
+        <li>&#10060; Turns off when you close the lid</li>
+        <li>&#10060; Disconnects when you leave WiFi</li>
+        <li>&#10060; IP address changes every network</li>
+        <li>&#10060; Firewall blocks incoming requests</li>
+        <li>&#10060; Gets slow when you open Photoshop</li>
+        <li>&#10060; One user overloads it</li>
+      </ul>
+    </div>
+    <div class="compare-col good">
+      <h4>&#9729;&#65039; Cloud Server (Vercel, AWS)</h4>
+      <ul>
+        <li>&#10004; Runs 24 hours, 365 days a year</li>
+        <li>&#10004; Connected to high-speed backbone</li>
+        <li>&#10004; Fixed public IP address</li>
+        <li>&#10004; Configured to accept all requests</li>
+        <li>&#10004; Dedicated to serving your app</li>
+        <li>&#10004; Scales to handle thousands of users</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="analogy">
+    <div class="analogy-label">Analogy</div>
+    <p><strong>Your laptop is like your home kitchen.</strong> You can cook there, but it is not set up for 200 guests. <strong>A cloud server is like a commercial kitchen in a restaurant.</strong> It is built to handle volume, it is always open, and it has a fixed address people can find.</p>
+  </div>
+
+  <h2>What does a server actually do?</h2>
+  <p>Click each role to learn more:</p>
+
+  <div class="btn-row" id="server-roles-btns">
+    <button onclick="showServerRole('listen')" class="selected">Listens</button>
+    <button onclick="showServerRole('process')">Processes</button>
+    <button onclick="showServerRole('respond')">Responds</button>
+    <button onclick="showServerRole('store')">Stores</button>
+  </div>
+
+  <div id="server-role-listen" class="card animate-in">
+    <h3>1. It listens for requests</h3>
+    <p>A server sits and waits. It has a port open (like port 3100 in your Paperclip app, or port 443 for HTTPS). When someone types your URL, the request arrives at that port.</p>
+    <div class="code-block">
+      <span class="cm">// Your Paperclip server does this under the hood:</span><br>
+      <span class="kw">const</span> server = <span class="fn">createServer</span>(app);<br>
+      server.<span class="fn">listen</span>(<span class="num">3100</span>, () <span class="kw">=&gt;</span> {<br>
+      &nbsp;&nbsp;<span class="fn">console</span>.<span class="fn">log</span>(<span class="str">'Listening on port 3100'</span>);<br>
+      });
+    </div>
+  </div>
+
+  <div id="server-role-process" class="card animate-in" style="display:none;">
+    <h3>2. It processes the request</h3>
+    <p>When a request comes in, the server figures out what is being asked for. "They want the homepage? The API for paperclips? An image?" It runs your code to generate the right response.</p>
+    <div class="code-block">
+      <span class="cm">// Request comes in: GET /api/paperclips</span><br>
+      <span class="kw">if</span> (path === <span class="str">'/api/paperclips'</span>) {<br>
+      &nbsp;&nbsp;<span class="kw">const</span> clips = <span class="kw">await</span> db.<span class="fn">query</span>(<span class="str">'SELECT * FROM paperclips'</span>);<br>
+      &nbsp;&nbsp;<span class="cm">// got the data, now respond...</span><br>
+      }
+    </div>
+  </div>
+
+  <div id="server-role-respond" class="card animate-in" style="display:none;">
+    <h3>3. It sends a response</h3>
+    <p>The server sends back HTML, JSON, images, or whatever was requested. Your browser takes that response and renders it on screen. The whole trip &mdash; request to response &mdash; takes milliseconds.</p>
+    <div class="code-block">
+      <span class="cm">// Server sends back JSON:</span><br>
+      <span class="fn">res</span>.<span class="fn">json</span>({<br>
+      &nbsp;&nbsp;<span class="str">paperclips</span>: [<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;{ <span class="str">id</span>: <span class="num">1</span>, <span class="str">name</span>: <span class="str">"Standard Silver"</span>, <span class="str">count</span>: <span class="num">42</span> }<br>
+      &nbsp;&nbsp;]<br>
+      });
+    </div>
+  </div>
+
+  <div id="server-role-store" class="card animate-in" style="display:none;">
+    <h3>4. It stores data</h3>
+    <p>Servers often connect to a database (like the SQLite database in your Paperclip app). The database lives on the server too (or on another specialized server). This is where your paperclip inventory persists, even when users close their browsers.</p>
+    <div class="code-block">
+      <span class="cm">// The database file on your server:</span><br>
+      <span class="str">/data/paperclip.db</span> &larr; <span class="cm">SQLite file</span><br><br>
+      <span class="cm">// In production, often a managed database:</span><br>
+      <span class="str">postgres://db.vercel.com:5432/paperclip</span>
+    </div>
+  </div>
+
+  <h2>Cloud providers: renting a server</h2>
+  <p>You do not need to buy a physical server. Cloud providers rent them to you. Here are the big ones:</p>
+
+  <div class="card-dark">
+    <table class="env-table">
+      <thead>
+        <tr>
+          <th>Provider</th>
+          <th>What they give you</th>
+          <th>Best for</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong style="color:var(--text-primary)">Vercel</strong></td>
+          <td>Deploys your frontend + API routes automatically</td>
+          <td class="env-dev">What you are using</td>
+        </tr>
+        <tr>
+          <td><strong style="color:var(--text-primary)">AWS</strong></td>
+          <td>Raw servers, databases, storage &mdash; everything</td>
+          <td>Big companies, full control</td>
+        </tr>
+        <tr>
+          <td><strong style="color:var(--text-primary)">Google Cloud</strong></td>
+          <td>Similar to AWS, plus AI/ML tools</td>
+          <td>Data-heavy apps</td>
+        </tr>
+        <tr>
+          <td><strong style="color:var(--text-primary)">Netlify</strong></td>
+          <td>Similar to Vercel, great for static sites</td>
+          <td>Blogs, portfolios</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="highlight-box">
+    <strong style="color:#3b82f6">For Paperclip:</strong> You have Vercel installed and logged in as <span class="badge badge-blue">jared-2093</span>. Vercel handles the server part so you do not have to think about it. You push code, Vercel runs it.
+  </div>
+
+  <button class="next-btn" onclick="goToLesson(3)">Next: The Build Step &#8594;</button>
+</div>
+
+<!-- ============================================================ -->
+<!-- LESSON 3: The Build Step -->
+<!-- ============================================================ -->
+<div class="lesson" id="lesson-3">
+  <h1>The Build Step</h1>
+  <p class="subtitle">Lesson 3 of 8 &mdash; Turning raw code into something fast</p>
+
+  <p>Here is something that surprises people: the code you write is <strong style="color:var(--text-primary)">not</strong> the code that gets deployed. Not exactly. Your source code goes through a <strong style="color:var(--text-primary)">build step</strong> first &mdash; a process that transforms it into optimized, production-ready code.</p>
+
+  <div class="analogy">
+    <div class="analogy-label">Analogy</div>
+    <p><strong>Raw ingredients are not the finished dish.</strong> You have flour, eggs, sugar, and butter. The build step is the baking. What comes out of the oven is a cake &mdash; smaller, combined, and ready to eat. You would not serve someone raw flour.</p>
+  </div>
+
+  <h2>What happens during a build?</h2>
+  <p>Click "Run Build" to watch the transformation:</p>
+
+  <div class="build-visual">
+    <div class="build-col" id="build-before">
+      <h5 style="color:var(--accent-yellow);">Source Code (before)</h5>
+      <div class="file-item"><span style="color:#3b82f6">&#128196;</span> index.tsx &mdash; <span class="text-dim">4.2 KB</span></div>
+      <div class="file-item"><span style="color:#3b82f6">&#128196;</span> App.tsx &mdash; <span class="text-dim">8.1 KB</span></div>
+      <div class="file-item"><span style="color:var(--accent-purple)">&#128196;</span> api/route.ts &mdash; <span class="text-dim">3.4 KB</span></div>
+      <div class="file-item"><span style="color:#22c55e">&#128196;</span> styles.css &mdash; <span class="text-dim">6.8 KB</span></div>
+      <div class="file-item"><span style="color:var(--accent-orange)">&#128196;</span> utils.ts &mdash; <span class="text-dim">2.1 KB</span></div>
+      <div class="file-item"><span style="color:#f87171">&#128196;</span> logo.svg &mdash; <span class="text-dim">12 KB</span></div>
+      <div class="file-item"><span style="color:var(--text-muted)">&#128193;</span> node_modules/ &mdash; <span class="text-dim">180 MB</span></div>
+      <div class="file-item" style="margin-top:8px;font-weight:600;color:var(--accent-yellow);">Total: ~180 MB</div>
+    </div>
+    <div class="build-arrow-col">
+      <div class="build-gear" id="buildGear">&#9881;&#65039;</div>
+      <div style="color:#3b82f6;font-size:24px;">&#8594;</div>
+      <button class="sim-btn" id="buildBtn" onclick="runBuildAnimation()">Run Build</button>
+    </div>
+    <div class="build-col" id="build-after" style="opacity:0.3;">
+      <h5 style="color:#4ade80;">Build Output (after)</h5>
+      <div class="file-item"><span style="color:#4ade80">&#128196;</span> index.js &mdash; <span class="text-dim">1.8 KB</span></div>
+      <div class="file-item"><span style="color:#4ade80">&#128196;</span> chunk-a3f2.js &mdash; <span class="text-dim">42 KB</span></div>
+      <div class="file-item"><span style="color:#4ade80">&#128196;</span> styles.min.css &mdash; <span class="text-dim">1.2 KB</span></div>
+      <div class="file-item"><span style="color:#4ade80">&#128196;</span> logo.opt.svg &mdash; <span class="text-dim">3 KB</span></div>
+      <div class="file-item" style="margin-top:8px;font-weight:600;color:#4ade80;">Total: ~48 KB</div>
+    </div>
+  </div>
+
+  <div id="build-result" class="card" style="display:none;">
+    <p style="margin-bottom:8px;"><strong style="color:#4ade80;">Build complete.</strong> Look at those numbers:</p>
+    <p style="margin-bottom:4px;">Source: <span class="badge badge-yellow">~180 MB</span> (includes all of node_modules)</p>
+    <p style="margin-bottom:4px;">Output: <span class="badge badge-green">~48 KB</span> (just what the browser needs)</p>
+    <p style="margin-bottom:0;">That is a <strong style="color:var(--text-primary)">99.97% reduction.</strong> The build step only keeps what your app actually uses.</p>
+  </div>
+
+  <h2>What the build step does</h2>
+  <p>Click each task to see what it means:</p>
+
+  <div class="reveal-trigger" onclick="toggleReveal(this)">
+    <span><span class="badge badge-purple">TypeScript</span> &#8594; JavaScript</span>
+    <span class="arrow">&#9654;</span>
+  </div>
+  <div class="reveal-content">
+    <div class="reveal-inner">
+      <p>Browsers do not understand TypeScript. The build step compiles your <code>.tsx</code> and <code>.ts</code> files into plain JavaScript that any browser can run.</p>
+      <div class="code-block">
+        <span class="cm">// Before (TypeScript):</span><br>
+        <span class="kw">const</span> <span class="fn">getClips</span> = (<span class="typ">count</span>: <span class="typ">number</span>): <span class="typ">Paperclip[]</span> <span class="kw">=&gt;</span> { ... }<br><br>
+        <span class="cm">// After (JavaScript):</span><br>
+        <span class="kw">const</span> <span class="fn">getClips</span> = (<span class="typ">count</span>) <span class="kw">=&gt;</span> { ... }
+      </div>
+      <p>The type annotations are stripped away. They were useful for you while coding, but the browser does not need them.</p>
+    </div>
+  </div>
+
+  <div class="reveal-trigger" onclick="toggleReveal(this)">
+    <span><span class="badge badge-blue">Bundling</span> &mdash; many files become few</span>
+    <span class="arrow">&#9654;</span>
+  </div>
+  <div class="reveal-content">
+    <div class="reveal-inner">
+      <p>Your project has dozens of files that import each other. The bundler traces all the imports and combines them into a few optimized files. Fewer files = fewer network requests = faster loading.</p>
+      <div class="code-block">
+        <span class="cm">// You wrote 47 files:</span><br>
+        <span class="str">src/components/Header.tsx</span><br>
+        <span class="str">src/components/ClipCard.tsx</span><br>
+        <span class="str">src/utils/format.ts</span><br>
+        <span class="str">... 44 more files</span><br><br>
+        <span class="cm">// Bundler outputs 2 files:</span><br>
+        <span class="str">dist/index.js</span> <span class="cm">(everything combined)</span><br>
+        <span class="str">dist/chunk-vendor.js</span> <span class="cm">(libraries)</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="reveal-trigger" onclick="toggleReveal(this)">
+    <span><span class="badge badge-green">Minification</span> &mdash; removing whitespace and shortening names</span>
+    <span class="arrow">&#9654;</span>
+  </div>
+  <div class="reveal-content">
+    <div class="reveal-inner">
+      <p>The minifier removes all spaces, newlines, and comments, and renames variables to single letters. The code does the same thing but takes up way less space.</p>
+      <div class="code-block">
+        <span class="cm">// Before (readable):</span><br>
+        <span class="kw">function</span> <span class="fn">calculateTotal</span>(<span class="typ">paperclips</span>) {<br>
+        &nbsp;&nbsp;<span class="kw">const</span> <span class="typ">total</span> = <span class="typ">paperclips</span>.<span class="fn">reduce</span>((<span class="typ">sum</span>, <span class="typ">clip</span>) <span class="kw">=&gt;</span> {<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span> <span class="typ">sum</span> + <span class="typ">clip</span>.<span class="typ">price</span>;<br>
+        &nbsp;&nbsp;}, <span class="num">0</span>);<br>
+        &nbsp;&nbsp;<span class="kw">return</span> <span class="typ">total</span>;<br>
+        }<br><br>
+        <span class="cm">// After (minified):</span><br>
+        <span class="kw">function</span> <span class="fn">c</span>(<span class="typ">a</span>){<span class="kw">return</span> <span class="typ">a</span>.<span class="fn">reduce</span>((<span class="typ">s</span>,<span class="typ">e</span>)=><span class="typ">s</span>+<span class="typ">e</span>.<span class="typ">price</span>,<span class="num">0</span>)}
+      </div>
+      <p>Same logic. Same result. 60% less data to download.</p>
+    </div>
+  </div>
+
+  <div class="reveal-trigger" onclick="toggleReveal(this)">
+    <span><span class="badge badge-yellow">Tree Shaking</span> &mdash; removing unused code</span>
+    <span class="arrow">&#9654;</span>
+  </div>
+  <div class="reveal-content">
+    <div class="reveal-inner">
+      <p>If you import a library but only use 2 of its 50 functions, the build step throws away the other 48. This is called "tree shaking" &mdash; shaking the tree and letting the dead branches fall.</p>
+      <div class="code-block">
+        <span class="cm">// You imported:</span><br>
+        <span class="kw">import</span> { <span class="fn">format</span>, <span class="fn">parse</span> } <span class="kw">from</span> <span class="str">'date-fns'</span>;<br><br>
+        <span class="cm">// date-fns has 200+ functions</span><br>
+        <span class="cm">// Tree shaking keeps ONLY format and parse</span><br>
+        <span class="cm">// Everything else is removed from the bundle</span>
+      </div>
+    </div>
+  </div>
+
+  <h2>The build command</h2>
+  <p>For your Paperclip project, the build is triggered by a simple command:</p>
+
+  <div class="code-block">
+    <span class="cm">$ pnpm build</span><br><br>
+    <span class="fn">info</span>  - Creating an optimized production build...<br>
+    <span class="fn">info</span>  - Compiled successfully<br>
+    <span class="fn">info</span>  - Collecting page data...<br>
+    <span class="fn">info</span>  - Generating static pages<br>
+    <span class="sim-ok">Done</span> in <span class="num">8.2</span>s
+  </div>
+
+  <div class="highlight-box">
+    <strong style="color:#3b82f6">Key insight:</strong> When you run <span class="badge badge-purple">pnpm dev</span>, there is no build step &mdash; your code runs directly for speed. When you deploy, the build step runs first to make everything small and fast for real users.
+  </div>
+
+  <button class="next-btn" onclick="goToLesson(4)">Next: How Vercel Works &#8594;</button>
+</div>
+
+<!-- ============================================================ -->
+<!-- LESSON 4: How Vercel Works -->
+<!-- ============================================================ -->
+<div class="lesson" id="lesson-4">
+  <h1>How Vercel Works</h1>
+  <p class="subtitle">Lesson 4 of 8 &mdash; From your terminal to a live URL</p>
+
+  <p>Vercel is the company that is going to host your Paperclip app. You already have it installed and you are logged in as <span class="badge badge-blue">jared-2093</span>. Let us walk through what happens when you deploy.</p>
+
+  <h2>The Deploy Flow</h2>
+  <p>Click "Deploy" to simulate what happens step by step:</p>
+
+  <div class="flow-container" id="vercel-flow">
+    <div class="flow-step">
+      <div class="flow-dot" id="vf-dot-1">1</div>
+      <div class="flow-content">
+        <h4 id="vf-title-1">Upload Your Code</h4>
+        <p id="vf-desc-1">When you run <code>vercel deploy</code>, the Vercel CLI packages up your project files and uploads them to Vercel's cloud servers. It is like zipping your project and emailing it &mdash; but faster and automated.</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-dot" id="vf-dot-2">2</div>
+      <div class="flow-content">
+        <h4 id="vf-title-2">Run the Build</h4>
+        <p id="vf-desc-2">Vercel's servers run <code>pnpm build</code> (or whatever build command your project uses). This is the same build step from Lesson 3 &mdash; compiling TypeScript, bundling, minifying &mdash; but it runs on Vercel's fast machines, not your laptop.</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-dot" id="vf-dot-3">3</div>
+      <div class="flow-content">
+        <h4 id="vf-title-3">Distribute to Edge Servers</h4>
+        <p id="vf-desc-3">The build output gets copied to servers all around the world &mdash; Vercel's "edge network." This means a user in Tokyo loads from a server in Tokyo, not Virginia. We will cover this more in Lesson 6 (CDN).</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-dot" id="vf-dot-4">4</div>
+      <div class="flow-content">
+        <h4 id="vf-title-4">You Get a URL</h4>
+        <p id="vf-desc-4">Vercel gives you a unique URL like <code>paperclip-abc123.vercel.app</code>. Anyone can visit it. Your app is live. The whole process takes about 30-60 seconds.</p>
+      </div>
+    </div>
+  </div>
+
+  <button class="sim-btn" id="deployFlowBtn" onclick="runDeployFlow()">&#9654; Simulate Deploy</button>
+
+  <div class="spacer"></div>
+
+  <h2>See it in your terminal</h2>
+  <p>This is what the actual deploy looks like. Click "Run Deploy" to simulate:</p>
+
+  <div class="deploy-sim" id="deploySim">
+    <div class="sim-line" id="sim-1"><span class="sim-info">$</span> vercel deploy</div>
+    <div class="sim-line" id="sim-2"><span class="sim-info">Vercel CLI 33.0.0</span></div>
+    <div class="sim-line" id="sim-3">&#127968; Linked to <span class="sim-info">jared-2093/paperclip</span></div>
+    <div class="sim-line" id="sim-4">&#128269; Inspecting project settings...</div>
+    <div class="sim-line" id="sim-5">&#128230; Uploading <span class="sim-warn">[====================]</span> 47 files</div>
+    <div class="sim-line" id="sim-6">&#9881;&#65039;  Building...</div>
+    <div class="sim-line" id="sim-7">&nbsp;&nbsp;Running <span class="sim-info">pnpm build</span></div>
+    <div class="sim-line" id="sim-8">&nbsp;&nbsp;Compiled successfully in <span class="sim-warn">8.2s</span></div>
+    <div class="sim-line" id="sim-9">&#9989; <span class="sim-ok">Build completed</span></div>
+    <div class="sim-line" id="sim-10">&#127758; Deploying to edge network...</div>
+    <div class="sim-line" id="sim-11">&#9989; <span class="sim-ok">Deployed to 23 regions</span></div>
+    <div class="sim-line" id="sim-12"><br>&#10004; <span class="sim-ok">Ready!</span> <span class="sim-url">https://paperclip-k4f2j.vercel.app</span></div>
+  </div>
+
+  <button class="sim-btn" id="runDeployBtn" onclick="runTerminalDeploy()">&#9654; Run Deploy</button>
+
+  <div class="spacer"></div>
+
+  <h2>Two ways to deploy</h2>
+
+  <div class="btn-row" id="deploy-method-btns">
+    <button onclick="showDeployMethod('cli')" class="selected">CLI (command line)</button>
+    <button onclick="showDeployMethod('git')">Git Push (automatic)</button>
+  </div>
+
+  <div id="deploy-method-cli" class="card animate-in">
+    <h3>Manual deploy with the CLI</h3>
+    <p>You run <span class="badge badge-purple">vercel deploy</span> in your terminal. Good for testing. You are in full control of when it goes live.</p>
+    <div class="code-block">
+      <span class="cm"># Deploy a preview (test URL):</span><br>
+      <span class="fn">$</span> vercel deploy<br><br>
+      <span class="cm"># Deploy to production (the real URL):</span><br>
+      <span class="fn">$</span> vercel deploy --prod
+    </div>
+  </div>
+
+  <div id="deploy-method-git" class="card animate-in" style="display:none;">
+    <h3>Automatic deploy with Git</h3>
+    <p>Connect your GitHub repo to Vercel, and every time you <span class="badge badge-purple">git push</span>, Vercel automatically deploys. This is how most teams work &mdash; push code, it goes live automatically.</p>
+    <div class="code-block">
+      <span class="cm"># You just push your code like normal:</span><br>
+      <span class="fn">$</span> git add .<br>
+      <span class="fn">$</span> git commit -m <span class="str">"add paperclip sorting"</span><br>
+      <span class="fn">$</span> git push origin main<br><br>
+      <span class="cm"># Vercel detects the push and deploys automatically</span><br>
+      <span class="cm"># No extra commands needed!</span>
+    </div>
+    <div class="highlight-box">
+      <strong style="color:#3b82f6">This is the most common workflow:</strong> You write code, push to GitHub, and Vercel handles the rest. You do not even need the Vercel CLI for this.
+    </div>
+  </div>
+
+  <button class="next-btn" onclick="goToLesson(5)">Next: DNS &mdash; How Names Become Addresses &#8594;</button>
+</div>
+
+<!-- ============================================================ -->
+<!-- LESSON 5: DNS -->
+<!-- ============================================================ -->
+<div class="lesson" id="lesson-5">
+  <h1>DNS &mdash; How Names Become Addresses</h1>
+  <p class="subtitle">Lesson 5 of 8 &mdash; The phone book of the internet</p>
+
+  <p>When you type <span class="badge badge-blue">google.com</span> into your browser, your computer does not actually know where Google is. Computers communicate using IP addresses &mdash; numbers like <span class="badge badge-yellow">142.250.80.46</span>. But nobody wants to memorize numbers.</p>
+
+  <p>That is what DNS does. <strong style="color:var(--text-primary)">DNS (Domain Name System) converts human-friendly names into computer-friendly numbers.</strong></p>
+
+  <div class="analogy">
+    <div class="analogy-label">Analogy</div>
+    <p><strong>DNS is the phone book of the internet.</strong> You know your friend's name (google.com), but to call them you need their phone number (142.250.80.46). DNS looks up the name and gives you the number.</p>
+  </div>
+
+  <h2>Try a DNS Lookup</h2>
+  <p>Type a domain name and see what happens:</p>
+
+  <div class="dns-input-row">
+    <input type="text" class="dns-input" id="dnsInput" placeholder="Type a domain (e.g. google.com)" value="google.com">
+    <button class="sim-btn" onclick="runDnsLookup()">Lookup</button>
+  </div>
+
+  <div id="dns-result" class="card" style="display:none;">
+    <div class="flow-container" id="dns-flow"></div>
+  </div>
+
+  <h2>The Full DNS Journey</h2>
+  <p>When you type a URL and press Enter, here is what happens in about 50 milliseconds:</p>
+
+  <div class="flow-container">
+    <div class="flow-step">
+      <div class="flow-dot active">1</div>
+      <div class="flow-content">
+        <h4>Browser checks its cache</h4>
+        <p>"Have I looked this up recently?" If yes, it already knows the IP. Done. If not, keep going.</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-dot active">2</div>
+      <div class="flow-content">
+        <h4>Ask the operating system</h4>
+        <p>Your Mac or PC has its own cache. Maybe another app already looked this up. Still nothing? Keep going.</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-dot active">3</div>
+      <div class="flow-content">
+        <h4>Ask your ISP's DNS server</h4>
+        <p>Your internet provider (Comcast, AT&T, etc.) runs DNS servers. They handle millions of lookups and cache popular ones. If they have it, great.</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-dot active">4</div>
+      <div class="flow-content">
+        <h4>Ask the root DNS servers</h4>
+        <p>If nobody has the answer cached, the query goes to the root DNS servers &mdash; 13 server clusters that know where to find information about every domain extension (.com, .org, .io, etc.).</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-dot active">5</div>
+      <div class="flow-content">
+        <h4>Get the IP address</h4>
+        <p>The authoritative DNS server for that domain responds with the IP address. Your browser now knows where to connect. The answer gets cached so next time it is instant.</p>
+      </div>
+    </div>
+  </div>
+
+  <h2>How this connects to Vercel</h2>
+  <p>When Vercel gives you a URL like <span class="badge badge-blue">paperclip-k4f2j.vercel.app</span>, they also set up DNS records that point that name to their servers' IP addresses. If you add a custom domain like <span class="badge badge-green">paperclip.com</span>, you would add DNS records pointing it to Vercel.</p>
+
+  <div class="card-dark">
+    <h3 style="margin-top:0">DNS Records for Your App</h3>
+    <table class="env-table">
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Name</th>
+          <th>Value</th>
+          <th>What it does</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="badge badge-blue">A</span></td>
+          <td>paperclip.com</td>
+          <td>76.76.21.21</td>
+          <td>Points domain to Vercel's IP</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-purple">CNAME</span></td>
+          <td>www</td>
+          <td>cname.vercel-dns.com</td>
+          <td>Points www subdomain to Vercel</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="reveal-trigger" onclick="toggleReveal(this)">
+    <span>What is the difference between an A record and a CNAME?</span>
+    <span class="arrow">&#9654;</span>
+  </div>
+  <div class="reveal-content">
+    <div class="reveal-inner">
+      <p><strong style="color:#3b82f6">A record</strong> = "this name points to this IP address." Direct mapping.</p>
+      <p><strong style="color:var(--accent-purple)">CNAME record</strong> = "this name points to another name." It is like a redirect. <code>www.paperclip.com</code> points to <code>cname.vercel-dns.com</code>, which then resolves to the actual IP.</p>
+      <p>Think of an A record as writing someone's home address directly. A CNAME is like writing "same address as my friend John" &mdash; it points to John, and John's address is the real answer.</p>
+    </div>
+  </div>
+
+  <button class="next-btn" onclick="goToLesson(6)">Next: CDN &mdash; Copies Everywhere &#8594;</button>
+</div>
+
+<!-- ============================================================ -->
+<!-- LESSON 6: CDN -->
+<!-- ============================================================ -->
+<div class="lesson" id="lesson-6">
+  <h1>CDN &mdash; Copies Everywhere</h1>
+  <p class="subtitle">Lesson 6 of 8 &mdash; Why Vercel is fast from anywhere in the world</p>
+
+  <p>Imagine if Google had only one server, sitting in a closet in California. Every single person on Earth &mdash; Tokyo, London, Sydney, Sao Paulo &mdash; would have to send their request across the ocean to that one closet and wait for a response to travel all the way back.</p>
+
+  <p>That would be slow. <strong style="color:var(--text-primary)">Distance creates delay.</strong> Light in a fiber optic cable takes about 70 milliseconds to cross the Atlantic Ocean. That is just the physics; you cannot make it faster.</p>
+
+  <p>The solution: do not have one server. <strong style="color:var(--text-primary)">Have copies everywhere.</strong></p>
+
+  <div class="analogy">
+    <div class="analogy-label">Analogy</div>
+    <p><strong>A CDN is like a chain restaurant.</strong> McDonald's does not cook all its burgers in one kitchen in Chicago and ship them worldwide. They have kitchens in every city. When you order in Tokyo, the Tokyo kitchen makes your burger. A CDN does the same thing with your website.</p>
+  </div>
+
+  <h2>What is a CDN?</h2>
+  <p><strong style="color:var(--text-primary)">CDN = Content Delivery Network.</strong> A network of servers spread across the world, each holding a copy of your website. When a user requests your site, the nearest server responds.</p>
+
+  <h2>Vercel's Edge Network</h2>
+  <p>Click a city to see how a user there connects to your deployed Paperclip app:</p>
+
+  <div class="world-map" id="worldMap">
+    <!-- Edge servers (blue dots) -->
+    <div class="map-dot active" style="left:20%;top:35%;" data-city="Washington DC"><span class="map-label">Washington DC</span></div>
+    <div class="map-dot" style="left:15%;top:25%;" data-city="Toronto"><span class="map-label">Toronto</span></div>
+    <div class="map-dot" style="left:10%;top:45%;" data-city="San Francisco"><span class="map-label">San Francisco</span></div>
+    <div class="map-dot" style="left:25%;top:60%;" data-city="Sao Paulo"><span class="map-label">Sao Paulo</span></div>
+    <div class="map-dot" style="left:47%;top:30%;" data-city="London"><span class="map-label">London</span></div>
+    <div class="map-dot" style="left:50%;top:32%;" data-city="Frankfurt"><span class="map-label">Frankfurt</span></div>
+    <div class="map-dot" style="left:55%;top:52%;" data-city="Mumbai"><span class="map-label">Mumbai</span></div>
+    <div class="map-dot" style="left:62%;top:40%;" data-city="Singapore"><span class="map-label">Singapore</span></div>
+    <div class="map-dot" style="left:72%;top:32%;" data-city="Tokyo"><span class="map-label">Tokyo</span></div>
+    <div class="map-dot" style="left:78%;top:62%;" data-city="Sydney"><span class="map-label">Sydney</span></div>
+
+    <div class="map-legend">
+      <span class="edge">Edge server</span>
+      <span class="user">User</span>
+    </div>
+  </div>
+
+  <div id="cdn-result" class="card" style="display:none;">
+    <div id="cdn-result-content"></div>
+  </div>
+
+  <div class="btn-row" id="cdn-city-btns">
+    <button onclick="selectCdnCity('Tokyo')" class="">User in Tokyo</button>
+    <button onclick="selectCdnCity('London')" class="">User in London</button>
+    <button onclick="selectCdnCity('Sao Paulo')" class="">User in Sao Paulo</button>
+    <button onclick="selectCdnCity('San Francisco')" class="">User in San Francisco</button>
+  </div>
+
+  <h2>Without CDN vs With CDN</h2>
+
+  <div class="compare-grid">
+    <div class="compare-col bad">
+      <h4>&#128543; Without CDN (single server)</h4>
+      <ul>
+        <li>Server in Virginia, USA</li>
+        <li>User in Tokyo: ~200ms latency</li>
+        <li>User in Sydney: ~250ms latency</li>
+        <li>User in London: ~100ms latency</li>
+        <li>Server overloaded under load</li>
+        <li>If server goes down, everything is down</li>
+      </ul>
+    </div>
+    <div class="compare-col good">
+      <h4>&#9889; With CDN (Vercel Edge)</h4>
+      <ul>
+        <li>Servers in 23+ regions worldwide</li>
+        <li>User in Tokyo: ~10ms latency</li>
+        <li>User in Sydney: ~15ms latency</li>
+        <li>User in London: ~8ms latency</li>
+        <li>Load spread across all servers</li>
+        <li>If one goes down, others take over</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="highlight-box">
+    <strong style="color:#3b82f6">This is why you chose Vercel:</strong> When you deploy Paperclip, it does not go to one server. It goes to edge servers worldwide. Every user gets a fast experience, no matter where they are. You get this for free.
+  </div>
+
+  <button class="next-btn" onclick="goToLesson(7)">Next: Environments &#8594;</button>
+</div>
+
+<!-- ============================================================ -->
+<!-- LESSON 7: Environments -->
+<!-- ============================================================ -->
+<div class="lesson" id="lesson-7">
+  <h1>Environments</h1>
+  <p class="subtitle">Lesson 7 of 8 &mdash; Development, staging, and production</p>
+
+  <p>You would not test a parachute by jumping out of a plane. You would test it on the ground first, then from a low height, then from the real thing. Software works the same way. You have different <strong style="color:var(--text-primary)">environments</strong> for different stages of confidence.</p>
+
+  <h2>The Three Environments</h2>
+  <p>Click each environment to learn about it:</p>
+
+  <div class="btn-row" id="env-btns">
+    <button onclick="showEnv('dev')" class="selected">Development</button>
+    <button onclick="showEnv('staging')">Staging</button>
+    <button onclick="showEnv('prod')">Production</button>
+  </div>
+
+  <div id="env-dev" class="card animate-in">
+    <div class="icon-row">
+      <div class="icon-circle" style="background:#422006;">&#128187;</div>
+      <div>
+        <strong style="color:var(--accent-yellow)">Development (your laptop)</strong>
+        <p class="text-sm text-dim" style="margin:0">Where you write code and try things out</p>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <p>This is what you have been doing. Running <span class="badge badge-purple">pnpm dev</span> on localhost:3100. You can break things, try crazy ideas, and nobody sees it. It is your personal sandbox.</p>
+    <div class="code-block">
+      <span class="cm"># You run this every day:</span><br>
+      <span class="fn">$</span> pnpm dev<br>
+      <span class="str">http://localhost:3100</span> <span class="cm">&larr; only you see this</span>
+    </div>
+    <p><strong style="color:var(--accent-yellow)">Database:</strong> Local SQLite file on your laptop<br>
+    <strong style="color:var(--accent-yellow)">API keys:</strong> Test keys that hit sandbox APIs<br>
+    <strong style="color:var(--accent-yellow)">Who sees it:</strong> Only you</p>
+  </div>
+
+  <div id="env-staging" class="card animate-in" style="display:none;">
+    <div class="icon-row">
+      <div class="icon-circle" style="background:#431407;">&#128270;</div>
+      <div>
+        <strong style="color:var(--accent-orange)">Staging (preview deployment)</strong>
+        <p class="text-sm text-dim" style="margin:0">A dress rehearsal before going live</p>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <p>A staging environment is a copy of production for testing. On Vercel, every push to a non-main branch creates a <strong style="color:var(--text-primary)">preview deployment</strong> &mdash; a real URL anyone can visit, but it is not the "official" production URL.</p>
+    <div class="code-block">
+      <span class="cm"># Push to a branch (not main):</span><br>
+      <span class="fn">$</span> git push origin feature/sorting<br><br>
+      <span class="cm"># Vercel creates a preview URL:</span><br>
+      <span class="str">https://paperclip-feature-sorting-k4f2j.vercel.app</span><br>
+      <span class="cm">&uarr; real URL, but not production</span>
+    </div>
+    <p><strong style="color:var(--accent-orange)">Database:</strong> Test database (copy of production structure, fake data)<br>
+    <strong style="color:var(--accent-orange)">API keys:</strong> Test keys, same as development<br>
+    <strong style="color:var(--accent-orange)">Who sees it:</strong> You and your team for testing</p>
+  </div>
+
+  <div id="env-prod" class="card animate-in" style="display:none;">
+    <div class="icon-row">
+      <div class="icon-circle" style="background:#14532d;">&#127758;</div>
+      <div>
+        <strong style="color:#22c55e">Production (live for everyone)</strong>
+        <p class="text-sm text-dim" style="margin:0">The real deal. Real users. Real data.</p>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <p>This is the live version that real users see. Breaking production means your users see errors. That is why you test in development and staging first.</p>
+    <div class="code-block">
+      <span class="cm"># Push to main branch:</span><br>
+      <span class="fn">$</span> git push origin main<br><br>
+      <span class="cm"># Vercel deploys to production:</span><br>
+      <span class="str">https://paperclip.vercel.app</span> <span class="cm">&larr; THE real URL</span><br>
+      <span class="cm"># (or your custom domain: paperclip.com)</span>
+    </div>
+    <p><strong style="color:#22c55e">Database:</strong> Production database with real user data<br>
+    <strong style="color:#22c55e">API keys:</strong> Live keys that process real payments<br>
+    <strong style="color:#22c55e">Who sees it:</strong> Everyone on the internet</p>
+  </div>
+
+  <h2>Environment Variables: Why .env Files Matter</h2>
+  <p>Your app needs different settings in different environments. The database URL in development is not the same as in production. <strong style="color:var(--text-primary)">Environment variables</strong> are how you handle this.</p>
+
+  <div class="tab-row">
+    <button class="tab-btn active" onclick="showEnvTab(this, 'env-file-dev')">.env (development)</button>
+    <button class="tab-btn" onclick="showEnvTab(this, 'env-file-staging')">.env.staging</button>
+    <button class="tab-btn" onclick="showEnvTab(this, 'env-file-prod')">.env.production</button>
+  </div>
+
+  <div id="env-file-dev" class="tab-pane active">
+    <div class="code-block">
+      <span class="cm"># .env (local development)</span><br>
+      <span class="typ">DATABASE_URL</span>=<span class="str">"file:./dev.db"</span><br>
+      <span class="typ">API_KEY</span>=<span class="str">"sk_test_abc123_not_real"</span><br>
+      <span class="typ">NEXT_PUBLIC_URL</span>=<span class="str">"http://localhost:3100"</span><br>
+      <span class="typ">NODE_ENV</span>=<span class="str">"development"</span>
+    </div>
+    <p class="text-sm" style="color:var(--text-muted)">Uses a local SQLite file. Test API key. localhost URL.</p>
+  </div>
+
+  <div id="env-file-staging" class="tab-pane">
+    <div class="code-block">
+      <span class="cm"># .env.staging (preview deployments)</span><br>
+      <span class="typ">DATABASE_URL</span>=<span class="str">"postgres://staging-db.vercel.com:5432/paperclip_test"</span><br>
+      <span class="typ">API_KEY</span>=<span class="str">"sk_test_xyz789_not_real"</span><br>
+      <span class="typ">NEXT_PUBLIC_URL</span>=<span class="str">"https://paperclip-preview.vercel.app"</span><br>
+      <span class="typ">NODE_ENV</span>=<span class="str">"production"</span>
+    </div>
+    <p class="text-sm" style="color:var(--text-muted)">Uses a test database in the cloud. Still test API keys. Preview URL.</p>
+  </div>
+
+  <div id="env-file-prod" class="tab-pane">
+    <div class="code-block">
+      <span class="cm"># .env.production (live site)</span><br>
+      <span class="typ">DATABASE_URL</span>=<span class="str">"postgres://prod-db.vercel.com:5432/paperclip"</span><br>
+      <span class="typ">API_KEY</span>=<span class="str">"sk_live_REAL_KEY_KEEP_SECRET"</span><br>
+      <span class="typ">NEXT_PUBLIC_URL</span>=<span class="str">"https://paperclip.vercel.app"</span><br>
+      <span class="typ">NODE_ENV</span>=<span class="str">"production"</span>
+    </div>
+    <p class="text-sm" style="color:var(--text-muted)">Real database. LIVE API key (charges real money!). Production URL.</p>
+  </div>
+
+  <div class="analogy">
+    <div class="analogy-label">Key rule</div>
+    <p><strong>Never commit .env files to Git.</strong> They contain secrets (API keys, database passwords). Your <code>.gitignore</code> file should list <code>.env</code> so Git does not track it. On Vercel, you set environment variables in the dashboard instead.</p>
+  </div>
+
+  <h2>How Vercel Handles Environments</h2>
+
+  <div class="card-dark">
+    <table class="env-table">
+      <thead>
+        <tr>
+          <th>You do this...</th>
+          <th>Vercel creates...</th>
+          <th>Environment</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>git push origin feature/x</code></td>
+          <td>Preview deployment</td>
+          <td class="env-staging">Staging</td>
+        </tr>
+        <tr>
+          <td><code>git push origin main</code></td>
+          <td>Production deployment</td>
+          <td class="env-prod">Production</td>
+        </tr>
+        <tr>
+          <td><code>vercel deploy</code></td>
+          <td>Preview deployment</td>
+          <td class="env-staging">Staging</td>
+        </tr>
+        <tr>
+          <td><code>vercel deploy --prod</code></td>
+          <td>Production deployment</td>
+          <td class="env-prod">Production</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <button class="next-btn" onclick="goToLesson(8)">Next: The Full Journey &#8594;</button>
+</div>
+
+<!-- ============================================================ -->
+<!-- LESSON 8: The Full Journey -->
+<!-- ============================================================ -->
+<div class="lesson" id="lesson-8">
+  <h1>The Full Journey</h1>
+  <p class="subtitle">Lesson 8 of 8 &mdash; From git push to "live on the internet"</p>
+
+  <p>You have learned every piece. Now let us put them all together and trace the entire journey of your Paperclip code, from your laptop to a user's browser on the other side of the world.</p>
+
+  <h2>The Pipeline</h2>
+  <p>Click "Trace the Journey" to watch code flow through every stage:</p>
+
+  <div class="pipeline" id="fullPipeline">
+    <div class="pipeline-stage" id="pipe-1">
+      <h5>Step 1</h5>
+      <p>git push</p>
+    </div>
+    <div class="pipeline-arrow" id="pipe-arrow-1">&#8594;</div>
+    <div class="pipeline-stage" id="pipe-2">
+      <h5>Step 2</h5>
+      <p>Vercel Detects</p>
+    </div>
+    <div class="pipeline-arrow" id="pipe-arrow-2">&#8594;</div>
+    <div class="pipeline-stage" id="pipe-3">
+      <h5>Step 3</h5>
+      <p>Build</p>
+    </div>
+    <div class="pipeline-arrow" id="pipe-arrow-3">&#8594;</div>
+    <div class="pipeline-stage" id="pipe-4">
+      <h5>Step 4</h5>
+      <p>Deploy to Edge</p>
+    </div>
+    <div class="pipeline-arrow" id="pipe-arrow-4">&#8594;</div>
+    <div class="pipeline-stage" id="pipe-5">
+      <h5>Step 5</h5>
+      <p>DNS Routes</p>
+    </div>
+    <div class="pipeline-arrow" id="pipe-arrow-5">&#8594;</div>
+    <div class="pipeline-stage" id="pipe-6">
+      <h5>Step 6</h5>
+      <p>Page Loads</p>
+    </div>
+  </div>
+
+  <button class="sim-btn" id="pipelineBtn" onclick="runPipeline()">&#9654; Trace the Journey</button>
+
+  <div id="pipeline-details" style="margin-top:24px;"></div>
+
+  <div class="spacer"></div>
+
+  <h2>Every Step Explained</h2>
+
+  <div class="reveal-trigger" onclick="toggleReveal(this)">
+    <span><span class="badge badge-purple">Step 1</span> You push code to GitHub</span>
+    <span class="arrow">&#9654;</span>
+  </div>
+  <div class="reveal-content">
+    <div class="reveal-inner">
+      <p>You have been writing code for Paperclip. You added a feature, tested it locally on localhost:3100, and it works. You commit and push:</p>
+      <div class="code-block">
+        <span class="fn">$</span> git add .<br>
+        <span class="fn">$</span> git commit -m <span class="str">"add paperclip color filter"</span><br>
+        <span class="fn">$</span> git push origin main
+      </div>
+      <p>Your code is now on GitHub's servers. This is not deployment yet &mdash; your code is stored, but nobody can visit it as a website.</p>
+    </div>
+  </div>
+
+  <div class="reveal-trigger" onclick="toggleReveal(this)">
+    <span><span class="badge badge-blue">Step 2</span> Vercel detects the push</span>
+    <span class="arrow">&#9654;</span>
+  </div>
+  <div class="reveal-content">
+    <div class="reveal-inner">
+      <p>Because you connected your GitHub repo to Vercel (linked to <span class="badge badge-blue">jared-2093</span>), Vercel has a "webhook" &mdash; a notification system. GitHub tells Vercel: "Hey, new code was pushed to main."</p>
+      <p>Vercel wakes up and says: "New code? Time to deploy." It pulls down your latest code from GitHub.</p>
+    </div>
+  </div>
+
+  <div class="reveal-trigger" onclick="toggleReveal(this)">
+    <span><span class="badge badge-green">Step 3</span> Vercel runs the build</span>
+    <span class="arrow">&#9654;</span>
+  </div>
+  <div class="reveal-content">
+    <div class="reveal-inner">
+      <p>Vercel's servers run your build command. For Paperclip, that is <span class="badge badge-purple">pnpm build</span>. This compiles TypeScript, bundles your React components, minifies everything, and tree-shakes unused code. (Everything from Lesson 3.)</p>
+      <p>Your 180 MB of source code becomes ~48 KB of optimized output. If the build fails (syntax error, missing import), the deploy stops and you get an error message.</p>
+    </div>
+  </div>
+
+  <div class="reveal-trigger" onclick="toggleReveal(this)">
+    <span><span class="badge badge-yellow">Step 4</span> Output is deployed to edge servers</span>
+    <span class="arrow">&#9654;</span>
+  </div>
+  <div class="reveal-content">
+    <div class="reveal-inner">
+      <p>The build output is copied to Vercel's edge network &mdash; servers in 23+ cities worldwide. (Everything from Lesson 6.) Within seconds, your app is available from Tokyo, London, Sao Paulo, everywhere.</p>
+      <p>Vercel gives you a URL: <span class="badge badge-green">https://paperclip.vercel.app</span></p>
+    </div>
+  </div>
+
+  <div class="reveal-trigger" onclick="toggleReveal(this)">
+    <span><span class="badge badge-purple">Step 5</span> A user types the URL, DNS routes them</span>
+    <span class="arrow">&#9654;</span>
+  </div>
+  <div class="reveal-content">
+    <div class="reveal-inner">
+      <p>Someone in Tokyo types <span class="badge badge-blue">paperclip.vercel.app</span> in their browser. DNS kicks in (Lesson 5): the domain name gets resolved to an IP address. Vercel's smart DNS routes them to the nearest edge server &mdash; the one in Tokyo.</p>
+    </div>
+  </div>
+
+  <div class="reveal-trigger" onclick="toggleReveal(this)">
+    <span><span class="badge badge-green">Step 6</span> The page loads</span>
+    <span class="arrow">&#9654;</span>
+  </div>
+  <div class="reveal-content">
+    <div class="reveal-inner">
+      <p>The Tokyo edge server sends back your optimized HTML, CSS, and JavaScript. The browser renders Paperclip. The user sees your app. They have no idea about build steps, edge networks, or DNS lookups. They just see a fast, working app.</p>
+      <p><strong style="color:var(--text-primary)">Total time from git push to live: about 30-60 seconds.</strong></p>
+    </div>
+  </div>
+
+  <div class="spacer"></div>
+
+  <h2>Connecting Back to Paperclip</h2>
+
+  <div class="card" style="border-left:3px solid #3b82f6;">
+    <p style="font-size:16px;"><strong style="color:var(--text-primary)">When you ran <span class="badge badge-purple">pnpm dev</span>, that was Step 1 of this journey.</strong></p>
+    <p>You saw your Paperclip app running on localhost:3100. That is the development environment. Only your computer could see it.</p>
+    <p><strong style="color:var(--text-primary)">Deployment is everything after that.</strong> It is taking what works on your laptop and making it available to the world. And now you know every step in between.</p>
+  </div>
+
+  <h2>Quick Reference</h2>
+
+  <div class="card-dark">
+    <table class="env-table">
+      <thead>
+        <tr>
+          <th>Concept</th>
+          <th>What it means</th>
+          <th>Lesson</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong style="color:var(--text-primary)">localhost</strong></td>
+          <td>Your computer, only you can see it</td>
+          <td>1</td>
+        </tr>
+        <tr>
+          <td><strong style="color:var(--text-primary)">Server</strong></td>
+          <td>A computer that is always on and publicly reachable</td>
+          <td>2</td>
+        </tr>
+        <tr>
+          <td><strong style="color:var(--text-primary)">Build</strong></td>
+          <td>Transforming source code into optimized output</td>
+          <td>3</td>
+        </tr>
+        <tr>
+          <td><strong style="color:var(--text-primary)">Vercel</strong></td>
+          <td>The platform that builds and hosts your app</td>
+          <td>4</td>
+        </tr>
+        <tr>
+          <td><strong style="color:var(--text-primary)">DNS</strong></td>
+          <td>Converts domain names to IP addresses</td>
+          <td>5</td>
+        </tr>
+        <tr>
+          <td><strong style="color:var(--text-primary)">CDN</strong></td>
+          <td>Copies of your site on servers worldwide</td>
+          <td>6</td>
+        </tr>
+        <tr>
+          <td><strong style="color:var(--text-primary)">Environments</strong></td>
+          <td>Dev, staging, production &mdash; stages of confidence</td>
+          <td>7</td>
+        </tr>
+        <tr>
+          <td><strong style="color:var(--text-primary)">.env files</strong></td>
+          <td>Config that changes per environment (keep secret!)</td>
+          <td>7</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>What You Can Do Now</h2>
+
+  <div class="card" style="border-color:#22c55e44;">
+    <p>You understand the full deployment pipeline. Here is what you could do right now with your Paperclip app:</p>
+    <div class="flow-container">
+      <div class="flow-step">
+        <div class="flow-dot done">1</div>
+        <div class="flow-content">
+          <h4>Run <code>vercel deploy</code> in your Paperclip project</h4>
+          <p>Creates a preview deployment you can share with friends</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-dot done">2</div>
+        <div class="flow-content">
+          <h4>Run <code>vercel deploy --prod</code> for production</h4>
+          <p>Creates the official production URL</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-dot done">3</div>
+        <div class="flow-content">
+          <h4>Connect your GitHub repo for auto-deploy</h4>
+          <p>Every <code>git push</code> triggers a deploy automatically</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-dot done">4</div>
+        <div class="flow-content">
+          <h4>Set environment variables in the Vercel dashboard</h4>
+          <p>Different database URLs and API keys for preview vs production</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="analogy">
+    <div class="analogy-label">The big picture</div>
+    <p>You have now learned <strong>databases</strong> (where data lives), <strong>codebases</strong> (how code is organized), <strong>APIs</strong> (how systems talk to each other), <strong>building an app</strong> (putting it all together), and now <strong>deployment</strong> (sharing it with the world). You understand how modern web applications work, end to end.</p>
+  </div>
+
+  <div style="text-align:center;margin-top:48px;padding:32px;background:var(--bg-secondary);border:1px solid var(--border-primary);border-radius:10px;">
+    <h2 style="margin-top:0;color:var(--text-primary);">Tutorial Complete</h2>
+    <p style="color:var(--text-muted);font-size:15px;margin-bottom:0;">You now understand how deployment works &mdash; from localhost to a live URL anyone on Earth can visit.</p>
+  </div>
+
+  <div class="next-course-banner">
+    <h3>Up Next</h3>
+    <p>Continue to Course 06: How Git Works — Version control, branches, and collaboration.</p>
+    <a href="/lessons/git.html">Start How Git Works →</a>
+  </div>
+</div>
+
+</div><!-- end container -->
+
+</div><!-- end content-wrapper -->
+
+<script>
+// ===== LESSON NAVIGATION =====
+const lessonTitles = [
+  'localhost vs The World',
+  'What is a Server?',
+  'The Build Step',
+  'How Vercel Works',
+  'DNS',
+  'CDN',
+  'Environments',
+  'The Full Journey'
+];
+
+const totalLessons = lessonTitles.length;
+
+// Build nav buttons
+const topNav = document.getElementById('topNav');
+lessonTitles.forEach((title, i) => {
+  const btn = document.createElement('button');
+  btn.textContent = (i + 1) + '. ' + title;
+  btn.id = 'nav-btn-' + (i + 1);
+  if (i === 0) btn.classList.add('active');
+  btn.addEventListener('click', () => goToLesson(i + 1));
+  topNav.appendChild(btn);
+});
+
+function goToLesson(num) {
+  // Hide all lessons
+  document.querySelectorAll('.lesson').forEach(l => l.classList.remove('active'));
+  document.querySelectorAll('.top-nav button').forEach(b => b.classList.remove('active'));
+
+  // Show target
+  const target = document.getElementById('lesson-' + num);
+  if (target) {
+    target.classList.add('active');
+    target.classList.add('animate-in');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  const navBtn = document.getElementById('nav-btn-' + num);
+  if (navBtn) navBtn.classList.add('active');
+
+  // Update progress
+  document.getElementById('progressBar').style.width = ((num / totalLessons) * 100) + '%';
+}
+
+// ===== LESSON 1: Deploy diff toggle =====
+function revealDeployDiff(btn, mode) {
+  document.querySelectorAll('#deploy-diff-local, #deploy-diff-deployed').forEach(el => el.style.display = 'none');
+  btn.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  document.getElementById('deploy-diff-' + mode).style.display = 'block';
+}
+
+// ===== GENERIC REVEAL =====
+function toggleReveal(trigger) {
+  trigger.classList.toggle('open');
+  const content = trigger.nextElementSibling;
+  content.classList.toggle('open');
+}
+
+// ===== LESSON 2: Server roles =====
+function showServerRole(role) {
+  const roles = ['listen', 'process', 'respond', 'store'];
+  roles.forEach(r => {
+    document.getElementById('server-role-' + r).style.display = 'none';
+  });
+  document.getElementById('server-role-' + role).style.display = 'block';
+  document.querySelectorAll('#server-roles-btns button').forEach(b => b.classList.remove('selected'));
+  event.target.classList.add('selected');
+}
+
+// ===== LESSON 3: Build animation =====
+function runBuildAnimation() {
+  const btn = document.getElementById('buildBtn');
+  const gear = document.getElementById('buildGear');
+  const after = document.getElementById('build-after');
+  const result = document.getElementById('build-result');
+
+  btn.disabled = true;
+  btn.textContent = 'Building...';
+  gear.classList.add('spinning');
+  after.style.opacity = '0.3';
+  result.style.display = 'none';
+
+  setTimeout(() => {
+    after.style.transition = 'opacity 0.6s';
+    after.style.opacity = '1';
+    gear.classList.remove('spinning');
+    result.style.display = 'block';
+    result.classList.add('animate-in');
+    btn.textContent = 'Run Build';
+    btn.disabled = false;
+  }, 2000);
+}
+
+// ===== LESSON 4: Deploy flow animation =====
+function runDeployFlow() {
+  const btn = document.getElementById('deployFlowBtn');
+  btn.disabled = true;
+  btn.textContent = 'Deploying...';
+
+  // Reset all dots
+  for (let i = 1; i <= 4; i++) {
+    document.getElementById('vf-dot-' + i).classList.remove('active', 'done');
+  }
+
+  const steps = [1, 2, 3, 4];
+  let delay = 0;
+  steps.forEach((step, idx) => {
+    setTimeout(() => {
+      // Mark previous as done
+      if (idx > 0) {
+        document.getElementById('vf-dot-' + steps[idx - 1]).classList.remove('active');
+        document.getElementById('vf-dot-' + steps[idx - 1]).classList.add('done');
+      }
+      document.getElementById('vf-dot-' + step).classList.add('active');
+
+      if (idx === steps.length - 1) {
+        setTimeout(() => {
+          document.getElementById('vf-dot-' + step).classList.remove('active');
+          document.getElementById('vf-dot-' + step).classList.add('done');
+          btn.textContent = 'Deploy Complete!';
+          setTimeout(() => {
+            btn.disabled = false;
+            btn.textContent = '\u25B6 Simulate Deploy';
+          }, 2000);
+        }, 1000);
+      }
+    }, delay);
+    delay += 1200;
+  });
+}
+
+// ===== LESSON 4: Terminal deploy simulation =====
+function runTerminalDeploy() {
+  const btn = document.getElementById('runDeployBtn');
+  btn.disabled = true;
+  btn.textContent = 'Running...';
+
+  // Reset all lines
+  for (let i = 1; i <= 12; i++) {
+    document.getElementById('sim-' + i).classList.remove('visible');
+  }
+
+  let delay = 0;
+  for (let i = 1; i <= 12; i++) {
+    setTimeout((idx) => {
+      document.getElementById('sim-' + idx).classList.add('visible');
+      if (idx === 12) {
+        setTimeout(() => {
+          btn.disabled = false;
+          btn.textContent = '\u25B6 Run Deploy';
+        }, 1500);
+      }
+    }, delay, i);
+    if (i <= 2) delay += 300;
+    else if (i <= 5) delay += 500;
+    else if (i <= 8) delay += 700;
+    else delay += 500;
+  }
+}
+
+// ===== LESSON 4: Deploy method toggle =====
+function showDeployMethod(method) {
+  document.getElementById('deploy-method-cli').style.display = 'none';
+  document.getElementById('deploy-method-git').style.display = 'none';
+  document.getElementById('deploy-method-' + method).style.display = 'block';
+  document.querySelectorAll('#deploy-method-btns button').forEach(b => b.classList.remove('selected'));
+  event.target.classList.add('selected');
+}
+
+// ===== LESSON 5: DNS Lookup =====
+const fakeDns = {
+  'google.com': '142.250.80.46',
+  'github.com': '140.82.121.4',
+  'vercel.com': '76.76.21.21',
+  'paperclip.vercel.app': '76.76.21.93',
+  'facebook.com': '157.240.1.35',
+  'twitter.com': '104.244.42.129',
+  'x.com': '104.244.42.129',
+  'reddit.com': '151.101.1.140',
+  'youtube.com': '142.250.80.78',
+  'amazon.com': '52.94.236.248',
+  'netflix.com': '54.237.226.164',
+  'apple.com': '17.253.144.10',
+  'wikipedia.org': '208.80.154.224',
+  'stackoverflow.com': '151.101.1.69',
+  'localhost': '127.0.0.1'
+};
+
+function runDnsLookup() {
+  const input = document.getElementById('dnsInput').value.trim().toLowerCase();
+  const resultDiv = document.getElementById('dns-result');
+  const flowDiv = document.getElementById('dns-flow');
+
+  if (!input) return;
+
+  const ip = fakeDns[input] || ((Math.floor(Math.random()*200)+20) + '.' + (Math.floor(Math.random()*255)) + '.' + (Math.floor(Math.random()*255)) + '.' + (Math.floor(Math.random()*255)));
+
+  resultDiv.style.display = 'block';
+  resultDiv.classList.add('animate-in');
+
+  flowDiv.innerHTML = '';
+
+  const steps = [
+    { label: 'Your Browser', desc: 'You type "' + input + '" and press Enter' },
+    { label: 'DNS Resolver', desc: 'Your computer asks: "What is the IP for ' + input + '?"' },
+    { label: 'Root DNS Server', desc: 'Knows where to find .' + (input.split('.').pop() || 'com') + ' domains' },
+    { label: 'TLD Server', desc: 'Knows which server is authoritative for "' + input + '"' },
+    { label: 'Authoritative DNS', desc: 'Responds: "' + input + ' lives at ' + ip + '"' },
+    { label: 'Connected!', desc: 'Your browser connects to ' + ip + ' and loads the page' }
+  ];
+
+  steps.forEach((step, idx) => {
+    const stepEl = document.createElement('div');
+    stepEl.className = 'flow-step';
+    stepEl.innerHTML = `
+      <div class="flow-dot" id="dns-dot-${idx}">${idx + 1}</div>
+      <div class="flow-content">
+        <h4>${step.label}</h4>
+        <p>${step.desc}</p>
+      </div>
+    `;
+    flowDiv.appendChild(stepEl);
+
+    setTimeout(() => {
+      document.getElementById('dns-dot-' + idx).classList.add('active');
+      if (idx > 0) {
+        document.getElementById('dns-dot-' + (idx - 1)).classList.remove('active');
+        document.getElementById('dns-dot-' + (idx - 1)).classList.add('done');
+      }
+      if (idx === steps.length - 1) {
+        setTimeout(() => {
+          document.getElementById('dns-dot-' + idx).classList.remove('active');
+          document.getElementById('dns-dot-' + idx).classList.add('done');
+        }, 600);
+      }
+    }, 400 * (idx + 1));
+  });
+}
+
+// ===== LESSON 6: CDN city selection =====
+function selectCdnCity(city) {
+  const resultDiv = document.getElementById('cdn-result');
+  const contentDiv = document.getElementById('cdn-result-content');
+
+  // Update button states
+  document.querySelectorAll('#cdn-city-btns button').forEach(b => {
+    b.classList.remove('selected');
+    if (b.textContent.includes(city)) b.classList.add('selected');
+  });
+
+  // Activate correct map dot
+  document.querySelectorAll('.map-dot').forEach(dot => {
+    dot.classList.remove('active');
+    if (dot.dataset.city === city) {
+      dot.classList.add('active');
+    }
+  });
+
+  const latencyMap = {
+    'Tokyo': { server: 'Tokyo', latency: '8ms', without: '190ms', savings: '96%' },
+    'London': { server: 'London', latency: '5ms', without: '95ms', savings: '95%' },
+    'Sao Paulo': { server: 'Sao Paulo', latency: '12ms', without: '160ms', savings: '93%' },
+    'San Francisco': { server: 'San Francisco', latency: '4ms', without: '70ms', savings: '94%' }
+  };
+
+  const data = latencyMap[city];
+
+  contentDiv.innerHTML = `
+    <div class="icon-row">
+      <div class="icon-circle" style="background:var(--bg-btn-selected);">&#127758;</div>
+      <div>
+        <strong style="color:var(--text-primary)">User in ${city}</strong>
+        <p class="text-sm text-dim" style="margin:0">Connects to the nearest edge server</p>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <p>Instead of reaching across the ocean to Virginia, the user connects to the <strong style="color:#3b82f6">${data.server} edge server</strong>.</p>
+    <p>
+      <span class="badge badge-green">With CDN: ${data.latency}</span>&nbsp;&nbsp;
+      <span class="badge badge-yellow">Without CDN: ${data.without}</span>&nbsp;&nbsp;
+      <span class="text-sm text-green">${data.savings}% faster</span>
+    </p>
+    <p class="text-sm" style="color:#666;margin-bottom:0;">The edge server already has a copy of your Paperclip app. No need to go to a central origin server.</p>
+  `;
+
+  resultDiv.style.display = 'block';
+  resultDiv.classList.add('animate-in');
+}
+
+// ===== LESSON 7: Environment toggle =====
+function showEnv(env) {
+  const envs = ['dev', 'staging', 'prod'];
+  envs.forEach(e => {
+    document.getElementById('env-' + e).style.display = 'none';
+  });
+  document.getElementById('env-' + env).style.display = 'block';
+  document.querySelectorAll('#env-btns button').forEach(b => b.classList.remove('selected'));
+  event.target.classList.add('selected');
+}
+
+// ===== LESSON 7: Env file tabs =====
+function showEnvTab(btn, id) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ===== LESSON 8: Pipeline animation =====
+function runPipeline() {
+  const btn = document.getElementById('pipelineBtn');
+  btn.disabled = true;
+  btn.textContent = 'Tracing...';
+
+  const detailsDiv = document.getElementById('pipeline-details');
+  detailsDiv.innerHTML = '';
+
+  // Reset
+  for (let i = 1; i <= 6; i++) {
+    document.getElementById('pipe-' + i).classList.remove('lit');
+    if (i <= 5) document.getElementById('pipe-arrow-' + i).classList.remove('lit');
+  }
+
+  const stepDetails = [
+    { title: 'git push', desc: 'You push your Paperclip code to GitHub. Your commits are uploaded to the remote repository.', color: '#c084fc' },
+    { title: 'Vercel Detects', desc: 'GitHub notifies Vercel via webhook: "New code on main!" Vercel pulls the latest code.', color: '#3b82f6' },
+    { title: 'Build', desc: 'Vercel runs pnpm build. TypeScript compiles, code bundles, files minify. 180 MB becomes 48 KB.', color: '#4ade80' },
+    { title: 'Deploy to Edge', desc: 'Build output is distributed to 23+ edge servers around the world. Every continent covered.', color: '#fbbf24' },
+    { title: 'DNS Routes User', desc: 'Someone types your URL. DNS resolves the name to the nearest edge server IP address.', color: '#c084fc' },
+    { title: 'Page Loads', desc: 'The edge server sends optimized HTML/CSS/JS to the browser. Paperclip renders. The user sees your app.', color: '#4ade80' }
+  ];
+
+  let delay = 0;
+  for (let i = 1; i <= 6; i++) {
+    setTimeout((idx) => {
+      document.getElementById('pipe-' + idx).classList.add('lit');
+      if (idx > 1) {
+        document.getElementById('pipe-arrow-' + (idx - 1)).classList.add('lit');
+      }
+
+      const detail = stepDetails[idx - 1];
+      const el = document.createElement('div');
+      el.className = 'highlight-box animate-in';
+      el.style.borderColor = detail.color;
+      el.innerHTML = `<strong style="color:${detail.color}">${detail.title}:</strong> ${detail.desc}`;
+      detailsDiv.appendChild(el);
+
+      if (idx === 6) {
+        setTimeout(() => {
+          btn.disabled = false;
+          btn.innerHTML = '\u25B6 Trace the Journey';
+        }, 2000);
+      }
+    }, delay, i);
+    delay += 900;
+  }
+}
+
+// ===== KEYBOARD NAV =====
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+    const current = getCurrentLesson();
+    if (current < totalLessons) goToLesson(current + 1);
+  }
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+    const current = getCurrentLesson();
+    if (current > 1) goToLesson(current - 1);
+  }
+});
+
+function getCurrentLesson() {
+  for (let i = 1; i <= totalLessons; i++) {
+    if (document.getElementById('lesson-' + i).classList.contains('active')) return i;
+  }
+  return 1;
+}
+</script>
+<script src="/js/shared.js"></script>
+</body>
+</html>

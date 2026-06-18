@@ -1,0 +1,2198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>APIs &amp; HTTP — The Fundamentals</title>
+<link rel="stylesheet" href="/css/shared.css">
+<style>
+  /* LESSON-SPECIFIC styles only — converted to use CSS variables */
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    background: var(--bg-primary);
+    color: var(--text-secondary);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    line-height: 1.7;
+    padding-top: 60px;
+  }
+
+  /* ── Top Nav ── */
+  .top-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-primary);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    padding: 10px 16px;
+    gap: 8px;
+    overflow-x: auto;
+  }
+
+  @media (min-width: 1024px) {
+    .top-nav { left: 280px; }
+  }
+
+  .breadcrumb { margin-top: 64px; padding-top: 8px; }
+
+  .top-nav .nav-title {
+    color: var(--accent-indigo);
+    font-weight: 700;
+    font-size: 14px;
+    margin-right: 8px;
+    white-space: nowrap;
+  }
+
+  .top-nav button {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-nav-btn);
+    color: var(--text-secondary);
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: inherit;
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+
+  .top-nav button:hover {
+    background: #252525;
+    border-color: var(--text-faint);
+  }
+
+  .top-nav button.active {
+    background: var(--accent-blue-bg);
+    border-color: var(--accent-blue-bg);
+    color: var(--text-primary);
+  }
+
+  /* ── Container ── */
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 32px 20px 80px;
+  }
+
+  /* ── Lesson ── */
+  .lesson {
+    display: none;
+  }
+
+  .lesson.active {
+    display: block;
+  }
+
+  .lesson h1 {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+  }
+
+  .lesson .subtitle {
+    font-size: 16px;
+    color: var(--text-muted);
+    margin-bottom: 32px;
+  }
+
+  .lesson h2 {
+    font-size: 22px;
+    font-weight: 600;
+    margin-top: 36px;
+    margin-bottom: 14px;
+    color: var(--text-secondary);
+  }
+
+  .lesson h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-top: 28px;
+    margin-bottom: 10px;
+    color: #d0d0d0;
+  }
+
+  .lesson p {
+    margin-bottom: 16px;
+    font-size: 15px;
+    color: var(--text-body);
+  }
+
+  .lesson ul, .lesson ol {
+    margin-bottom: 16px;
+    padding-left: 24px;
+  }
+
+  .lesson li {
+    margin-bottom: 8px;
+    font-size: 15px;
+    color: var(--text-body);
+  }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-secondary);
+    border-radius: 10px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+
+  .card h3 {
+    margin-top: 0;
+    color: var(--text-primary);
+  }
+
+  .card p:last-child {
+    margin-bottom: 0;
+  }
+
+  /* ── Analogy Box ── */
+  .analogy {
+    background: var(--bg-analogy);
+    border: 1px solid var(--border-analogy);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+  }
+
+  .analogy strong {
+    color: var(--accent-indigo);
+  }
+
+  .analogy p:last-child {
+    margin-bottom: 0;
+  }
+
+  .analogy-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--accent-indigo);
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  /* ── Code Block ── */
+  .code-block {
+    background: var(--bg-code);
+    border: 1px solid var(--border-primary);
+    border-radius: 10px;
+    padding: 18px 22px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+    font-family: 'SF Mono', Monaco, monospace;
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+  }
+
+  .code-block .keyword { color: var(--accent-purple); }
+  .code-block .function { color: var(--accent-blue); }
+  .code-block .string { color: var(--accent-green); }
+  .code-block .type { color: var(--accent-yellow); }
+  .code-block .comment { color: #6b7280; font-style: italic; }
+  .code-block .number { color: var(--accent-pink); }
+  .code-block .property { color: #93c5fd; }
+  .code-block .punctuation { color: #9ca3af; }
+  .code-block .method { color: var(--accent-purple); font-weight: 600; }
+
+  /* ── Interactive Buttons Row ── */
+  .btn-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .btn-row button {
+    background: var(--bg-btn);
+    border: 1px solid var(--border-btn);
+    color: var(--text-secondary);
+    padding: 10px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-family: inherit;
+    transition: all 0.2s;
+    font-weight: 500;
+  }
+
+  .btn-row button:hover {
+    background: #263548;
+    border-color: #4a6580;
+  }
+
+  .btn-row button.selected {
+    background: var(--bg-btn-selected);
+    border-color: var(--border-btn-selected);
+    color: #93c5fd;
+  }
+
+  /* ── Result Panel ── */
+  .result-panel {
+    background: var(--bg-card);
+    border: 1px solid var(--border-secondary);
+    border-radius: 10px;
+    padding: 24px;
+    margin-bottom: 20px;
+    min-height: 60px;
+    transition: all 0.3s;
+  }
+
+  .result-panel .result-title {
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+  }
+
+  .result-panel .result-body {
+    color: var(--text-body);
+    font-size: 14px;
+  }
+
+  /* ── Diagram ── */
+  .diagram {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: 10px;
+    padding: 30px 20px;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  .diagram-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+
+  .diagram-box {
+    background: var(--bg-analogy);
+    border: 1px solid var(--border-analogy);
+    border-radius: 8px;
+    padding: 14px 20px;
+    color: var(--accent-indigo);
+    font-weight: 600;
+    font-size: 14px;
+    min-width: 100px;
+    transition: all 0.3s;
+  }
+
+  .diagram-box.highlight {
+    background: var(--bg-btn-selected);
+    border-color: #3b82f6;
+    color: #93c5fd;
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
+  }
+
+  .diagram-arrow {
+    color: #4a5568;
+    font-size: 22px;
+    font-weight: bold;
+  }
+
+  .diagram-label {
+    color: var(--text-muted);
+    font-size: 12px;
+    margin-top: 4px;
+  }
+
+  /* ── Table ── */
+  .styled-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bg-card);
+    border: 1px solid var(--border-secondary);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+
+  .styled-table th {
+    background: var(--bg-secondary);
+    color: var(--accent-indigo);
+    text-align: left;
+    padding: 12px 16px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--border-secondary);
+  }
+
+  .styled-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #1a1f2e;
+    font-size: 14px;
+    color: var(--text-body);
+  }
+
+  .styled-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .styled-table code {
+    background: var(--bg-analogy);
+    color: var(--accent-indigo);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: 'SF Mono', Monaco, monospace;
+    font-size: 13px;
+  }
+
+  /* ── Status Code Badge ── */
+  .status-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-family: 'SF Mono', Monaco, monospace;
+    font-size: 13px;
+  }
+
+  .status-2xx { background: #064e3b; color: var(--accent-green); }
+  .status-3xx { background: var(--bg-btn-selected); color: var(--accent-blue); }
+  .status-4xx { background: #78350f; color: var(--accent-yellow); }
+  .status-5xx { background: #7f1d1d; color: #f87171; }
+
+  /* ── Next Button ── */
+  .next-btn {
+    display: inline-block;
+    background: var(--accent-blue-bg);
+    color: var(--text-primary);
+    border: none;
+    padding: 14px 36px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-family: inherit;
+    font-weight: 600;
+    margin-top: 32px;
+    transition: all 0.2s;
+  }
+
+  .next-btn:hover {
+    background: #1d4ed8;
+  }
+
+  /* ── Inline Code ── */
+  code {
+    background: var(--bg-analogy);
+    color: var(--accent-indigo);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: 'SF Mono', Monaco, monospace;
+    font-size: 13px;
+  }
+
+  /* ── Progress Bar ── */
+  .progress-bar {
+    position: fixed;
+    top: 52px;
+    left: 0;
+    height: 3px;
+    background: var(--accent-blue-bg);
+    transition: width 0.3s;
+    z-index: 1001;
+  }
+
+  /* ── Collapsible ── */
+  .collapsible-trigger {
+    background: var(--bg-btn);
+    border: 1px solid var(--border-btn);
+    border-radius: 8px;
+    padding: 14px 20px;
+    width: 100%;
+    text-align: left;
+    color: var(--text-secondary);
+    font-size: 15px;
+    font-family: inherit;
+    cursor: pointer;
+    margin-bottom: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s;
+  }
+
+  .collapsible-trigger:hover {
+    background: #263548;
+  }
+
+  .collapsible-trigger .arrow {
+    transition: transform 0.2s;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .collapsible-trigger.open .arrow {
+    transform: rotate(90deg);
+  }
+
+  .collapsible-content {
+    display: none;
+    padding: 16px 20px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-secondary);
+    border-radius: 0 0 8px 8px;
+    margin-top: -5px;
+    margin-bottom: 12px;
+  }
+
+  .collapsible-content.open {
+    display: block;
+  }
+
+  /* ── JSON Highlighter ── */
+  .json-interactive {
+    background: var(--bg-code);
+    border: 1px solid var(--border-primary);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    font-family: 'SF Mono', Monaco, monospace;
+    font-size: 13.5px;
+    line-height: 1.8;
+    position: relative;
+  }
+
+  .json-interactive .json-part {
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 4px;
+    padding: 1px 3px;
+  }
+
+  .json-interactive .json-part:hover {
+    background: var(--bg-btn);
+  }
+
+  .json-interactive .json-part.active {
+    background: var(--bg-btn-selected);
+    outline: 1px solid #3b82f6;
+  }
+
+  .json-explain {
+    background: var(--bg-card);
+    border: 1px solid var(--border-secondary);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-top: 12px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 14px;
+    color: #93c5fd;
+    min-height: 48px;
+  }
+
+  /* ── Request Breakdown ── */
+  .request-visual {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+
+  .request-section {
+    padding: 16px 22px;
+    border-bottom: 1px solid var(--border-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .request-section:last-child {
+    border-bottom: none;
+  }
+
+  .request-section:hover {
+    background: #161b22;
+  }
+
+  .request-section.active {
+    background: var(--bg-btn-selected);
+    border-left: 3px solid #3b82f6;
+  }
+
+  .request-section .section-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--accent-indigo);
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+
+  .request-section .section-value {
+    font-family: 'SF Mono', Monaco, monospace;
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  .section-explain {
+    background: var(--bg-card);
+    border: 1px solid var(--border-secondary);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    color: #93c5fd;
+    min-height: 48px;
+  }
+
+  /* ── Trace Flow ── */
+  .trace-flow {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin-bottom: 20px;
+  }
+
+  .trace-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    cursor: pointer;
+    padding: 16px 20px;
+    border-left: 2px solid var(--border-primary);
+    margin-left: 16px;
+    transition: all 0.2s;
+    position: relative;
+  }
+
+  .trace-step:hover {
+    background: var(--bg-secondary);
+  }
+
+  .trace-step.active {
+    background: var(--bg-card);
+    border-left-color: #3b82f6;
+  }
+
+  .trace-step .step-number {
+    min-width: 32px;
+    height: 32px;
+    background: var(--bg-analogy);
+    border: 1px solid var(--border-analogy);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--accent-indigo);
+    position: relative;
+    left: -25px;
+    flex-shrink: 0;
+  }
+
+  .trace-step.active .step-number {
+    background: var(--accent-blue-bg);
+    border-color: var(--accent-blue-bg);
+    color: var(--text-primary);
+  }
+
+  .trace-step .step-content {
+    margin-left: -10px;
+  }
+
+  .trace-step .step-title {
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+    font-size: 15px;
+  }
+
+  .trace-step .step-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  .trace-step.active .step-desc {
+    color: var(--text-tertiary);
+  }
+
+  .trace-detail {
+    background: var(--bg-card);
+    border: 1px solid var(--border-secondary);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    min-height: 80px;
+  }
+
+  .trace-detail h4 {
+    color: var(--text-primary);
+    margin-bottom: 8px;
+    font-size: 16px;
+  }
+
+  .trace-detail p {
+    font-size: 14px;
+    color: var(--text-body);
+  }
+
+  /* ── REST resource table ── */
+  .rest-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .rest-resource {
+    background: var(--bg-card);
+    border: 1px solid var(--border-secondary);
+    border-radius: 10px;
+    padding: 18px 22px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .rest-resource:hover {
+    border-color: var(--border-btn);
+    background: #111827;
+  }
+
+  .rest-resource.active {
+    border-color: #3b82f6;
+    background: var(--bg-btn-selected);
+  }
+
+  .rest-resource .resource-name {
+    font-weight: 600;
+    color: var(--accent-indigo);
+    font-size: 15px;
+    margin-bottom: 6px;
+  }
+
+  .rest-resource .resource-desc {
+    font-size: 13px;
+    color: #999;
+  }
+
+  .rest-detail {
+    background: var(--bg-card);
+    border: 1px solid var(--border-secondary);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+  }
+
+  /* ── Fade In Animation ── */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .lesson.active {
+    animation: fadeIn 0.3s ease;
+  }
+
+  /* ── Highlight text ── */
+  .hl-purple { color: var(--accent-purple); font-weight: 600; }
+  .hl-blue { color: var(--accent-blue); font-weight: 600; }
+  .hl-green { color: var(--accent-green); font-weight: 600; }
+  .hl-yellow { color: var(--accent-yellow); font-weight: 600; }
+  .hl-red { color: #f87171; font-weight: 600; }
+  .hl-indigo { color: var(--accent-indigo); font-weight: 600; }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: var(--bg-primary); }
+  ::-webkit-scrollbar-thumb { background: var(--border-nav-btn); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-faint); }
+</style>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <a href="/index.html" class="sidebar-logo">The Fundamentals</a>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="sidebar-section-title">Courses</div>
+    <a href="/lessons/databases.html" class="sidebar-link" data-course="databases">
+      <span class="sidebar-num">01</span> How Databases Work
+    </a>
+    <a href="/lessons/codebase.html" class="sidebar-link" data-course="codebase">
+      <span class="sidebar-num">02</span> The Codebase
+    </a>
+    <a href="/lessons/apis.html" class="sidebar-link" data-course="apis" aria-current="page">
+      <span class="sidebar-num">03</span> APIs &amp; HTTP
+    </a>
+    <a href="/lessons/build.html" class="sidebar-link" data-course="build">
+      <span class="sidebar-num">04</span> Build a Mini App
+    </a>
+    <a href="/lessons/deployment.html" class="sidebar-link" data-course="deployment">
+      <span class="sidebar-num">05</span> How Deployment Works
+    </a>
+    <a href="/lessons/git.html" class="sidebar-link" data-course="git">
+      <span class="sidebar-num">06</span> How Git Works
+    </a>
+  </nav>
+      <a href="/lessons/authentication.html" class="sidebar-link" data-course="authentication">
+        <span class="sidebar-num">07</span> How Auth Works
+      </a>
+      <a href="/lessons/typescript.html" class="sidebar-link" data-course="typescript">
+        <span class="sidebar-num">08</span> How TypeScript Works
+      </a>
+      <a href="/lessons/react.html" class="sidebar-link" data-course="react">
+        <span class="sidebar-num">09</span> How React Works
+      </a>
+      <a href="/lessons/testing.html" class="sidebar-link" data-course="testing">
+        <span class="sidebar-num">10</span> How Testing Works
+      </a>
+      <a href="/lessons/ai-agents.html" class="sidebar-link" data-course="ai-agents">
+        <span class="sidebar-num">11</span> How AI Agents Work
+      </a>
+      <a href="/lessons/shipping.html" class="sidebar-link" data-course="shipping">
+        <span class="sidebar-num">12</span> How to Ship a Product
+      </a>
+  <div class="sidebar-footer">
+    <button class="theme-toggle" id="theme-toggle">
+      <span class="theme-icon" id="theme-icon">☀️</span>
+      <span class="theme-label" id="theme-label">Light Mode</span>
+    </button>
+  </div>
+</aside>
+<button class="sidebar-toggle" id="sidebar-toggle">☰</button>
+
+<div class="content-wrapper">
+
+<div class="breadcrumb"><a href="/index.html">Home</a><span class="sep">›</span><span>APIs & HTTP</span></div>
+
+<!-- ════════════════════════════════════════════════════════════════════
+     TOP NAV
+     ════════════════════════════════════════════════════════════════════ -->
+<nav class="top-nav">
+  <span class="nav-title">APIs & HTTP</span>
+  <button onclick="goToLesson(0)" id="nav-0" class="active">1. The Internet</button>
+  <button onclick="goToLesson(1)" id="nav-1">2. APIs</button>
+  <button onclick="goToLesson(2)" id="nav-2">3. HTTP Methods</button>
+  <button onclick="goToLesson(3)" id="nav-3">4. The Request</button>
+  <button onclick="goToLesson(4)" id="nav-4">5. The Response</button>
+  <button onclick="goToLesson(5)" id="nav-5">6. JSON</button>
+  <button onclick="goToLesson(6)" id="nav-6">7. Tracing a Request</button>
+  <button onclick="goToLesson(7)" id="nav-7">8. REST</button>
+</nav>
+
+<div class="progress-bar" id="progressBar" style="width: 12.5%"></div>
+
+<div class="container">
+
+<!-- ════════════════════════════════════════════════════════════════════
+     LESSON 1: WHAT IS THE INTERNET?
+     ════════════════════════════════════════════════════════════════════ -->
+<div class="lesson active" id="lesson-0">
+  <h1>What is the Internet?</h1>
+  <p class="subtitle">Lesson 1 of 8 &mdash; The client-server model</p>
+
+  <p>You already know that Paperclip has a <strong>server</strong> (the backend code) and a <strong>UI</strong> (the frontend you see in the browser). But how do they talk to each other? That's what the internet is all about.</p>
+
+  <h2>The Client-Server Model</h2>
+
+  <p>Every time you use the internet, two things are having a conversation:</p>
+
+  <div class="diagram">
+    <div class="diagram-row">
+      <div class="diagram-box" id="d1-client">Your Browser<br><span style="font-size:12px;color:#999;">(the client)</span></div>
+      <div class="diagram-arrow">&xrarr;</div>
+      <div class="diagram-box" id="d1-internet">The Internet<br><span style="font-size:12px;color:#999;">(the network)</span></div>
+      <div class="diagram-arrow">&xrarr;</div>
+      <div class="diagram-box" id="d1-server">Paperclip Server<br><span style="font-size:12px;color:#999;">(the server)</span></div>
+    </div>
+    <div class="diagram-label">Click each box to learn more</div>
+  </div>
+
+  <div class="result-panel" id="d1-explain">
+    <div class="result-body" style="color:var(--text-muted);">Click on any box in the diagram above to learn what it does.</div>
+  </div>
+
+  <h2>The Restaurant Analogy</h2>
+
+  <div class="analogy">
+    <div class="analogy-label">Analogy</div>
+    <p><strong>Think of a restaurant.</strong> You sit at a table with a menu. You are the <strong>client</strong>. The kitchen in the back is the <strong>server</strong> &mdash; it has all the food and knows how to make things. But you can't just walk into the kitchen and start cooking. You need a <strong>waiter</strong>.</p>
+    <p>The waiter is <strong>HTTP</strong> &mdash; the protocol (set of rules) that carries your order to the kitchen and brings the food back to your table. You say "I'd like the pasta," the waiter carries that to the kitchen, and then brings you a plate of pasta.</p>
+    <p>The internet works the same way. Your browser asks for something, HTTP carries the request to the server, and the server sends back a response.</p>
+  </div>
+
+  <h2>How Does This Connect to Paperclip?</h2>
+
+  <p>In the codebase tutorial, you explored Paperclip's server code. Every time someone opens Paperclip in their browser:</p>
+
+  <ol>
+    <li>The <span class="hl-blue">browser</span> (client) sends a request over the internet</li>
+    <li>The request travels through <span class="hl-purple">HTTP</span> (the waiter)</li>
+    <li>It arrives at the <span class="hl-green">Paperclip server</span> (the kitchen)</li>
+    <li>The server does its job (maybe queries the database you learned about!)</li>
+    <li>The server sends a <span class="hl-yellow">response</span> back through HTTP</li>
+    <li>The browser shows the result on screen</li>
+  </ol>
+
+  <div class="card">
+    <h3>Key Takeaway</h3>
+    <p>The internet is just a system for <strong>clients</strong> (like your browser) to send messages to <strong>servers</strong> (like Paperclip's backend) and get messages back. HTTP is the set of rules they both follow so they can understand each other &mdash; like a shared language.</p>
+  </div>
+
+  <h2>Quick Check</h2>
+
+  <p>In the Paperclip system, which is the client and which is the server?</p>
+
+  <div class="btn-row">
+    <button onclick="checkQuiz1('a')">The UI is the server, the database is the client</button>
+    <button onclick="checkQuiz1('b')">The browser is the client, the backend is the server</button>
+    <button onclick="checkQuiz1('c')">They're the same thing</button>
+  </div>
+
+  <div class="result-panel" id="quiz1-result">
+    <div class="result-body" style="color:var(--text-muted);">Pick an answer above.</div>
+  </div>
+
+  <button class="next-btn" onclick="goToLesson(1)">Next: What is an API? &rarr;</button>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════
+     LESSON 2: WHAT IS AN API?
+     ════════════════════════════════════════════════════════════════════ -->
+<div class="lesson" id="lesson-1">
+  <h1>What is an API?</h1>
+  <p class="subtitle">Lesson 2 of 8 &mdash; Application Programming Interface</p>
+
+  <p>API stands for <strong>Application Programming Interface</strong>. That sounds complicated, but it's actually a simple idea.</p>
+
+  <div class="analogy">
+    <div class="analogy-label">Analogy</div>
+    <p><strong>Remember the restaurant?</strong> The <strong>menu</strong> is the API. It tells you exactly what you can order. You can't just ask for "something delicious" &mdash; you have to pick from the menu. The menu lists every dish the kitchen knows how to make.</p>
+    <p>An API is the <strong>menu of things you can ask a server to do</strong>. It defines exactly what requests the server will accept and what you'll get back.</p>
+  </div>
+
+  <h2>Paperclip's API</h2>
+
+  <p>When you explored the Paperclip codebase, you saw that it has about <strong>43 route files</strong>. Each route is like one item on the menu. Here are some examples:</p>
+
+  <div class="card">
+    <h3>Paperclip's "Menu" (Some API Routes)</h3>
+    <div class="code-block">
+<span class="comment">// Agents</span>
+<span class="method">GET</span>    <span class="string">/api/agents</span>          <span class="comment">// List all agents</span>
+<span class="method">POST</span>   <span class="string">/api/agents</span>          <span class="comment">// Create a new agent</span>
+<span class="method">GET</span>    <span class="string">/api/agents/:id</span>      <span class="comment">// Get one specific agent</span>
+
+<span class="comment">// Issues</span>
+<span class="method">GET</span>    <span class="string">/api/issues</span>          <span class="comment">// List all issues</span>
+<span class="method">POST</span>   <span class="string">/api/issues</span>          <span class="comment">// Create a new issue</span>
+<span class="method">PATCH</span>  <span class="string">/api/issues/:id</span>      <span class="comment">// Update an issue</span>
+
+<span class="comment">// Tasks</span>
+<span class="method">GET</span>    <span class="string">/api/tasks</span>           <span class="comment">// List all tasks</span>
+<span class="method">POST</span>   <span class="string">/api/tasks</span>           <span class="comment">// Create a new task</span>
+<span class="method">DELETE</span> <span class="string">/api/tasks/:id</span>       <span class="comment">// Delete a task</span>
+    </div>
+  </div>
+
+  <h2>Without an API vs. With an API</h2>
+
+  <p>Click each scenario to see the difference:</p>
+
+  <div class="btn-row">
+    <button onclick="showApiComparison('without')" id="api-cmp-without">Without an API</button>
+    <button onclick="showApiComparison('with')" id="api-cmp-with">With an API</button>
+  </div>
+
+  <div class="result-panel" id="api-comparison">
+    <div class="result-body" style="color:var(--text-muted);">Click a scenario above to compare.</div>
+  </div>
+
+  <h2>APIs Are Everywhere</h2>
+
+  <p>APIs aren't just a Paperclip thing. They're everywhere:</p>
+
+  <table class="styled-table">
+    <thead>
+      <tr>
+        <th>App</th>
+        <th>Example API Call</th>
+        <th>What It Does</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Twitter/X</td>
+        <td><code>GET /api/tweets</code></td>
+        <td>Get tweets for your timeline</td>
+      </tr>
+      <tr>
+        <td>Spotify</td>
+        <td><code>GET /api/playlists</code></td>
+        <td>Get your playlists</td>
+      </tr>
+      <tr>
+        <td>Uber</td>
+        <td><code>POST /api/rides</code></td>
+        <td>Request a new ride</td>
+      </tr>
+      <tr>
+        <td>Paperclip</td>
+        <td><code>GET /api/agents</code></td>
+        <td>List all agents</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="card">
+    <h3>Key Takeaway</h3>
+    <p>An API is the <strong>menu</strong> that a server publishes. It tells the client exactly what requests it can make. Each item on the menu (each route) has a specific address (URL) and a specific action (method). Paperclip's 43 route files define its entire menu.</p>
+  </div>
+
+  <button class="next-btn" onclick="goToLesson(2)">Next: HTTP Methods &rarr;</button>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════
+     LESSON 3: HTTP METHODS
+     ════════════════════════════════════════════════════════════════════ -->
+<div class="lesson" id="lesson-2">
+  <h1>HTTP Methods</h1>
+  <p class="subtitle">Lesson 3 of 8 &mdash; GET, POST, PATCH, PUT, DELETE</p>
+
+  <p>When you order at a restaurant, there are different <em>types</em> of things you can ask: "Show me the dessert menu," "I'd like to order the pasta," "Actually, change my order to pizza," or "Cancel my order." HTTP methods work the same way &mdash; they tell the server what <em>kind</em> of action you want.</p>
+
+  <h2>The Five Main HTTP Methods</h2>
+
+  <p>Click each method to see what it does, with real Paperclip examples:</p>
+
+  <div class="btn-row">
+    <button onclick="showMethod('get')" id="method-get" class="selected">GET</button>
+    <button onclick="showMethod('post')" id="method-post">POST</button>
+    <button onclick="showMethod('patch')" id="method-patch">PATCH</button>
+    <button onclick="showMethod('put')" id="method-put">PUT</button>
+    <button onclick="showMethod('delete')" id="method-delete">DELETE</button>
+  </div>
+
+  <div class="result-panel" id="method-result">
+    <div class="result-title"><span class="hl-blue">GET</span> &mdash; Read data</div>
+    <div class="result-body">
+      <p><strong>What it does:</strong> Asks the server to <em>show</em> you something. It never changes anything &mdash; it just reads.</p>
+      <p style="margin-top:8px;"><strong>Restaurant analogy:</strong> "Can I see the menu?" or "What soups do you have today?"</p>
+      <p style="margin-top:8px;"><strong>Paperclip examples:</strong></p>
+      <div class="code-block" style="margin-top:8px;">
+<span class="method">GET</span> <span class="string">/api/agents</span>       <span class="comment">// "Show me all the agents"</span>
+<span class="method">GET</span> <span class="string">/api/agents/42</span>    <span class="comment">// "Show me agent number 42"</span>
+<span class="method">GET</span> <span class="string">/api/issues</span>       <span class="comment">// "Show me all the issues"</span>
+<span class="method">GET</span> <span class="string">/api/tasks</span>        <span class="comment">// "Show me all the tasks"</span>
+      </div>
+    </div>
+  </div>
+
+  <h2>Methods at a Glance</h2>
+
+  <table class="styled-table">
+    <thead>
+      <tr>
+        <th>Method</th>
+        <th>Action</th>
+        <th>Changes Data?</th>
+        <th>Restaurant Analogy</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>GET</code></td>
+        <td>Read / retrieve</td>
+        <td>No</td>
+        <td>"Show me the menu"</td>
+      </tr>
+      <tr>
+        <td><code>POST</code></td>
+        <td>Create new</td>
+        <td>Yes</td>
+        <td>"I'd like to order the pasta"</td>
+      </tr>
+      <tr>
+        <td><code>PATCH</code></td>
+        <td>Partially update</td>
+        <td>Yes</td>
+        <td>"Change my drink to water"</td>
+      </tr>
+      <tr>
+        <td><code>PUT</code></td>
+        <td>Fully replace</td>
+        <td>Yes</td>
+        <td>"Replace my entire order"</td>
+      </tr>
+      <tr>
+        <td><code>DELETE</code></td>
+        <td>Remove</td>
+        <td>Yes</td>
+        <td>"Cancel my order"</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="analogy">
+    <div class="analogy-label">Analogy</div>
+    <p><strong>PATCH vs. PUT &mdash; what's the difference?</strong></p>
+    <p>Imagine you ordered a burger with fries and a Coke. <strong>PATCH</strong> means "change just the drink to water" &mdash; keep everything else the same. <strong>PUT</strong> means "here's my whole new order from scratch: burger, fries, water." PUT replaces <em>everything</em>; PATCH only updates the parts you mention.</p>
+    <p>In practice, most APIs (including Paperclip) use <strong>PATCH</strong> more often than PUT, because you usually just want to change one or two fields.</p>
+  </div>
+
+  <h2>Quick Challenge</h2>
+
+  <p>For each action, pick the right HTTP method:</p>
+
+  <div class="card" style="margin-bottom:12px;">
+    <p style="margin-bottom:8px;"><strong>1.</strong> A user wants to see all their tasks</p>
+    <div class="btn-row">
+      <button onclick="checkMethodQuiz(1,'GET')" id="mq1-GET">GET</button>
+      <button onclick="checkMethodQuiz(1,'POST')" id="mq1-POST">POST</button>
+      <button onclick="checkMethodQuiz(1,'DELETE')" id="mq1-DELETE">DELETE</button>
+    </div>
+    <div id="mq1-result" style="font-size:13px;color:var(--text-muted);min-height:20px;"></div>
+  </div>
+
+  <div class="card" style="margin-bottom:12px;">
+    <p style="margin-bottom:8px;"><strong>2.</strong> A user wants to create a new issue</p>
+    <div class="btn-row">
+      <button onclick="checkMethodQuiz(2,'GET')" id="mq2-GET">GET</button>
+      <button onclick="checkMethodQuiz(2,'POST')" id="mq2-POST">POST</button>
+      <button onclick="checkMethodQuiz(2,'PATCH')" id="mq2-PATCH">PATCH</button>
+    </div>
+    <div id="mq2-result" style="font-size:13px;color:var(--text-muted);min-height:20px;"></div>
+  </div>
+
+  <div class="card" style="margin-bottom:12px;">
+    <p style="margin-bottom:8px;"><strong>3.</strong> A user wants to remove an agent from the system</p>
+    <div class="btn-row">
+      <button onclick="checkMethodQuiz(3,'POST')" id="mq3-POST">POST</button>
+      <button onclick="checkMethodQuiz(3,'PATCH')" id="mq3-PATCH">PATCH</button>
+      <button onclick="checkMethodQuiz(3,'DELETE')" id="mq3-DELETE">DELETE</button>
+    </div>
+    <div id="mq3-result" style="font-size:13px;color:var(--text-muted);min-height:20px;"></div>
+  </div>
+
+  <div class="card">
+    <p style="margin-bottom:8px;"><strong>4.</strong> A user wants to change a task's status from "open" to "done"</p>
+    <div class="btn-row">
+      <button onclick="checkMethodQuiz(4,'GET')" id="mq4-GET">GET</button>
+      <button onclick="checkMethodQuiz(4,'PATCH')" id="mq4-PATCH">PATCH</button>
+      <button onclick="checkMethodQuiz(4,'DELETE')" id="mq4-DELETE">DELETE</button>
+    </div>
+    <div id="mq4-result" style="font-size:13px;color:var(--text-muted);min-height:20px;"></div>
+  </div>
+
+  <button class="next-btn" onclick="goToLesson(3)">Next: The Request &rarr;</button>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════
+     LESSON 4: THE REQUEST
+     ════════════════════════════════════════════════════════════════════ -->
+<div class="lesson" id="lesson-3">
+  <h1>The Request</h1>
+  <p class="subtitle">Lesson 4 of 8 &mdash; What actually gets sent to the server</p>
+
+  <p>When your browser talks to a server, it doesn't just shout "give me stuff!" It sends a carefully structured message called an <strong>HTTP request</strong>. Let's break down exactly what's inside one.</p>
+
+  <div class="analogy">
+    <div class="analogy-label">Analogy</div>
+    <p><strong>Think of mailing a letter.</strong> You don't just scribble your message and throw it into the wind. You put it in an envelope with: a <strong>destination address</strong> (the URL), a note saying what kind of letter it is (the <strong>method</strong>), some info on the outside of the envelope (the <strong>headers</strong>), and the actual letter inside (the <strong>body</strong>).</p>
+  </div>
+
+  <h2>The Four Parts of a Request</h2>
+
+  <p>Click each part of this real Paperclip request to learn what it does:</p>
+
+  <div class="request-visual" id="request-breakdown">
+    <div class="request-section active" onclick="explainRequestPart('method')">
+      <div class="section-label">Method</div>
+      <div class="section-value"><span style="color:var(--accent-purple);font-weight:600;">POST</span></div>
+    </div>
+    <div class="request-section" onclick="explainRequestPart('url')">
+      <div class="section-label">URL</div>
+      <div class="section-value"><span style="color:var(--accent-green);">https://paperclip.app/api/issues</span></div>
+    </div>
+    <div class="request-section" onclick="explainRequestPart('headers')">
+      <div class="section-label">Headers</div>
+      <div class="section-value">
+        <span style="color:var(--accent-yellow);">Content-Type</span>: <span style="color:var(--text-secondary);">application/json</span><br>
+        <span style="color:var(--accent-yellow);">Authorization</span>: <span style="color:var(--text-secondary);">Bearer eyJhbG...xyz</span><br>
+        <span style="color:var(--accent-yellow);">Accept</span>: <span style="color:var(--text-secondary);">application/json</span>
+      </div>
+    </div>
+    <div class="request-section" onclick="explainRequestPart('body')">
+      <div class="section-label">Body</div>
+      <div class="section-value">
+        {<br>
+        &nbsp;&nbsp;<span style="color:#93c5fd;">"title"</span>: <span style="color:var(--accent-green);">"Fix login bug"</span>,<br>
+        &nbsp;&nbsp;<span style="color:#93c5fd;">"priority"</span>: <span style="color:var(--accent-green);">"high"</span>,<br>
+        &nbsp;&nbsp;<span style="color:#93c5fd;">"assignee_id"</span>: <span style="color:var(--accent-pink);">42</span><br>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="section-explain" id="request-explain">
+    <strong style="color:var(--accent-purple);">Method (POST)</strong> &mdash; This tells the server what <em>kind</em> of action you want. POST means "create something new." It's like telling the waiter "I'd like to place a new order" vs. "Can I see the menu?" (which would be GET).
+  </div>
+
+  <h2>Let's Build a Request Step by Step</h2>
+
+  <p>Imagine a Paperclip user clicks "Create New Issue" in the UI. Here's what happens behind the scenes:</p>
+
+  <div class="card">
+    <h3>Step 1: The browser figures out WHERE to send the request</h3>
+    <div class="code-block">
+<span class="comment">// The URL is the address of the API endpoint</span>
+<span class="type">URL</span>: <span class="string">https://paperclip.app/api/issues</span>
+
+<span class="comment">// Broken down:</span>
+<span class="type">https://</span>          <span class="comment">// The protocol (secure HTTP)</span>
+<span class="type">paperclip.app</span>     <span class="comment">// The server's address (domain)</span>
+<span class="type">/api/issues</span>       <span class="comment">// The specific endpoint (route)</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Step 2: The browser picks the right METHOD</h3>
+    <p>Since the user is <em>creating</em> something new, the browser uses <code>POST</code>.</p>
+  </div>
+
+  <div class="card">
+    <h3>Step 3: The browser adds HEADERS</h3>
+    <p>Headers are like the info written on the outside of an envelope. They tell the server things like:</p>
+    <ul>
+      <li><code>Content-Type: application/json</code> &mdash; "The body is written in JSON format"</li>
+      <li><code>Authorization: Bearer eyJhbG...</code> &mdash; "Here's my ID badge to prove who I am"</li>
+      <li><code>Accept: application/json</code> &mdash; "Please send the response in JSON too"</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>Step 4: The browser packs the BODY</h3>
+    <p>The body is the actual data you're sending. For a POST request creating an issue, it includes all the details about the new issue:</p>
+    <div class="code-block">
+{
+  <span class="property">"title"</span>: <span class="string">"Fix login bug"</span>,
+  <span class="property">"priority"</span>: <span class="string">"high"</span>,
+  <span class="property">"assignee_id"</span>: <span class="number">42</span>
+}
+    </div>
+    <p style="margin-top:12px;">This is <strong>JSON</strong> &mdash; we'll learn more about it in Lesson 6. For now, just know it's a way to organize data using key-value pairs, like a form.</p>
+  </div>
+
+  <div class="analogy">
+    <div class="analogy-label">Important Detail</div>
+    <p><strong>Not all requests have a body!</strong> GET requests usually don't, because you're just asking to <em>see</em> something. It's like asking the waiter "What's on the menu?" &mdash; you don't need to hand them anything. But POST and PATCH requests usually <em>do</em> have a body, because you're sending data to the server.</p>
+  </div>
+
+  <h2>Quick Check</h2>
+  <p>If you're sending a GET request to see all agents, which parts do you need?</p>
+  <div class="btn-row">
+    <button onclick="checkReqQuiz('a')">Method + URL + Body</button>
+    <button onclick="checkReqQuiz('b')">Method + URL + Headers</button>
+    <button onclick="checkReqQuiz('c')">Just the URL</button>
+  </div>
+  <div class="result-panel" id="req-quiz-result">
+    <div class="result-body" style="color:var(--text-muted);">Pick an answer.</div>
+  </div>
+
+  <button class="next-btn" onclick="goToLesson(4)">Next: The Response &rarr;</button>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════
+     LESSON 5: THE RESPONSE
+     ════════════════════════════════════════════════════════════════════ -->
+<div class="lesson" id="lesson-4">
+  <h1>The Response</h1>
+  <p class="subtitle">Lesson 5 of 8 &mdash; What the server sends back</p>
+
+  <p>After the server receives your request, it thinks about it (runs your code, queries the database) and then sends back a <strong>response</strong>. This is the waiter coming back from the kitchen.</p>
+
+  <h2>The Three Parts of a Response</h2>
+
+  <div class="diagram">
+    <div class="diagram-row">
+      <div class="diagram-box" onclick="showRespPart('status')" id="resp-status" style="cursor:pointer;">Status Code<br><span style="font-size:12px;color:#999;">200 OK</span></div>
+      <div class="diagram-box" onclick="showRespPart('headers')" id="resp-headers" style="cursor:pointer;">Headers<br><span style="font-size:12px;color:#999;">Content-Type, etc.</span></div>
+      <div class="diagram-box" onclick="showRespPart('body')" id="resp-body" style="cursor:pointer;">Body<br><span style="font-size:12px;color:#999;">The actual data</span></div>
+    </div>
+    <div class="diagram-label">Click each part to learn more</div>
+  </div>
+
+  <div class="result-panel" id="resp-explain">
+    <div class="result-body" style="color:var(--text-muted);">Click a part of the response above to learn about it.</div>
+  </div>
+
+  <h2>Status Codes &mdash; The Server's Quick Answer</h2>
+
+  <p>Before the server sends any data, it sends a <strong>number</strong> that instantly tells you how things went. Click each status code to see what it means:</p>
+
+  <div class="btn-row">
+    <button onclick="showStatusCode(200)" id="sc-200" class="selected">200</button>
+    <button onclick="showStatusCode(201)" id="sc-201">201</button>
+    <button onclick="showStatusCode(400)" id="sc-400">400</button>
+    <button onclick="showStatusCode(404)" id="sc-404">404</button>
+    <button onclick="showStatusCode(500)" id="sc-500">500</button>
+  </div>
+
+  <div class="result-panel" id="status-result">
+    <div class="result-title"><span class="status-badge status-2xx">200 OK</span></div>
+    <div class="result-body">
+      <p><strong>Meaning:</strong> Everything worked perfectly! Here's what you asked for.</p>
+      <p style="margin-top:8px;"><strong>Restaurant analogy:</strong> The waiter brings your food and says "Here you go! Enjoy your meal."</p>
+      <p style="margin-top:8px;"><strong>Paperclip example:</strong> You asked for <code>GET /api/agents</code> and the server found all the agents and sent them back.</p>
+    </div>
+  </div>
+
+  <h2>Status Code Families</h2>
+
+  <p>Status codes are grouped by their first digit:</p>
+
+  <table class="styled-table">
+    <thead>
+      <tr>
+        <th>Range</th>
+        <th>Category</th>
+        <th>Meaning</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="status-badge status-2xx">2xx</span></td>
+        <td>Success</td>
+        <td>Everything went well</td>
+      </tr>
+      <tr>
+        <td><span class="status-badge status-3xx">3xx</span></td>
+        <td>Redirect</td>
+        <td>Go look somewhere else</td>
+      </tr>
+      <tr>
+        <td><span class="status-badge status-4xx">4xx</span></td>
+        <td>Client Error</td>
+        <td>YOU made a mistake</td>
+      </tr>
+      <tr>
+        <td><span class="status-badge status-5xx">5xx</span></td>
+        <td>Server Error</td>
+        <td>THE SERVER made a mistake</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="analogy">
+    <div class="analogy-label">Analogy</div>
+    <p><strong>The easy way to remember:</strong></p>
+    <p><strong>2xx</strong> = "Here you go!" (success)</p>
+    <p><strong>4xx</strong> = "That's your fault" (you asked for something wrong)</p>
+    <p><strong>5xx</strong> = "That's our fault" (the kitchen caught fire)</p>
+  </div>
+
+  <h2>A Complete Response Example</h2>
+
+  <p>Here's what comes back when you ask Paperclip for agent #42:</p>
+
+  <div class="code-block">
+<span class="comment">// Response to: GET /api/agents/42</span>
+
+<span class="type">Status</span>: <span class="number">200</span> <span class="string">OK</span>
+
+<span class="type">Headers</span>:
+  <span class="property">Content-Type</span>: <span class="string">application/json</span>
+  <span class="property">X-Request-Id</span>: <span class="string">abc-123-def</span>
+
+<span class="type">Body</span>:
+{
+  <span class="property">"id"</span>: <span class="number">42</span>,
+  <span class="property">"name"</span>: <span class="string">"Support Bot Alpha"</span>,
+  <span class="property">"status"</span>: <span class="string">"active"</span>,
+  <span class="property">"created_at"</span>: <span class="string">"2025-03-15T10:30:00Z"</span>,
+  <span class="property">"tasks_completed"</span>: <span class="number">147</span>
+}
+  </div>
+
+  <div class="card">
+    <h3>Key Takeaway</h3>
+    <p>Every HTTP response has three parts: a <strong>status code</strong> (how did it go?), <strong>headers</strong> (metadata about the response), and a <strong>body</strong> (the actual data). The status code is the first thing your browser checks &mdash; it tells you immediately whether things worked or something went wrong.</p>
+  </div>
+
+  <button class="next-btn" onclick="goToLesson(5)">Next: JSON &rarr;</button>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════
+     LESSON 6: JSON
+     ════════════════════════════════════════════════════════════════════ -->
+<div class="lesson" id="lesson-5">
+  <h1>JSON</h1>
+  <p class="subtitle">Lesson 6 of 8 &mdash; The language of APIs</p>
+
+  <p>You've seen JSON popping up in request bodies and response bodies. Now let's understand exactly what it is.</p>
+
+  <p><strong>JSON</strong> stands for <strong>JavaScript Object Notation</strong>. It's a simple, universal way to format data so that both humans and computers can read it.</p>
+
+  <div class="analogy">
+    <div class="analogy-label">Analogy</div>
+    <p><strong>Think of a form you fill out at a doctor's office.</strong> It has labels on the left and your answers on the right:</p>
+    <p style="margin-top:8px;"><strong>Name:</strong> Jane Smith<br><strong>Age:</strong> 28<br><strong>Allergies:</strong> None</p>
+    <p style="margin-top:8px;">JSON works the same way. Each piece of data has a <strong>key</strong> (the label) and a <strong>value</strong> (your answer). That's it!</p>
+  </div>
+
+  <h2>Interactive JSON Explorer</h2>
+
+  <p>Click on different parts of this JSON to learn what each piece means:</p>
+
+  <div class="json-interactive" id="json-explorer">
+    <span class="punctuation">{</span><br>
+    <span class="json-part" data-explain="key" onclick="explainJson(this, 'key')">&nbsp;&nbsp;<span class="property">&quot;name&quot;</span></span><span class="punctuation">:</span> <span class="json-part" data-explain="string-val" onclick="explainJson(this, 'string-val')"><span class="string">&quot;Support Bot Alpha&quot;</span></span><span class="punctuation">,</span><br>
+    <span class="json-part" data-explain="key2" onclick="explainJson(this, 'key2')">&nbsp;&nbsp;<span class="property">&quot;id&quot;</span></span><span class="punctuation">:</span> <span class="json-part" data-explain="number-val" onclick="explainJson(this, 'number-val')"><span class="number">42</span></span><span class="punctuation">,</span><br>
+    <span class="json-part" data-explain="key3" onclick="explainJson(this, 'key3')">&nbsp;&nbsp;<span class="property">&quot;active&quot;</span></span><span class="punctuation">:</span> <span class="json-part" data-explain="bool-val" onclick="explainJson(this, 'bool-val')"><span class="keyword">true</span></span><span class="punctuation">,</span><br>
+    <span class="json-part" data-explain="key4" onclick="explainJson(this, 'key4')">&nbsp;&nbsp;<span class="property">&quot;tags&quot;</span></span><span class="punctuation">:</span> <span class="json-part" data-explain="array-val" onclick="explainJson(this, 'array-val')"><span class="punctuation">[</span><span class="string">&quot;support&quot;</span><span class="punctuation">,</span> <span class="string">&quot;chat&quot;</span><span class="punctuation">,</span> <span class="string">&quot;tier-1&quot;</span><span class="punctuation">]</span></span><span class="punctuation">,</span><br>
+    <span class="json-part" data-explain="key5" onclick="explainJson(this, 'key5')">&nbsp;&nbsp;<span class="property">&quot;config&quot;</span></span><span class="punctuation">:</span> <span class="json-part" data-explain="object-val" onclick="explainJson(this, 'object-val')"><span class="punctuation">{</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="property">&quot;language&quot;</span><span class="punctuation">:</span> <span class="string">&quot;en&quot;</span><span class="punctuation">,</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="property">&quot;max_retries&quot;</span><span class="punctuation">:</span> <span class="number">3</span><br>
+    &nbsp;&nbsp;<span class="punctuation">}</span></span><br>
+    <span class="punctuation">}</span>
+  </div>
+
+  <div class="json-explain" id="json-explain-panel">
+    Click on any highlighted part of the JSON above to learn what it is and how it works.
+  </div>
+
+  <h2>The Five JSON Value Types</h2>
+
+  <p>JSON only has five types of values. Click each to see an example:</p>
+
+  <div class="btn-row">
+    <button onclick="showJsonType('string')" id="jt-string" class="selected">String</button>
+    <button onclick="showJsonType('number')" id="jt-number">Number</button>
+    <button onclick="showJsonType('boolean')" id="jt-boolean">Boolean</button>
+    <button onclick="showJsonType('array')" id="jt-array">Array</button>
+    <button onclick="showJsonType('object')" id="jt-object">Object</button>
+  </div>
+
+  <div class="result-panel" id="json-type-result">
+    <div class="result-title"><span class="hl-green">String</span> &mdash; Text wrapped in quotes</div>
+    <div class="result-body">
+      <p>A string is any text. It must always be wrapped in double quotes.</p>
+      <div class="code-block" style="margin-top:8px;">
+<span class="property">"name"</span>: <span class="string">"Fix login bug"</span>
+<span class="property">"status"</span>: <span class="string">"active"</span>
+<span class="property">"email"</span>: <span class="string">"jane@example.com"</span>
+      </div>
+      <p style="margin-top:8px;">Strings can hold anything: names, emails, dates, descriptions &mdash; any text at all.</p>
+    </div>
+  </div>
+
+  <h2>JSON in Paperclip</h2>
+
+  <p>Here's a real-world example. When the Paperclip UI fetches an issue, the server responds with JSON like this:</p>
+
+  <div class="code-block">
+<span class="comment">// Response body from GET /api/issues/101</span>
+{
+  <span class="property">"id"</span>: <span class="number">101</span>,
+  <span class="property">"title"</span>: <span class="string">"Login page crashes on mobile"</span>,
+  <span class="property">"status"</span>: <span class="string">"open"</span>,
+  <span class="property">"priority"</span>: <span class="string">"high"</span>,
+  <span class="property">"created_at"</span>: <span class="string">"2025-06-10T14:22:00Z"</span>,
+  <span class="property">"assignee"</span>: {
+    <span class="property">"id"</span>: <span class="number">42</span>,
+    <span class="property">"name"</span>: <span class="string">"Support Bot Alpha"</span>
+  },
+  <span class="property">"labels"</span>: [<span class="string">"bug"</span>, <span class="string">"mobile"</span>, <span class="string">"urgent"</span>]
+}
+  </div>
+
+  <p>Notice how <code>"assignee"</code> is a nested object (an object inside an object), and <code>"labels"</code> is an array (a list). JSON can nest as deep as you need.</p>
+
+  <div class="analogy">
+    <div class="analogy-label">Connecting to the Database Tutorial</div>
+    <p>Remember database rows from Lesson 1 of the previous tutorial? Each row in a database table becomes a <strong>JSON object</strong> when sent through an API. The column names become <strong>keys</strong>, and the cell values become <strong>values</strong>. The API is essentially translating database rows into a format the browser can understand.</p>
+  </div>
+
+  <div class="card">
+    <h3>Key Takeaway</h3>
+    <p>JSON is the shared language between clients and servers. It uses <strong>key-value pairs</strong> wrapped in curly braces. Values can be strings, numbers, booleans, arrays (lists), or nested objects. When Paperclip's server reads from the database, it converts the rows into JSON and sends them to the browser.</p>
+  </div>
+
+  <button class="next-btn" onclick="goToLesson(6)">Next: Tracing a Request &rarr;</button>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════
+     LESSON 7: FOLLOWING A REQUEST THROUGH PAPERCLIP
+     ════════════════════════════════════════════════════════════════════ -->
+<div class="lesson" id="lesson-6">
+  <h1>Following a Request Through Paperclip</h1>
+  <p class="subtitle">Lesson 7 of 8 &mdash; Tying it all together</p>
+
+  <p>Now let's put everything together by tracing a single action through the entire Paperclip system. You'll see how the database tutorial, the codebase tutorial, and everything you've learned here all connect.</p>
+
+  <h2>The Scenario</h2>
+
+  <div class="card">
+    <p>A user is looking at Paperclip in their browser. They click <strong>"Create New Issue"</strong>, fill in a title ("Fix login bug") and a priority ("high"), and click <strong>Submit</strong>.</p>
+    <p style="margin-top:8px;">What happens next? Click each step below to follow the journey:</p>
+  </div>
+
+  <div class="trace-flow" id="trace-flow">
+    <div class="trace-step active" onclick="showTraceStep(0)">
+      <div class="step-number">1</div>
+      <div class="step-content">
+        <div class="step-title">User Clicks "Submit"</div>
+        <div class="step-desc">The browser captures the form data</div>
+      </div>
+    </div>
+    <div class="trace-step" onclick="showTraceStep(1)">
+      <div class="step-number">2</div>
+      <div class="step-content">
+        <div class="step-title">Browser Builds an HTTP Request</div>
+        <div class="step-desc">POST /api/issues with JSON body</div>
+      </div>
+    </div>
+    <div class="trace-step" onclick="showTraceStep(2)">
+      <div class="step-number">3</div>
+      <div class="step-content">
+        <div class="step-title">Request Travels Over the Internet</div>
+        <div class="step-desc">DNS, TCP, TLS &mdash; the plumbing of the web</div>
+      </div>
+    </div>
+    <div class="trace-step" onclick="showTraceStep(3)">
+      <div class="step-number">4</div>
+      <div class="step-content">
+        <div class="step-title">Server Receives the Request</div>
+        <div class="step-desc">Middleware checks auth, parses JSON</div>
+      </div>
+    </div>
+    <div class="trace-step" onclick="showTraceStep(4)">
+      <div class="step-number">5</div>
+      <div class="step-content">
+        <div class="step-title">Router Matches the Route</div>
+        <div class="step-desc">POST /api/issues &rarr; issues route handler</div>
+      </div>
+    </div>
+    <div class="trace-step" onclick="showTraceStep(5)">
+      <div class="step-number">6</div>
+      <div class="step-content">
+        <div class="step-title">Service Layer Runs Business Logic</div>
+        <div class="step-desc">Validates data, applies rules</div>
+      </div>
+    </div>
+    <div class="trace-step" onclick="showTraceStep(6)">
+      <div class="step-number">7</div>
+      <div class="step-content">
+        <div class="step-title">Database Query Executes</div>
+        <div class="step-desc">INSERT INTO issues ...</div>
+      </div>
+    </div>
+    <div class="trace-step" onclick="showTraceStep(7)">
+      <div class="step-number">8</div>
+      <div class="step-content">
+        <div class="step-title">Server Sends a Response</div>
+        <div class="step-desc">201 Created with the new issue data</div>
+      </div>
+    </div>
+    <div class="trace-step" onclick="showTraceStep(8)">
+      <div class="step-number">9</div>
+      <div class="step-content">
+        <div class="step-title">Browser Receives the Response</div>
+        <div class="step-desc">Parses JSON, updates the UI</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="trace-detail" id="trace-detail">
+    <h4>Step 1: User Clicks "Submit"</h4>
+    <p>The journey begins in the <strong>UI layer</strong> (from the codebase tutorial). When the user clicks Submit, the UI code gathers the form data &mdash; the title, priority, and any other fields &mdash; and prepares to send them to the server.</p>
+    <div class="code-block" style="margin-top:12px;">
+<span class="comment">// In Paperclip's UI code (simplified)</span>
+<span class="keyword">const</span> <span class="function">formData</span> = {
+  <span class="property">title</span>: <span class="string">"Fix login bug"</span>,
+  <span class="property">priority</span>: <span class="string">"high"</span>
+};
+    </div>
+    <p style="margin-top:12px;">At this point, nothing has left the user's computer yet. The browser is just collecting the data.</p>
+  </div>
+
+  <h2>The Full Picture</h2>
+
+  <div class="diagram">
+    <div class="diagram-row">
+      <div class="diagram-box">Browser / UI</div>
+      <div class="diagram-arrow">&rarr;</div>
+      <div class="diagram-box">HTTP Request</div>
+      <div class="diagram-arrow">&rarr;</div>
+      <div class="diagram-box">Middleware</div>
+      <div class="diagram-arrow">&rarr;</div>
+      <div class="diagram-box">Router</div>
+    </div>
+    <div style="margin:12px 0;color:#4a5568;font-size:18px;">&darr;</div>
+    <div class="diagram-row">
+      <div class="diagram-box">UI Update</div>
+      <div class="diagram-arrow">&larr;</div>
+      <div class="diagram-box">HTTP Response</div>
+      <div class="diagram-arrow">&larr;</div>
+      <div class="diagram-box">Service</div>
+      <div class="diagram-arrow">&larr;</div>
+      <div class="diagram-box">Database</div>
+    </div>
+  </div>
+
+  <div class="analogy">
+    <div class="analogy-label">Connecting Everything</div>
+    <p><strong>Database tutorial:</strong> You learned about tables, rows, INSERT, SELECT &mdash; that's step 7 above.</p>
+    <p><strong>Codebase tutorial:</strong> You saw the server code, routes, services, middleware, adapters &mdash; that's steps 4-6.</p>
+    <p><strong>This tutorial:</strong> You've now learned about HTTP requests & responses &mdash; that's the glue connecting the browser to all that server code.</p>
+  </div>
+
+  <div class="card">
+    <h3>Key Takeaway</h3>
+    <p>A single button click triggers a chain of events: the browser builds an HTTP request, the server receives it, routes it to the right handler, runs business logic, talks to the database, and sends back a response. Every web app you've ever used works this way.</p>
+  </div>
+
+  <button class="next-btn" onclick="goToLesson(7)">Next: REST &rarr;</button>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════
+     LESSON 8: REST
+     ════════════════════════════════════════════════════════════════════ -->
+<div class="lesson" id="lesson-7">
+  <h1>REST</h1>
+  <p class="subtitle">Lesson 8 of 8 &mdash; The convention that organizes APIs</p>
+
+  <p>You now know about HTTP methods, URLs, requests, and responses. But how do developers <em>organize</em> all of this? That's where <strong>REST</strong> comes in.</p>
+
+  <p><strong>REST</strong> stands for <strong>Representational State Transfer</strong>. Don't worry about the name &mdash; it's just a set of conventions (agreed-upon rules) for how to design APIs so they're consistent and predictable.</p>
+
+  <div class="analogy">
+    <div class="analogy-label">Analogy</div>
+    <p><strong>Think of how a library is organized.</strong> Books could be thrown into random piles, but instead, every library uses the same system: books are organized by category, each has a unique call number, and there are clear rules for checking out, returning, and reserving books.</p>
+    <p style="margin-top:8px;">REST is like the Dewey Decimal System for APIs. It gives everyone a shared way to organize things so that any developer can look at an API and immediately know how to use it.</p>
+  </div>
+
+  <h2>The Three Key Ideas of REST</h2>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">
+    <span><strong>1. Everything is a Resource</strong></span>
+    <span class="arrow">&#9654;</span>
+  </button>
+  <div class="collapsible-content">
+    <p>In REST, you think about your data as <strong>resources</strong> &mdash; things (nouns), not actions (verbs). In Paperclip, the resources are agents, issues, tasks, users, and so on.</p>
+    <p style="margin-top:8px;">Each resource gets its own URL:</p>
+    <div class="code-block" style="margin-top:8px;">
+<span class="string">/api/agents</span>      <span class="comment">// The agents resource</span>
+<span class="string">/api/issues</span>      <span class="comment">// The issues resource</span>
+<span class="string">/api/tasks</span>       <span class="comment">// The tasks resource</span>
+<span class="string">/api/users</span>       <span class="comment">// The users resource</span>
+    </div>
+    <p style="margin-top:8px;">Notice: the URLs are <em>nouns</em>, not verbs. You don't see <code>/api/createAgent</code> or <code>/api/deleteTask</code>. The URL says <em>what thing</em> you're talking about, and the HTTP method says <em>what you want to do</em> with it.</p>
+  </div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">
+    <span><strong>2. HTTP Methods Define the Actions</strong></span>
+    <span class="arrow">&#9654;</span>
+  </button>
+  <div class="collapsible-content">
+    <p>Instead of creating different URLs for every action, REST uses the HTTP methods you already learned:</p>
+    <table class="styled-table" style="margin-top:8px;">
+      <thead>
+        <tr>
+          <th>Action</th>
+          <th>Method + URL</th>
+          <th>Meaning</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>List all</td>
+          <td><code>GET /api/issues</code></td>
+          <td>Show me all issues</td>
+        </tr>
+        <tr>
+          <td>Get one</td>
+          <td><code>GET /api/issues/101</code></td>
+          <td>Show me issue 101</td>
+        </tr>
+        <tr>
+          <td>Create</td>
+          <td><code>POST /api/issues</code></td>
+          <td>Create a new issue</td>
+        </tr>
+        <tr>
+          <td>Update</td>
+          <td><code>PATCH /api/issues/101</code></td>
+          <td>Update issue 101</td>
+        </tr>
+        <tr>
+          <td>Delete</td>
+          <td><code>DELETE /api/issues/101</code></td>
+          <td>Delete issue 101</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="margin-top:12px;">This is powerful because it's <em>predictable</em>. Once you know the pattern for issues, you can guess how agents, tasks, and users work too!</p>
+  </div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">
+    <span><strong>3. Stateless &mdash; Each Request Stands Alone</strong></span>
+    <span class="arrow">&#9654;</span>
+  </button>
+  <div class="collapsible-content">
+    <p>In REST, each request contains <em>all</em> the information the server needs. The server doesn't remember your previous requests.</p>
+    <p style="margin-top:8px;">This is like a forgetful waiter. Every time you call them over, you need to show your table number (authentication) and tell them exactly what you want. They don't remember that you ordered a drink five minutes ago.</p>
+    <p style="margin-top:8px;">That's why every request includes an <code>Authorization</code> header &mdash; the server needs to verify who you are each time, because it doesn't "remember" you between requests.</p>
+  </div>
+
+  <h2>Paperclip's REST Resources</h2>
+
+  <p>Click on a resource to see how REST applies to it in Paperclip:</p>
+
+  <div class="rest-grid">
+    <div class="rest-resource active" onclick="showRestResource('agents')" id="rest-agents">
+      <div class="resource-name">/api/agents</div>
+      <div class="resource-desc">Manage AI agents in the system</div>
+    </div>
+    <div class="rest-resource" onclick="showRestResource('issues')" id="rest-issues">
+      <div class="resource-name">/api/issues</div>
+      <div class="resource-desc">Track bugs and feature requests</div>
+    </div>
+    <div class="rest-resource" onclick="showRestResource('tasks')" id="rest-tasks">
+      <div class="resource-name">/api/tasks</div>
+      <div class="resource-desc">Manage work items and assignments</div>
+    </div>
+    <div class="rest-resource" onclick="showRestResource('users')" id="rest-users">
+      <div class="resource-name">/api/users</div>
+      <div class="resource-desc">User accounts and profiles</div>
+    </div>
+  </div>
+
+  <div class="rest-detail" id="rest-detail">
+    <h3 style="color:var(--accent-indigo);margin-bottom:12px;">Agents Resource</h3>
+    <table class="styled-table">
+      <thead>
+        <tr>
+          <th>Method</th>
+          <th>URL</th>
+          <th>What It Does</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>GET</code></td>
+          <td><code>/api/agents</code></td>
+          <td>List all agents</td>
+        </tr>
+        <tr>
+          <td><code>GET</code></td>
+          <td><code>/api/agents/:id</code></td>
+          <td>Get a specific agent by ID</td>
+        </tr>
+        <tr>
+          <td><code>POST</code></td>
+          <td><code>/api/agents</code></td>
+          <td>Create a new agent</td>
+        </tr>
+        <tr>
+          <td><code>PATCH</code></td>
+          <td><code>/api/agents/:id</code></td>
+          <td>Update an agent's settings</td>
+        </tr>
+        <tr>
+          <td><code>DELETE</code></td>
+          <td><code>/api/agents/:id</code></td>
+          <td>Remove an agent</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="margin-top:12px;font-size:14px;color:var(--text-muted);">The <code>:id</code> is a placeholder. In a real request, it would be a number like <code>/api/agents/42</code>.</p>
+  </div>
+
+  <h2>REST in Paperclip's Codebase</h2>
+
+  <p>Remember from the codebase tutorial that Paperclip has ~43 route files? Those route files follow REST conventions:</p>
+
+  <div class="code-block">
+<span class="comment">// Paperclip route structure (simplified)</span>
+
+<span class="comment">// routes/agents.js</span>
+<span class="function">router</span>.<span class="function">get</span>(<span class="string">'/api/agents'</span>,       <span class="function">agentController</span>.<span class="property">list</span>)
+<span class="function">router</span>.<span class="function">get</span>(<span class="string">'/api/agents/:id'</span>,   <span class="function">agentController</span>.<span class="property">show</span>)
+<span class="function">router</span>.<span class="function">post</span>(<span class="string">'/api/agents'</span>,      <span class="function">agentController</span>.<span class="property">create</span>)
+<span class="function">router</span>.<span class="function">patch</span>(<span class="string">'/api/agents/:id'</span>, <span class="function">agentController</span>.<span class="property">update</span>)
+<span class="function">router</span>.<span class="function">delete</span>(<span class="string">'/api/agents/:id'</span>,<span class="function">agentController</span>.<span class="property">destroy</span>)
+
+<span class="comment">// routes/issues.js</span>
+<span class="function">router</span>.<span class="function">get</span>(<span class="string">'/api/issues'</span>,       <span class="function">issueController</span>.<span class="property">list</span>)
+<span class="function">router</span>.<span class="function">get</span>(<span class="string">'/api/issues/:id'</span>,   <span class="function">issueController</span>.<span class="property">show</span>)
+<span class="function">router</span>.<span class="function">post</span>(<span class="string">'/api/issues'</span>,      <span class="function">issueController</span>.<span class="property">create</span>)
+<span class="function">router</span>.<span class="function">patch</span>(<span class="string">'/api/issues/:id'</span>, <span class="function">issueController</span>.<span class="property">update</span>)
+<span class="function">router</span>.<span class="function">delete</span>(<span class="string">'/api/issues/:id'</span>,<span class="function">issueController</span>.<span class="property">destroy</span>)
+
+<span class="comment">// ... same pattern for all 43 route files</span>
+  </div>
+
+  <p>See the pattern? Every resource follows the same five-action template. Once you understand one, you understand them all.</p>
+
+  <h2>Why REST Matters</h2>
+
+  <div class="card">
+    <h3>Predictability</h3>
+    <p>If you know that <code>GET /api/agents</code> lists agents, you can instantly guess that <code>GET /api/tasks</code> lists tasks. No need to read documentation for every single endpoint.</p>
+  </div>
+
+  <div class="card">
+    <h3>Consistency</h3>
+    <p>Every developer on the Paperclip team follows the same pattern. When someone adds a new feature (say, "comments"), they know exactly how to structure the routes: <code>GET /api/comments</code>, <code>POST /api/comments</code>, and so on.</p>
+  </div>
+
+  <div class="card">
+    <h3>Separation of Concerns</h3>
+    <p>The URL identifies <em>what</em> (the resource), and the method identifies the <em>action</em>. These are separate concepts, and keeping them separate makes the API cleaner and easier to understand.</p>
+  </div>
+
+  <h2>Congratulations!</h2>
+
+  <div class="card" style="border-color:var(--accent-blue-bg);background:#111827;">
+    <h3 style="color:var(--accent-blue);">You've Completed the Series!</h3>
+    <p>Let's recap what you now understand:</p>
+    <ol style="margin-top:12px;">
+      <li style="margin-bottom:8px;"><span class="hl-green">Databases</span> &mdash; How data is stored in tables, connected with keys, and queried with SQL</li>
+      <li style="margin-bottom:8px;"><span class="hl-purple">The Codebase</span> &mdash; How Paperclip's server, UI, adapters, and heartbeat work together</li>
+      <li style="margin-bottom:8px;"><span class="hl-blue">APIs & HTTP</span> &mdash; How the browser and server communicate using requests and responses</li>
+    </ol>
+    <p style="margin-top:16px;">You now have a complete mental model of how a modern web application works, from the database all the way up to the button a user clicks. That's a huge achievement!</p>
+    <div class="diagram" style="margin-top:20px;background:var(--bg-card);border-color:var(--border-secondary);">
+      <div class="diagram-row">
+        <div class="diagram-box" style="background:#064e3b;border-color:var(--accent-green);">User clicks<br>a button</div>
+        <div class="diagram-arrow">&rarr;</div>
+        <div class="diagram-box" style="background:var(--bg-btn-selected);border-color:#3b82f6;">HTTP carries<br>the request</div>
+        <div class="diagram-arrow">&rarr;</div>
+        <div class="diagram-box" style="background:#312e81;border-color:var(--accent-indigo);">Server runs<br>the code</div>
+        <div class="diagram-arrow">&rarr;</div>
+        <div class="diagram-box" style="background:#78350f;border-color:var(--accent-yellow);">Database stores<br>the data</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="next-course-banner">
+    <h3>Up Next</h3>
+    <p>Continue to Course 04: Build a Mini App — Create a working app from scratch.</p>
+    <a href="/lessons/build.html">Start Build a Mini App →</a>
+  </div>
+
+</div>
+
+</div><!-- end container -->
+
+</div><!-- end content-wrapper -->
+
+<!-- ════════════════════════════════════════════════════════════════════
+     JAVASCRIPT
+     ════════════════════════════════════════════════════════════════════ -->
+<script>
+// ── Lesson Navigation ──
+let currentLesson = 0;
+const totalLessons = 8;
+
+function goToLesson(n) {
+  document.querySelectorAll('.lesson').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.top-nav button').forEach(el => el.classList.remove('active'));
+
+  document.getElementById('lesson-' + n).classList.add('active');
+  document.getElementById('nav-' + n).classList.add('active');
+
+  currentLesson = n;
+  document.getElementById('progressBar').style.width = ((n + 1) / totalLessons * 100) + '%';
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── Lesson 1: Diagram interaction ──
+document.getElementById('d1-client').addEventListener('click', function() {
+  clearDiagramHighlights('d1');
+  this.classList.add('highlight');
+  document.getElementById('d1-explain').innerHTML = '<div class="result-title">The Client (Your Browser)</div><div class="result-body"><p>The client is the application running on YOUR device. When you open Paperclip in Chrome, Firefox, or Safari, that browser tab is the client. It\'s what you see and interact with &mdash; buttons, forms, lists of data.</p><p style="margin-top:8px;">The client can\'t do everything on its own. It needs to ask the server for data, send updates, and more. It does this by sending <strong>HTTP requests</strong>.</p></div>';
+});
+
+document.getElementById('d1-internet').addEventListener('click', function() {
+  clearDiagramHighlights('d1');
+  this.classList.add('highlight');
+  document.getElementById('d1-explain').innerHTML = '<div class="result-title">The Internet (The Network)</div><div class="result-body"><p>The internet is the highway that connects your computer to the server. When you send a request, it travels through cables, routers, and switches to reach the server &mdash; sometimes on the other side of the world.</p><p style="margin-top:8px;">Your message gets broken into tiny <strong>packets</strong> (like cutting a letter into pieces), each packet finds its own path to the destination, and they get reassembled on the other end. This all happens in milliseconds!</p></div>';
+});
+
+document.getElementById('d1-server').addEventListener('click', function() {
+  clearDiagramHighlights('d1');
+  this.classList.add('highlight');
+  document.getElementById('d1-explain').innerHTML = '<div class="result-title">The Server (Paperclip\'s Backend)</div><div class="result-body"><p>The server is a computer running 24/7, waiting for requests. When it receives one, it figures out what you\'re asking for, does the work (maybe queries the database), and sends back a response.</p><p style="margin-top:8px;">In the codebase tutorial, you explored Paperclip\'s server code &mdash; the routes, services, adapters, and middleware. All of that code lives here, running on the server, ready to handle incoming requests.</p></div>';
+});
+
+function clearDiagramHighlights(prefix) {
+  document.querySelectorAll('.diagram-box').forEach(function(el) {
+    if (el.id && el.id.startsWith(prefix)) {
+      el.classList.remove('highlight');
+    }
+  });
+}
+
+// ── Lesson 1: Quiz ──
+function checkQuiz1(answer) {
+  const el = document.getElementById('quiz1-result');
+  if (answer === 'b') {
+    el.innerHTML = '<div class="result-title" style="color:var(--accent-green);">Correct!</div><div class="result-body">The browser (where the user sees the UI) is the client, and Paperclip\'s backend (the server code you explored in the codebase tutorial) is the server. The database sits behind the server &mdash; the client never talks to the database directly.</div>';
+  } else {
+    el.innerHTML = '<div class="result-title" style="color:#f87171;">Not quite!</div><div class="result-body">Try again. Think about which part the user sees and interacts with (that\'s the client) vs. which part processes data behind the scenes (that\'s the server).</div>';
+  }
+}
+
+// ── Lesson 2: API Comparison ──
+function showApiComparison(which) {
+  document.getElementById('api-cmp-without').classList.remove('selected');
+  document.getElementById('api-cmp-with').classList.remove('selected');
+  document.getElementById('api-cmp-' + which).classList.add('selected');
+
+  const el = document.getElementById('api-comparison');
+  if (which === 'without') {
+    el.innerHTML = '<div class="result-title" style="color:#f87171;">Without an API &mdash; Chaos</div><div class="result-body"><p>Imagine a restaurant with no menu. You walk in and say "I want something with chicken." The kitchen doesn\'t know what you mean. How much chicken? What style? What sides? Every order is a guessing game.</p><p style="margin-top:8px;">Without an API, the browser would have to somehow know the internal structure of the server. It would be like a customer walking into the kitchen and trying to cook their own food. Messy, unsafe, and nothing would work right.</p></div>';
+  } else {
+    el.innerHTML = '<div class="result-title" style="color:var(--accent-green);">With an API &mdash; Order</div><div class="result-body"><p>With a menu, everything is clear. The menu says "Chicken Parmesan &mdash; $15" and you know exactly what you\'ll get. The kitchen knows exactly what to make.</p><p style="margin-top:8px;">With an API, the server publishes a clear list: "Send <code>GET /api/agents</code> and I\'ll give you a list of all agents." The browser knows exactly what to ask for, and the server knows exactly what to send back. Everyone speaks the same language.</p></div>';
+  }
+}
+
+// ── Lesson 3: HTTP Methods ──
+function showMethod(method) {
+  ['get','post','patch','put','delete'].forEach(function(m) {
+    document.getElementById('method-' + m).classList.remove('selected');
+  });
+  document.getElementById('method-' + method).classList.add('selected');
+
+  const el = document.getElementById('method-result');
+  const methods = {
+    get: {
+      title: '<span class="hl-blue">GET</span> &mdash; Read data',
+      body: '<p><strong>What it does:</strong> Asks the server to <em>show</em> you something. It never changes anything &mdash; it just reads.</p><p style="margin-top:8px;"><strong>Restaurant analogy:</strong> "Can I see the menu?" or "What soups do you have today?"</p><p style="margin-top:8px;"><strong>Paperclip examples:</strong></p><div class="code-block" style="margin-top:8px;"><span class="method">GET</span> <span class="string">/api/agents</span>       <span class="comment">// "Show me all the agents"</span>\n<span class="method">GET</span> <span class="string">/api/agents/42</span>    <span class="comment">// "Show me agent number 42"</span>\n<span class="method">GET</span> <span class="string">/api/issues</span>       <span class="comment">// "Show me all the issues"</span>\n<span class="method">GET</span> <span class="string">/api/tasks</span>        <span class="comment">// "Show me all the tasks"</span></div>'
+    },
+    post: {
+      title: '<span class="hl-green">POST</span> &mdash; Create something new',
+      body: '<p><strong>What it does:</strong> Tells the server to <em>create</em> a brand new thing. You send along the data for the new item in the request body.</p><p style="margin-top:8px;"><strong>Restaurant analogy:</strong> "I\'d like to order the pasta, please." You\'re creating a new order that didn\'t exist before.</p><p style="margin-top:8px;"><strong>Paperclip examples:</strong></p><div class="code-block" style="margin-top:8px;"><span class="method">POST</span> <span class="string">/api/issues</span>      <span class="comment">// "Create a new issue"</span>\n<span class="method">POST</span> <span class="string">/api/agents</span>      <span class="comment">// "Create a new agent"</span>\n<span class="method">POST</span> <span class="string">/api/tasks</span>       <span class="comment">// "Create a new task"</span></div>'
+    },
+    patch: {
+      title: '<span class="hl-yellow">PATCH</span> &mdash; Update part of something',
+      body: '<p><strong>What it does:</strong> Changes <em>some</em> fields of an existing thing, leaving everything else the same.</p><p style="margin-top:8px;"><strong>Restaurant analogy:</strong> "Actually, can you change my drink from Coke to water? Keep everything else the same."</p><p style="margin-top:8px;"><strong>Paperclip examples:</strong></p><div class="code-block" style="margin-top:8px;"><span class="method">PATCH</span> <span class="string">/api/issues/101</span>  <span class="comment">// "Change issue 101\'s status to \'closed\'"</span>\n<span class="method">PATCH</span> <span class="string">/api/agents/42</span>   <span class="comment">// "Update agent 42\'s name"</span>\n<span class="method">PATCH</span> <span class="string">/api/tasks/7</span>     <span class="comment">// "Mark task 7 as done"</span></div>'
+    },
+    put: {
+      title: '<span class="hl-purple">PUT</span> &mdash; Replace entirely',
+      body: '<p><strong>What it does:</strong> Replaces an <em>entire</em> thing with new data. Unlike PATCH (which changes just a few fields), PUT says "forget the old version, here\'s the complete new version."</p><p style="margin-top:8px;"><strong>Restaurant analogy:</strong> "Cancel my entire order. I want to start over: burger, fries, and a milkshake."</p><p style="margin-top:8px;"><strong>Paperclip example:</strong></p><div class="code-block" style="margin-top:8px;"><span class="method">PUT</span> <span class="string">/api/agents/42</span>   <span class="comment">// "Replace ALL of agent 42\'s data"</span>\n\n<span class="comment">// You must send EVERY field, not just the ones you\'re changing</span>\n<span class="comment">// Missing fields will be set to empty/default</span></div><p style="margin-top:8px;">In practice, PATCH is used more often than PUT because usually you only want to change one or two fields.</p>'
+    },
+    delete: {
+      title: '<span class="hl-red">DELETE</span> &mdash; Remove something',
+      body: '<p><strong>What it does:</strong> Permanently removes something from the system.</p><p style="margin-top:8px;"><strong>Restaurant analogy:</strong> "Cancel my order entirely." The order is gone.</p><p style="margin-top:8px;"><strong>Paperclip examples:</strong></p><div class="code-block" style="margin-top:8px;"><span class="method">DELETE</span> <span class="string">/api/agents/42</span>  <span class="comment">// "Remove agent 42 from the system"</span>\n<span class="method">DELETE</span> <span class="string">/api/tasks/7</span>    <span class="comment">// "Delete task number 7"</span>\n<span class="method">DELETE</span> <span class="string">/api/issues/101</span> <span class="comment">// "Delete issue 101"</span></div><p style="margin-top:8px;">DELETE requests usually don\'t have a body &mdash; the URL already says which thing to delete.</p>'
+    }
+  };
+
+  el.innerHTML = '<div class="result-title">' + methods[method].title + '</div><div class="result-body">' + methods[method].body + '</div>';
+}
+
+// ── Lesson 3: Method Quiz ──
+const methodAnswers = { 1: 'GET', 2: 'POST', 3: 'DELETE', 4: 'PATCH' };
+
+function checkMethodQuiz(q, answer) {
+  const resultEl = document.getElementById('mq' + q + '-result');
+  if (answer === methodAnswers[q]) {
+    resultEl.innerHTML = '<span style="color:var(--accent-green);">Correct! ' + answer + ' is right.</span>';
+    resultEl.style.color = 'var(--accent-green)';
+  } else {
+    resultEl.innerHTML = '<span style="color:#f87171;">Not quite. Think about what action is being performed &mdash; reading, creating, updating, or deleting?</span>';
+    resultEl.style.color = '#f87171';
+  }
+}
+
+// ── Lesson 4: Request Breakdown ──
+function explainRequestPart(part) {
+  document.querySelectorAll('.request-section').forEach(function(el) {
+    el.classList.remove('active');
+  });
+
+  const sections = document.querySelectorAll('.request-section');
+  const partMap = { method: 0, url: 1, headers: 2, body: 3 };
+  sections[partMap[part]].classList.add('active');
+
+  const el = document.getElementById('request-explain');
+  const explanations = {
+    method: '<strong style="color:var(--accent-purple);">Method (POST)</strong> &mdash; This tells the server what <em>kind</em> of action you want. POST means "create something new." It\'s like telling the waiter "I\'d like to place a new order" vs. "Can I see the menu?" (which would be GET).',
+    url: '<strong style="color:var(--accent-green);">URL (https://paperclip.app/api/issues)</strong> &mdash; This is the address of the specific endpoint you\'re talking to. It\'s like the address on an envelope. The <code>/api/issues</code> part tells the server "I\'m talking about issues" (not agents or tasks).',
+    headers: '<strong style="color:var(--accent-yellow);">Headers</strong> &mdash; These are extra pieces of information about the request. <code>Content-Type</code> tells the server "the body is in JSON format." <code>Authorization</code> proves who you are (like showing your ID). Think of headers as the writing on the outside of an envelope &mdash; info about the letter, not the letter itself.',
+    body: '<strong style="color:#93c5fd;">Body</strong> &mdash; This is the actual data you\'re sending. Since we\'re creating a new issue, the body contains the details: the title, priority, and who to assign it to. The body is written in JSON format (those key-value pairs in curly braces). Not all requests have a body &mdash; GET and DELETE usually don\'t.'
+  };
+
+  el.innerHTML = explanations[part];
+}
+
+// ── Lesson 4: Request Quiz ──
+function checkReqQuiz(answer) {
+  const el = document.getElementById('req-quiz-result');
+  if (answer === 'b') {
+    el.innerHTML = '<div class="result-title" style="color:var(--accent-green);">Correct!</div><div class="result-body">A GET request needs a method (GET), a URL (/api/agents), and headers (like Authorization to prove who you are). It does NOT need a body because you\'re just asking to <em>see</em> data, not sending any data.</div>';
+  } else {
+    el.innerHTML = '<div class="result-title" style="color:#f87171;">Not quite.</div><div class="result-body">Remember: GET requests are just asking to <em>see</em> something. They don\'t need a body (no data to send). But they do need headers (at minimum, to authenticate). And you always need the method and URL.</div>';
+  }
+}
+
+// ── Lesson 5: Response Parts ──
+function showRespPart(part) {
+  ['status','headers','body'].forEach(function(p) {
+    document.getElementById('resp-' + p).classList.remove('highlight');
+  });
+  document.getElementById('resp-' + part).classList.add('highlight');
+
+  const el = document.getElementById('resp-explain');
+  const explanations = {
+    status: '<div class="result-title">Status Code</div><div class="result-body"><p>The status code is a 3-digit number that instantly tells you how things went. <span class="status-badge status-2xx">200</span> means success, <span class="status-badge status-4xx">404</span> means "not found," <span class="status-badge status-5xx">500</span> means the server had an error. It\'s like the waiter\'s facial expression when they come back from the kitchen &mdash; you can tell right away if things went well or not.</p></div>',
+    headers: '<div class="result-title">Response Headers</div><div class="result-body"><p>Just like request headers, response headers carry metadata. <code>Content-Type: application/json</code> tells the browser "the body is in JSON format." There might also be headers for caching, security, rate limiting, and more. You usually don\'t need to think about these &mdash; the browser handles them automatically.</p></div>',
+    body: '<div class="result-title">Response Body</div><div class="result-body"><p>This is the actual data the server is sending back. For a GET request, it\'s the data you asked for (like a list of agents). For a POST request, it\'s usually the thing that was just created (so you can see its new ID and other details). The body is typically formatted as JSON.</p></div>'
+  };
+
+  el.innerHTML = explanations[part];
+}
+
+// ── Lesson 5: Status Codes ──
+function showStatusCode(code) {
+  [200, 201, 400, 404, 500].forEach(function(c) {
+    document.getElementById('sc-' + c).classList.remove('selected');
+  });
+  document.getElementById('sc-' + code).classList.add('selected');
+
+  const el = document.getElementById('status-result');
+  const codes = {
+    200: {
+      badge: '<span class="status-badge status-2xx">200 OK</span>',
+      body: '<p><strong>Meaning:</strong> Everything worked perfectly! Here\'s what you asked for.</p><p style="margin-top:8px;"><strong>Restaurant analogy:</strong> The waiter brings your food and says "Here you go! Enjoy your meal."</p><p style="margin-top:8px;"><strong>Paperclip example:</strong> You asked for <code>GET /api/agents</code> and the server found all the agents and sent them back.</p>'
+    },
+    201: {
+      badge: '<span class="status-badge status-2xx">201 Created</span>',
+      body: '<p><strong>Meaning:</strong> Something new was successfully created!</p><p style="margin-top:8px;"><strong>Restaurant analogy:</strong> The waiter confirms "Your order has been placed! It\'s being prepared now."</p><p style="margin-top:8px;"><strong>Paperclip example:</strong> You sent <code>POST /api/issues</code> with a new issue, and the server created it successfully. The response body contains the new issue with its assigned ID.</p>'
+    },
+    400: {
+      badge: '<span class="status-badge status-4xx">400 Bad Request</span>',
+      body: '<p><strong>Meaning:</strong> The server couldn\'t understand your request. You sent something wrong.</p><p style="margin-top:8px;"><strong>Restaurant analogy:</strong> "Sorry, I can\'t understand your order. Did you say \'florgenblorgen\'? That\'s not on the menu."</p><p style="margin-top:8px;"><strong>Paperclip example:</strong> You sent <code>POST /api/issues</code> but forgot to include a title, or sent the data in the wrong format. The server says "I can\'t create an issue without a title!"</p>'
+    },
+    404: {
+      badge: '<span class="status-badge status-4xx">404 Not Found</span>',
+      body: '<p><strong>Meaning:</strong> The thing you asked for doesn\'t exist.</p><p style="margin-top:8px;"><strong>Restaurant analogy:</strong> "Sorry, we don\'t have lobster. That\'s not on our menu." Or: "Table 99? We don\'t have a table 99."</p><p style="margin-top:8px;"><strong>Paperclip example:</strong> You asked for <code>GET /api/agents/99999</code> but there\'s no agent with ID 99999. The server can\'t find it.</p>'
+    },
+    500: {
+      badge: '<span class="status-badge status-5xx">500 Internal Server Error</span>',
+      body: '<p><strong>Meaning:</strong> Something went wrong on the server\'s side. It\'s not your fault!</p><p style="margin-top:8px;"><strong>Restaurant analogy:</strong> "I\'m so sorry, the kitchen caught fire. We can\'t fill any orders right now." You did nothing wrong &mdash; the restaurant has a problem.</p><p style="margin-top:8px;"><strong>Paperclip example:</strong> Maybe the database connection dropped, or there\'s a bug in the server code. The server tried to handle your request but crashed. The development team needs to fix this.</p>'
+    }
+  };
+
+  el.innerHTML = '<div class="result-title">' + codes[code].badge + '</div><div class="result-body">' + codes[code].body + '</div>';
+}
+
+// ── Lesson 6: JSON Explorer ──
+function explainJson(el, part) {
+  document.querySelectorAll('.json-part').forEach(function(p) {
+    p.classList.remove('active');
+  });
+  el.classList.add('active');
+
+  const panel = document.getElementById('json-explain-panel');
+  const explanations = {
+    'key': '<strong style="color:#93c5fd;">"name"</strong> &mdash; This is a <strong>key</strong>. It\'s the label that describes what data follows. Keys are always strings (text in double quotes). Think of it as the label on a form field.',
+    'string-val': '<strong style="color:var(--accent-green);">"Support Bot Alpha"</strong> &mdash; This is a <strong>string value</strong>. It\'s text data, always wrapped in double quotes. This is the agent\'s name.',
+    'key2': '<strong style="color:#93c5fd;">"id"</strong> &mdash; Another key. This one labels the agent\'s unique identifier number.',
+    'number-val': '<strong style="color:var(--accent-pink);">42</strong> &mdash; This is a <strong>number value</strong>. Numbers in JSON don\'t have quotes around them. This is the agent\'s ID.',
+    'key3': '<strong style="color:#93c5fd;">"active"</strong> &mdash; A key that labels whether this agent is currently active or not.',
+    'bool-val': '<strong style="color:var(--accent-purple);">true</strong> &mdash; This is a <strong>boolean value</strong>. It can only be <code>true</code> or <code>false</code>. No quotes! This tells us the agent is currently active.',
+    'key4': '<strong style="color:#93c5fd;">"tags"</strong> &mdash; A key that labels a list of tags associated with this agent.',
+    'array-val': '<strong style="color:var(--accent-green);">["support", "chat", "tier-1"]</strong> &mdash; This is an <strong>array</strong> (a list). Arrays use square brackets <code>[]</code> and can hold multiple values separated by commas. This agent has three tags.',
+    'key5': '<strong style="color:#93c5fd;">"config"</strong> &mdash; A key that labels a nested configuration object.',
+    'object-val': '<strong>{ "language": "en", "max_retries": 3 }</strong> &mdash; This is a <strong>nested object</strong>. It\'s an object inside an object! It uses curly braces <code>{}</code> and has its own key-value pairs. This stores the agent\'s configuration settings.'
+  };
+
+  panel.innerHTML = explanations[part] || 'Click a highlighted part above.';
+}
+
+// ── Lesson 6: JSON Types ──
+function showJsonType(type) {
+  ['string','number','boolean','array','object'].forEach(function(t) {
+    document.getElementById('jt-' + t).classList.remove('selected');
+  });
+  document.getElementById('jt-' + type).classList.add('selected');
+
+  const el = document.getElementById('json-type-result');
+  const types = {
+    string: {
+      title: '<span class="hl-green">String</span> &mdash; Text wrapped in quotes',
+      body: '<p>A string is any text. It must always be wrapped in double quotes.</p><div class="code-block" style="margin-top:8px;"><span class="property">"name"</span>: <span class="string">"Fix login bug"</span>\n<span class="property">"status"</span>: <span class="string">"active"</span>\n<span class="property">"email"</span>: <span class="string">"jane@example.com"</span></div><p style="margin-top:8px;">Strings can hold anything: names, emails, dates, descriptions &mdash; any text at all.</p>'
+    },
+    number: {
+      title: '<span class="hl-red">Number</span> &mdash; A numeric value, no quotes',
+      body: '<p>Numbers are written without quotes. They can be integers or decimals.</p><div class="code-block" style="margin-top:8px;"><span class="property">"id"</span>: <span class="number">42</span>\n<span class="property">"score"</span>: <span class="number">98.5</span>\n<span class="property">"retries"</span>: <span class="number">0</span>\n<span class="property">"temperature"</span>: <span class="number">-3.14</span></div><p style="margin-top:8px;">Important: if a number is in quotes like <code>"42"</code>, it\'s actually a string, not a number!</p>'
+    },
+    boolean: {
+      title: '<span class="hl-purple">Boolean</span> &mdash; true or false',
+      body: '<p>Booleans are simple yes/no values. There are only two options: <code>true</code> or <code>false</code>. No quotes!</p><div class="code-block" style="margin-top:8px;"><span class="property">"active"</span>: <span class="keyword">true</span>\n<span class="property">"deleted"</span>: <span class="keyword">false</span>\n<span class="property">"email_verified"</span>: <span class="keyword">true</span></div><p style="margin-top:8px;">Think of them as on/off switches or checkboxes.</p>'
+    },
+    array: {
+      title: '<span class="hl-blue">Array</span> &mdash; A list of values',
+      body: '<p>An array is an ordered list. It uses square brackets <code>[]</code> and separates items with commas. Arrays can hold any type of value &mdash; strings, numbers, even other arrays or objects.</p><div class="code-block" style="margin-top:8px;"><span class="property">"tags"</span>: [<span class="string">"bug"</span>, <span class="string">"urgent"</span>, <span class="string">"mobile"</span>]\n<span class="property">"scores"</span>: [<span class="number">95</span>, <span class="number">87</span>, <span class="number">92</span>]\n<span class="property">"items"</span>: []\n<span class="comment">// ^ an empty array (no items yet)</span></div><p style="margin-top:8px;">Remember from the database tutorial: a query that returns multiple rows comes back as an array of objects.</p>'
+    },
+    object: {
+      title: '<span class="hl-yellow">Object</span> &mdash; A collection of key-value pairs',
+      body: '<p>An object groups related data together using curly braces <code>{}</code>. It\'s the most common JSON structure &mdash; in fact, the top-level structure is always an object (or an array of objects).</p><div class="code-block" style="margin-top:8px;"><span class="property">"assignee"</span>: {\n  <span class="property">"id"</span>: <span class="number">42</span>,\n  <span class="property">"name"</span>: <span class="string">"Support Bot Alpha"</span>,\n  <span class="property">"active"</span>: <span class="keyword">true</span>\n}</div><p style="margin-top:8px;">Objects can be nested &mdash; an object inside an object inside an object. This lets you represent complex data structures.</p>'
+    }
+  };
+
+  el.innerHTML = '<div class="result-title">' + types[type].title + '</div><div class="result-body">' + types[type].body + '</div>';
+}
+
+// ── Lesson 7: Trace Steps ──
+function showTraceStep(n) {
+  document.querySelectorAll('.trace-step').forEach(function(el) {
+    el.classList.remove('active');
+  });
+  document.querySelectorAll('.trace-step')[n].classList.add('active');
+
+  const detail = document.getElementById('trace-detail');
+  const steps = [
+    {
+      title: 'Step 1: User Clicks "Submit"',
+      body: '<p>The journey begins in the <strong>UI layer</strong> (from the codebase tutorial). When the user clicks Submit, the UI code gathers the form data &mdash; the title, priority, and any other fields &mdash; and prepares to send them to the server.</p><div class="code-block" style="margin-top:12px;"><span class="comment">// In Paperclip\'s UI code (simplified)</span>\n<span class="keyword">const</span> <span class="function">formData</span> = {\n  <span class="property">title</span>: <span class="string">"Fix login bug"</span>,\n  <span class="property">priority</span>: <span class="string">"high"</span>\n};</div><p style="margin-top:12px;">At this point, nothing has left the user\'s computer yet. The browser is just collecting the data.</p>'
+    },
+    {
+      title: 'Step 2: Browser Builds an HTTP Request',
+      body: '<p>The UI code uses a function like <code>fetch()</code> to build a proper HTTP request with all four parts you learned about:</p><div class="code-block" style="margin-top:12px;"><span class="keyword">await</span> <span class="function">fetch</span>(<span class="string">"https://paperclip.app/api/issues"</span>, {\n  <span class="property">method</span>: <span class="string">"POST"</span>,\n  <span class="property">headers</span>: {\n    <span class="string">"Content-Type"</span>: <span class="string">"application/json"</span>,\n    <span class="string">"Authorization"</span>: <span class="string">"Bearer eyJhbG...xyz"</span>\n  },\n  <span class="property">body</span>: <span class="function">JSON.stringify</span>({\n    <span class="property">title</span>: <span class="string">"Fix login bug"</span>,\n    <span class="property">priority</span>: <span class="string">"high"</span>\n  })\n});</div><p style="margin-top:12px;">This is the actual JavaScript code that sends the request. <code>JSON.stringify()</code> converts the JavaScript object into a JSON string for transmission.</p>'
+    },
+    {
+      title: 'Step 3: Request Travels Over the Internet',
+      body: '<p>The HTTP request leaves the user\'s browser and travels through the internet. Here\'s what happens under the hood:</p><ol style="margin-top:12px;"><li style="margin-bottom:8px;"><strong>DNS Lookup:</strong> The browser asks "What\'s the IP address for paperclip.app?" DNS is like a phone book for the internet.</li><li style="margin-bottom:8px;"><strong>TCP Connection:</strong> The browser establishes a reliable connection to the server (like picking up the phone and making sure someone\'s on the other end).</li><li style="margin-bottom:8px;"><strong>TLS/SSL:</strong> The connection is encrypted so nobody can read your data in transit (that\'s what the "S" in HTTPS means &mdash; Secure).</li><li><strong>Data Transfer:</strong> The HTTP request is sent as packets across the network.</li></ol><p style="margin-top:12px;">All of this happens in milliseconds. You don\'t see any of it.</p>'
+    },
+    {
+      title: 'Step 4: Server Receives the Request',
+      body: '<p>The Paperclip server receives the request. Before it reaches your route handler, it passes through <strong>middleware</strong> (remember those from the codebase tutorial?).</p><div class="code-block" style="margin-top:12px;"><span class="comment">// Middleware chain (simplified)</span>\n\n<span class="comment">// 1. Parse the JSON body</span>\n<span class="function">app</span>.<span class="function">use</span>(<span class="function">express.json</span>())\n\n<span class="comment">// 2. Check authentication</span>\n<span class="function">app</span>.<span class="function">use</span>(<span class="function">authMiddleware</span>)  <span class="comment">// "Is this user logged in?"</span>\n\n<span class="comment">// 3. Log the request</span>\n<span class="function">app</span>.<span class="function">use</span>(<span class="function">requestLogger</span>)   <span class="comment">// "Someone just hit POST /api/issues"</span></div><p style="margin-top:12px;">Middleware is like the front desk at a hotel. Before you get to your room (the route handler), you need to check in, show your ID, and get your key.</p>'
+    },
+    {
+      title: 'Step 5: Router Matches the Route',
+      body: '<p>After middleware, the server\'s <strong>router</strong> looks at the method (POST) and URL (/api/issues) and finds the matching route handler.</p><div class="code-block" style="margin-top:12px;"><span class="comment">// The router matches POST /api/issues</span>\n<span class="comment">// to the issues route file</span>\n\n<span class="comment">// routes/issues.js</span>\n<span class="function">router</span>.<span class="function">post</span>(<span class="string">\'/api/issues\'</span>, <span class="function">issueController</span>.<span class="property">create</span>)\n\n<span class="comment">// This calls the \"create\" function in the issue controller</span></div><p style="margin-top:12px;">This is one of those ~43 route files! The router is like a switchboard operator &mdash; it receives the call and connects it to the right department.</p>'
+    },
+    {
+      title: 'Step 6: Service Layer Runs Business Logic',
+      body: '<p>The controller calls the <strong>service layer</strong> (from the codebase tutorial). This is where the actual business logic lives:</p><div class="code-block" style="margin-top:12px;"><span class="comment">// services/issueService.js (simplified)</span>\n\n<span class="keyword">async function</span> <span class="function">createIssue</span>(<span class="type">data</span>) {\n  <span class="comment">// Validate: does the issue have a title?</span>\n  <span class="keyword">if</span> (!<span class="type">data</span>.<span class="property">title</span>) <span class="keyword">throw</span> <span class="keyword">new</span> <span class="type">Error</span>(<span class="string">"Title is required"</span>);\n\n  <span class="comment">// Apply defaults</span>\n  <span class="type">data</span>.<span class="property">status</span> = <span class="string">"open"</span>;\n  <span class="type">data</span>.<span class="property">created_at</span> = <span class="keyword">new</span> <span class="type">Date</span>();\n\n  <span class="comment">// Save to database (next step!)</span>\n  <span class="keyword">return</span> <span class="keyword">await</span> <span class="function">db</span>.<span class="function">issues</span>.<span class="function">insert</span>(<span class="type">data</span>);\n}</div><p style="margin-top:12px;">The service layer is the "brain" &mdash; it decides whether the data is valid, applies any business rules, and then talks to the database.</p>'
+    },
+    {
+      title: 'Step 7: Database Query Executes',
+      body: '<p>This is where your <strong>database tutorial</strong> knowledge comes in! The service calls the database adapter (remember adapters from the codebase tutorial?), which runs a SQL query:</p><div class="code-block" style="margin-top:12px;"><span class="comment">-- The SQL query that runs</span>\n<span class="keyword">INSERT INTO</span> <span class="type">issues</span> (<span class="property">title</span>, <span class="property">priority</span>, <span class="property">status</span>, <span class="property">created_at</span>)\n<span class="keyword">VALUES</span> (<span class="string">\'Fix login bug\'</span>, <span class="string">\'high\'</span>, <span class="string">\'open\'</span>, <span class="string">\'2026-06-17T10:30:00Z\'</span>)\n<span class="keyword">RETURNING</span> *;</div><p style="margin-top:12px;">The <code>RETURNING *</code> part tells the database "after you insert this row, send me back the complete row including its new auto-generated ID." A new row now exists in the <code>issues</code> table!</p>'
+    },
+    {
+      title: 'Step 8: Server Sends a Response',
+      body: '<p>The database returns the new row. The service passes it back to the controller, which builds an HTTP response:</p><div class="code-block" style="margin-top:12px;"><span class="comment">// The server sends back:</span>\n\n<span class="type">Status</span>: <span class="number">201</span> <span class="string">Created</span>\n\n<span class="type">Body</span>:\n{\n  <span class="property">"id"</span>: <span class="number">257</span>,\n  <span class="property">"title"</span>: <span class="string">"Fix login bug"</span>,\n  <span class="property">"priority"</span>: <span class="string">"high"</span>,\n  <span class="property">"status"</span>: <span class="string">"open"</span>,\n  <span class="property">"created_at"</span>: <span class="string">"2026-06-17T10:30:00Z"</span>\n}</div><p style="margin-top:12px;">Notice the <span class="status-badge status-2xx">201 Created</span> status code &mdash; not just 200. It specifically means "I created something new for you." The body contains the full issue, including its brand new <code>id: 257</code>.</p>'
+    },
+    {
+      title: 'Step 9: Browser Receives the Response',
+      body: '<p>The response travels back through the internet to the user\'s browser. The UI code receives it and updates the screen:</p><div class="code-block" style="margin-top:12px;"><span class="comment">// Back in the UI code</span>\n<span class="keyword">const</span> <span class="function">response</span> = <span class="keyword">await</span> <span class="function">fetch</span>(<span class="string">"/api/issues"</span>, { ... });\n<span class="keyword">const</span> <span class="function">newIssue</span> = <span class="keyword">await</span> <span class="function">response</span>.<span class="function">json</span>();\n\n<span class="comment">// response.status === 201 (success!)</span>\n<span class="comment">// newIssue === { id: 257, title: "Fix login bug", ... }</span>\n\n<span class="comment">// Update the UI to show the new issue</span>\n<span class="function">addIssueToList</span>(<span class="function">newIssue</span>);\n<span class="function">showSuccessMessage</span>(<span class="string">"Issue created!"</span>);</div><p style="margin-top:12px;">The browser parses the JSON response, adds the new issue to the list on screen, and shows a success message. The user sees their new issue appear &mdash; and they have no idea about all the steps that just happened behind the scenes!</p>'
+    }
+  ];
+
+  detail.innerHTML = '<h4>' + steps[n].title + '</h4>' + steps[n].body;
+}
+
+// ── Lesson 8: REST Resources ──
+function showRestResource(resource) {
+  ['agents','issues','tasks','users'].forEach(function(r) {
+    document.getElementById('rest-' + r).classList.remove('active');
+  });
+  document.getElementById('rest-' + resource).classList.add('active');
+
+  const el = document.getElementById('rest-detail');
+  const resources = {
+    agents: {
+      title: 'Agents Resource',
+      rows: [
+        ['<code>GET</code>', '<code>/api/agents</code>', 'List all agents'],
+        ['<code>GET</code>', '<code>/api/agents/:id</code>', 'Get a specific agent by ID'],
+        ['<code>POST</code>', '<code>/api/agents</code>', 'Create a new agent'],
+        ['<code>PATCH</code>', '<code>/api/agents/:id</code>', 'Update an agent\'s settings'],
+        ['<code>DELETE</code>', '<code>/api/agents/:id</code>', 'Remove an agent']
+      ],
+      note: 'The <code>:id</code> is a placeholder. In a real request, it would be a number like <code>/api/agents/42</code>.'
+    },
+    issues: {
+      title: 'Issues Resource',
+      rows: [
+        ['<code>GET</code>', '<code>/api/issues</code>', 'List all issues (with filters)'],
+        ['<code>GET</code>', '<code>/api/issues/:id</code>', 'Get a specific issue'],
+        ['<code>POST</code>', '<code>/api/issues</code>', 'Create a new issue'],
+        ['<code>PATCH</code>', '<code>/api/issues/:id</code>', 'Update issue (change status, priority, etc.)'],
+        ['<code>DELETE</code>', '<code>/api/issues/:id</code>', 'Delete an issue']
+      ],
+      note: 'Issues might also have nested resources like <code>/api/issues/:id/comments</code> for comments on a specific issue.'
+    },
+    tasks: {
+      title: 'Tasks Resource',
+      rows: [
+        ['<code>GET</code>', '<code>/api/tasks</code>', 'List all tasks'],
+        ['<code>GET</code>', '<code>/api/tasks/:id</code>', 'Get a specific task'],
+        ['<code>POST</code>', '<code>/api/tasks</code>', 'Create a new task'],
+        ['<code>PATCH</code>', '<code>/api/tasks/:id</code>', 'Update a task (mark as done, reassign)'],
+        ['<code>DELETE</code>', '<code>/api/tasks/:id</code>', 'Delete a task']
+      ],
+      note: 'Tasks are often linked to issues or agents through foreign keys (remember those from the database tutorial?).'
+    },
+    users: {
+      title: 'Users Resource',
+      rows: [
+        ['<code>GET</code>', '<code>/api/users</code>', 'List all users'],
+        ['<code>GET</code>', '<code>/api/users/:id</code>', 'Get a specific user\'s profile'],
+        ['<code>POST</code>', '<code>/api/users</code>', 'Create a new user (registration)'],
+        ['<code>PATCH</code>', '<code>/api/users/:id</code>', 'Update user profile'],
+        ['<code>DELETE</code>', '<code>/api/users/:id</code>', 'Deactivate or remove a user']
+      ],
+      note: 'User endpoints often have extra security. Only admins can list all users, and you can usually only update your own profile.'
+    }
+  };
+
+  const r = resources[resource];
+  let html = '<h3 style="color:var(--accent-indigo);margin-bottom:12px;">' + r.title + '</h3>';
+  html += '<table class="styled-table"><thead><tr><th>Method</th><th>URL</th><th>What It Does</th></tr></thead><tbody>';
+  r.rows.forEach(function(row) {
+    html += '<tr><td>' + row[0] + '</td><td>' + row[1] + '</td><td>' + row[2] + '</td></tr>';
+  });
+  html += '</tbody></table>';
+  html += '<p style="margin-top:12px;font-size:14px;color:var(--text-muted);">' + r.note + '</p>';
+  el.innerHTML = html;
+}
+
+// ── Collapsible Sections ──
+function toggleCollapsible(trigger) {
+  trigger.classList.toggle('open');
+  const content = trigger.nextElementSibling;
+  content.classList.toggle('open');
+}
+
+// ── Keyboard Navigation ──
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowRight' && currentLesson < totalLessons - 1) {
+    goToLesson(currentLesson + 1);
+  } else if (e.key === 'ArrowLeft' && currentLesson > 0) {
+    goToLesson(currentLesson - 1);
+  }
+});
+</script>
+
+<script src="/js/shared.js"></script>
+
+</body>
+</html>

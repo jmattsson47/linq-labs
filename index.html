@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Fundamentals</title>
+  <link rel="stylesheet" href="/css/shared.css">
+  <style>
+    /* ======== Landing Page Styles ======== */
+
+    .hero {
+      text-align: center;
+      padding: 80px 24px 48px;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    .hero-title {
+      font-size: clamp(2.2rem, 5vw, 3.2rem);
+      font-weight: 800;
+      color: var(--text-primary);
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      margin-bottom: 16px;
+    }
+
+    .hero-subtitle {
+      font-size: clamp(1rem, 2.5vw, 1.2rem);
+      color: var(--text-dim);
+      max-width: 540px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* --- Hero Visual: Animated Stack --- */
+    .hero-visual {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      margin: 40px auto 0;
+      max-width: 380px;
+    }
+
+    .stack-layer {
+      width: 100%;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-align: center;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: stackSlideUp 0.5s ease forwards;
+      animation-delay: var(--delay);
+      border: 1px solid transparent;
+    }
+
+    .stack-layer:nth-child(1) {
+      background: rgba(52, 211, 153, 0.12);
+      color: var(--accent-green);
+      border-color: rgba(52, 211, 153, 0.25);
+      width: 70%;
+    }
+
+    .stack-layer:nth-child(2) {
+      background: rgba(96, 165, 250, 0.12);
+      color: var(--accent-blue);
+      border-color: rgba(96, 165, 250, 0.25);
+      width: 80%;
+    }
+
+    .stack-layer:nth-child(3) {
+      background: rgba(192, 132, 252, 0.12);
+      color: var(--accent-purple);
+      border-color: rgba(192, 132, 252, 0.25);
+      width: 90%;
+    }
+
+    .stack-layer:nth-child(4) {
+      background: rgba(251, 191, 36, 0.12);
+      color: var(--accent-yellow);
+      border-color: rgba(251, 191, 36, 0.25);
+      width: 100%;
+    }
+
+    @keyframes stackSlideUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* --- Keyboard Shortcut Hint --- */
+    .hero-hint {
+      margin-top: 24px;
+      font-size: 0.8rem;
+      color: var(--text-faint);
+    }
+
+    .hero-hint kbd {
+      display: inline-block;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-primary);
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-size: 0.75rem;
+      font-family: inherit;
+      color: var(--text-muted);
+    }
+
+    /* --- Course Grid --- */
+    .courses {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 24px 24px 64px;
+    }
+
+    .course-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .course-card {
+      position: relative;
+      background: var(--bg-card);
+      border: 1px solid var(--border-primary);
+      border-radius: 12px;
+      padding: 28px 24px 24px;
+      display: flex;
+      flex-direction: column;
+      transition: border-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+    }
+
+    .course-card:hover {
+      border-color: var(--border-btn-selected);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    }
+
+    .course-card.completed {
+      border-color: var(--accent-green);
+    }
+
+    .course-card .completed-badge {
+      display: none;
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: var(--accent-green);
+      color: #000;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .course-card.completed .completed-badge {
+      display: block;
+    }
+
+    .course-num {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--accent-blue);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 10px;
+    }
+
+    .course-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+      line-height: 1.3;
+    }
+
+    .course-desc {
+      font-size: 0.92rem;
+      color: var(--text-muted);
+      line-height: 1.55;
+      flex: 1;
+      margin-bottom: 16px;
+    }
+
+    .course-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .course-lessons {
+      font-size: 0.8rem;
+      color: var(--text-faint);
+      font-weight: 500;
+    }
+
+    .course-link {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--accent-blue);
+      text-decoration: none;
+      transition: color 0.15s ease;
+    }
+
+    .course-link:hover {
+      color: var(--accent-indigo);
+      text-decoration: underline;
+    }
+
+    /* --- Footer --- */
+    .landing-footer {
+      text-align: center;
+      padding: 32px 24px 48px;
+      color: var(--text-faint);
+      font-size: 0.82rem;
+      border-top: 1px solid var(--border-primary);
+      max-width: 960px;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ======== Sidebar ======== -->
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <a href="/index.html" class="sidebar-logo">The Fundamentals</a>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-title">Courses</div>
+      <a href="/lessons/databases.html" class="sidebar-link" data-course="databases">
+        <span class="sidebar-num">01</span> How Databases Work
+      </a>
+      <a href="/lessons/codebase.html" class="sidebar-link" data-course="codebase">
+        <span class="sidebar-num">02</span> The Codebase
+      </a>
+      <a href="/lessons/apis.html" class="sidebar-link" data-course="apis">
+        <span class="sidebar-num">03</span> APIs &amp; HTTP
+      </a>
+      <a href="/lessons/build.html" class="sidebar-link" data-course="build">
+        <span class="sidebar-num">04</span> Build a Mini App
+      </a>
+      <a href="/lessons/deployment.html" class="sidebar-link" data-course="deployment">
+        <span class="sidebar-num">05</span> How Deployment Works
+      </a>
+      <a href="/lessons/git.html" class="sidebar-link" data-course="git">
+        <span class="sidebar-num">06</span> How Git Works
+      </a>
+      <a href="/lessons/authentication.html" class="sidebar-link" data-course="authentication">
+        <span class="sidebar-num">07</span> How Auth Works
+      </a>
+      <a href="/lessons/typescript.html" class="sidebar-link" data-course="typescript">
+        <span class="sidebar-num">08</span> How TypeScript Works
+      </a>
+      <a href="/lessons/react.html" class="sidebar-link" data-course="react">
+        <span class="sidebar-num">09</span> How React Works
+      </a>
+      <a href="/lessons/testing.html" class="sidebar-link" data-course="testing">
+        <span class="sidebar-num">10</span> How Testing Works
+      </a>
+      <a href="/lessons/ai-agents.html" class="sidebar-link" data-course="ai-agents">
+        <span class="sidebar-num">11</span> How AI Agents Work
+      </a>
+      <a href="/lessons/shipping.html" class="sidebar-link" data-course="shipping">
+        <span class="sidebar-num">12</span> How to Ship a Product
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="theme-toggle" id="theme-toggle">
+        <span class="theme-icon" id="theme-icon">&#9728;&#65039;</span>
+        <span class="theme-label" id="theme-label">Light Mode</span>
+      </button>
+    </div>
+  </aside>
+  <button class="sidebar-toggle" id="sidebar-toggle">&#9776;</button>
+
+  <!-- ======== Main Content ======== -->
+  <div class="content-wrapper">
+
+    <section class="hero">
+      <h1 class="hero-title">The Fundamentals</h1>
+      <p class="hero-subtitle">Learn how software works from the ground up. Twelve interactive courses, zero prerequisites.</p>
+
+      <div class="hero-visual">
+        <div class="stack-layer" style="--delay: 0s">UI — React</div>
+        <div class="stack-layer" style="--delay: 0.3s">API — Express</div>
+        <div class="stack-layer" style="--delay: 0.6s">Server — Node.js</div>
+        <div class="stack-layer" style="--delay: 0.9s">Database — PostgreSQL</div>
+      </div>
+
+      <p class="hero-hint">Press <kbd>Cmd</kbd> + <kbd>K</kbd> to search all lessons</p>
+    </section>
+
+    <section class="courses">
+      <div class="course-grid">
+
+        <!-- Course 01 -->
+        <div class="course-card" data-course="databases">
+          <span class="completed-badge">Completed</span>
+          <div class="course-num">Course 01</div>
+          <h2 class="course-title">How Databases Work</h2>
+          <p class="course-desc">Tables, keys, relationships, and queries.</p>
+          <div class="course-meta">
+            <span class="course-lessons">6 lessons <span class="reading-time">~15 min</span></span>
+            <a href="/lessons/databases.html" class="course-link">Start course &rarr;</a>
+          </div>
+        </div>
+
+        <!-- Course 02 -->
+        <div class="course-card" data-course="codebase">
+          <span class="completed-badge">Completed</span>
+          <div class="course-num">Course 02</div>
+          <h2 class="course-title">The Codebase</h2>
+          <p class="course-desc">How a real production codebase is organized.</p>
+          <div class="course-meta">
+            <span class="course-lessons">8 lessons <span class="reading-time">~20 min</span></span>
+            <a href="/lessons/codebase.html" class="course-link">Start course &rarr;</a>
+          </div>
+        </div>
+
+        <!-- Course 03 -->
+        <div class="course-card" data-course="apis">
+          <span class="completed-badge">Completed</span>
+          <div class="course-num">Course 03</div>
+          <h2 class="course-title">APIs &amp; HTTP</h2>
+          <p class="course-desc">How the browser talks to the server.</p>
+          <div class="course-meta">
+            <span class="course-lessons">8 lessons <span class="reading-time">~25 min</span></span>
+            <a href="/lessons/apis.html" class="course-link">Start course &rarr;</a>
+          </div>
+        </div>
+
+        <!-- Course 04 -->
+        <div class="course-card" data-course="build">
+          <span class="completed-badge">Completed</span>
+          <div class="course-num">Course 04</div>
+          <h2 class="course-title">Build a Mini App</h2>
+          <p class="course-desc">Create a working app with a database, API, and UI.</p>
+          <div class="course-meta">
+            <span class="course-lessons">8 lessons <span class="reading-time">~25 min</span></span>
+            <a href="/lessons/build.html" class="course-link">Start course &rarr;</a>
+          </div>
+        </div>
+
+        <!-- Course 05 -->
+        <div class="course-card" data-course="deployment">
+          <span class="completed-badge">Completed</span>
+          <div class="course-num">Course 05</div>
+          <h2 class="course-title">How Deployment Works</h2>
+          <p class="course-desc">From localhost to a live URL.</p>
+          <div class="course-meta">
+            <span class="course-lessons">8 lessons <span class="reading-time">~20 min</span></span>
+            <a href="/lessons/deployment.html" class="course-link">Start course &rarr;</a>
+          </div>
+        </div>
+
+        <!-- Course 06 -->
+        <div class="course-card" data-course="git">
+          <span class="completed-badge">Completed</span>
+          <div class="course-num">Course 06</div>
+          <h2 class="course-title">How Git Works</h2>
+          <p class="course-desc">Version control, branches, and collaboration.</p>
+          <div class="course-meta">
+            <span class="course-lessons">8 lessons <span class="reading-time">~20 min</span></span>
+            <a href="/lessons/git.html" class="course-link">Start course &rarr;</a>
+          </div>
+        </div>
+
+        <!-- Course 07 -->
+        <div class="course-card" data-course="authentication">
+          <span class="completed-badge">Completed</span>
+          <div class="course-num">Course 07</div>
+          <h2 class="course-title">How Auth Works</h2>
+          <p class="course-desc">Passwords, sessions, tokens, and OAuth.</p>
+          <div class="course-meta">
+            <span class="course-lessons">8 lessons <span class="reading-time">~25 min</span></span>
+            <a href="/lessons/authentication.html" class="course-link">Start course &rarr;</a>
+          </div>
+        </div>
+
+        <!-- Course 08 -->
+        <div class="course-card" data-course="typescript">
+          <span class="completed-badge">Completed</span>
+          <div class="course-num">Course 08</div>
+          <h2 class="course-title">How TypeScript Works</h2>
+          <p class="course-desc">Types, interfaces, and compile-time safety.</p>
+          <div class="course-meta">
+            <span class="course-lessons">8 lessons <span class="reading-time">~20 min</span></span>
+            <a href="/lessons/typescript.html" class="course-link">Start course &rarr;</a>
+          </div>
+        </div>
+
+        <!-- Course 09 -->
+        <div class="course-card" data-course="react">
+          <span class="completed-badge">Completed</span>
+          <div class="course-num">Course 09</div>
+          <h2 class="course-title">How React Works</h2>
+          <p class="course-desc">Components, state, props, and rendering.</p>
+          <div class="course-meta">
+            <span class="course-lessons">8 lessons <span class="reading-time">~25 min</span></span>
+            <a href="/lessons/react.html" class="course-link">Start course &rarr;</a>
+          </div>
+        </div>
+
+        <!-- Course 10 -->
+        <div class="course-card" data-course="testing">
+          <span class="completed-badge">Completed</span>
+          <div class="course-num">Course 10</div>
+          <h2 class="course-title">How Testing Works</h2>
+          <p class="course-desc">Unit tests, integration tests, and why they matter.</p>
+          <div class="course-meta">
+            <span class="course-lessons">8 lessons <span class="reading-time">~20 min</span></span>
+            <a href="/lessons/testing.html" class="course-link">Start course &rarr;</a>
+          </div>
+        </div>
+
+        <!-- Course 11 -->
+        <div class="course-card" data-course="ai-agents">
+          <span class="completed-badge">Completed</span>
+          <div class="course-num">Course 11</div>
+          <h2 class="course-title">How AI Agents Work</h2>
+          <p class="course-desc">LLMs, prompts, tool use, and the agent loop.</p>
+          <div class="course-meta">
+            <span class="course-lessons">8 lessons <span class="reading-time">~20 min</span></span>
+            <a href="/lessons/ai-agents.html" class="course-link">Start course &rarr;</a>
+          </div>
+        </div>
+
+        <!-- Course 12 -->
+        <div class="course-card" data-course="shipping">
+          <span class="completed-badge">Completed</span>
+          <div class="course-num">Course 12</div>
+          <h2 class="course-title">How to Ship a Product</h2>
+          <p class="course-desc">The complete lifecycle from idea to launch.</p>
+          <div class="course-meta">
+            <span class="course-lessons">8 lessons <span class="reading-time">~25 min</span></span>
+            <a href="/lessons/shipping.html" class="course-link">Start course &rarr;</a>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <footer class="landing-footer">
+      Built with Claude Code
+    </footer>
+
+  </div>
+
+  <script src="/js/shared.js"></script>
+  <script>
+    // Mark course cards as completed based on localStorage
+    (function () {
+      try {
+        var visited = JSON.parse(localStorage.getItem('fundamentals-visited') || '{}');
+        document.querySelectorAll('.course-card[data-course]').forEach(function (card) {
+          var courseId = card.getAttribute('data-course');
+          if (visited[courseId]) {
+            card.classList.add('completed');
+          }
+        });
+      } catch (e) {
+        // localStorage unavailable
+      }
+    })();
+  </script>
+</body>
+</html>

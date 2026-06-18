@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How Databases Work — The Fundamentals</title>
+  <link rel="stylesheet" href="/css/shared.css">
+  <style>
+    /* LESSON-SPECIFIC styles only — converted to use CSS variables */
+    .lesson { display: none; }
+    .lesson.active { display: block; }
+    .lesson h2 { font-size: 28px; color: var(--text-primary); margin-bottom: 8px; }
+    .lesson .subtitle { color: var(--text-muted); font-size: 16px; margin-bottom: 32px; }
+    .lesson p { color: var(--text-tertiary); line-height: 1.7; margin-bottom: 16px; font-size: 15px; }
+    .lesson .analogy { background: var(--bg-analogy); border: 1px solid var(--border-analogy); border-radius: 10px; padding: 20px 24px; margin: 20px 0; }
+    .lesson .analogy strong { color: var(--accent-indigo); }
+
+    /* Table visualization */
+    .db-table { margin: 24px 0; border-radius: 10px; overflow: hidden; border: 1px solid var(--border-tertiary); }
+    .db-table .table-header { background: var(--bg-table-header); padding: 10px 16px; font-weight: 600; font-size: 14px; color: var(--accent-blue); display: flex; align-items: center; gap: 8px; }
+    .db-table .table-header .icon { font-size: 12px; }
+    .db-table table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .db-table th { background: var(--bg-table-th); padding: 10px 16px; text-align: left; color: var(--text-table-header); font-weight: 500; border-bottom: 1px solid var(--border-table); }
+    .db-table td { padding: 10px 16px; border-bottom: 1px solid var(--border-table-row); color: var(--text-body); }
+    .db-table tr:last-child td { border-bottom: none; }
+    .db-table tr:hover td { background: var(--bg-table-hover); }
+    .db-table .pk { color: var(--accent-yellow); font-weight: 600; }
+    .db-table .fk { color: var(--accent-green); font-style: italic; }
+
+    .highlight-row td { background: var(--bg-highlight-row) !important; }
+
+    /* Relationship lines */
+    .rel-diagram { display: flex; align-items: flex-start; gap: 20px; margin: 24px 0; flex-wrap: wrap; justify-content: center; }
+    .rel-diagram .db-table { flex: 1; min-width: 280px; max-width: 420px; margin: 0; }
+    .rel-arrow { display: flex; align-items: center; justify-content: center; font-size: 24px; color: #3b82f6; padding-top: 60px; min-width: 40px; }
+
+    /* Interactive query */
+    .query-box { background: var(--bg-secondary); border: 1px solid var(--border-tertiary); border-radius: 10px; padding: 20px; margin: 24px 0; }
+    .query-box code { display: block; background: var(--bg-code); padding: 16px; border-radius: 8px; font-family: 'SF Mono', Monaco, monospace; font-size: 14px; color: var(--text-secondary); margin: 12px 0; white-space: pre; overflow-x: auto; }
+    .query-box .keyword { color: var(--accent-purple); font-weight: 600; }
+    .query-box .table-name { color: var(--accent-blue); }
+    .query-box .col-name { color: var(--accent-yellow); }
+    .query-box .value { color: var(--accent-green); }
+
+    .btn-row { display: flex; gap: 10px; margin: 24px 0; flex-wrap: wrap; }
+    .btn { background: var(--bg-btn); border: 1px solid var(--border-btn); color: var(--text-nav); padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; transition: all 0.2s; }
+    .btn:hover { background: #253349; color: var(--text-primary); border-color: #4b6a9b; }
+    .btn.selected { background: var(--bg-btn-selected); border-color: var(--border-btn-selected); color: var(--accent-blue); }
+
+    .result-box { background: var(--bg-card); border: 1px solid #1a2332; border-radius: 10px; padding: 20px; margin: 16px 0; min-height: 60px; transition: all 0.3s; }
+    .result-box .label { color: var(--text-faint); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+    .result-box.flash { border-color: #3b82f6; }
+
+    .schema-block { background: var(--bg-card); border: 1px solid var(--border-secondary); border-radius: 10px; padding: 20px; margin: 20px 0; font-family: 'SF Mono', Monaco, monospace; font-size: 13px; line-height: 1.8; }
+    .schema-block .kw { color: var(--accent-purple); }
+    .schema-block .tbl { color: var(--accent-blue); }
+    .schema-block .col { color: var(--text-secondary); }
+    .schema-block .type { color: var(--accent-yellow); }
+    .schema-block .constraint { color: var(--accent-green); }
+    .schema-block .comment { color: var(--text-faint); }
+
+    .next-btn { display: inline-block; margin-top: 32px; background: var(--accent-blue-bg); border: none; color: var(--text-primary); padding: 12px 28px; border-radius: 8px; cursor: pointer; font-size: 15px; font-weight: 500; transition: all 0.2s; }
+    .next-btn:hover { background: #3b82f6; }
+
+    .key-label { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-left: 6px; }
+    .key-label.pk-label { background: #422006; color: var(--accent-yellow); }
+    .key-label.fk-label { background: #052e16; color: var(--accent-green); }
+
+    .legend { display: flex; gap: 20px; margin: 16px 0; font-size: 13px; }
+    .legend span { display: flex; align-items: center; gap: 6px; }
+    .legend .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .legend .dot.pk-dot { background: var(--accent-yellow); }
+    .legend .dot.fk-dot { background: var(--accent-green); }
+
+    .count-badge { background: var(--bg-btn); color: var(--accent-blue); padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; margin-left: 8px; }
+
+    .nav { position: fixed; top: 0; left: 0; right: 0; background: var(--bg-secondary); border-bottom: 1px solid var(--border-primary); padding: 12px 32px; display: flex; align-items: center; gap: 16px; z-index: 100; }
+    .nav h1 { font-size: 16px; color: var(--text-primary); margin-right: 24px; }
+    .nav button { background: var(--bg-tertiary); border: 1px solid var(--border-nav-btn); color: var(--text-dim); padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; transition: all 0.2s; }
+    .nav button:hover { background: #252525; color: var(--text-primary); border-color: #444; }
+    .nav button.active { background: var(--accent-blue-bg); border-color: #3b82f6; color: var(--text-primary); }
+    .progress { margin-left: auto; font-size: 13px; color: var(--text-faint); }
+
+    @media (min-width: 1024px) {
+      .nav { left: 280px; }
+    }
+
+    .breadcrumb { margin-top: 64px; padding-top: 8px; }
+  </style>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <a href="/index.html" class="sidebar-logo">The Fundamentals</a>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="sidebar-section-title">Courses</div>
+    <a href="/lessons/databases.html" class="sidebar-link" data-course="databases" aria-current="page">
+      <span class="sidebar-num">01</span> How Databases Work
+    </a>
+    <a href="/lessons/codebase.html" class="sidebar-link" data-course="codebase">
+      <span class="sidebar-num">02</span> The Codebase
+    </a>
+    <a href="/lessons/apis.html" class="sidebar-link" data-course="apis">
+      <span class="sidebar-num">03</span> APIs &amp; HTTP
+    </a>
+    <a href="/lessons/build.html" class="sidebar-link" data-course="build">
+      <span class="sidebar-num">04</span> Build a Mini App
+    </a>
+    <a href="/lessons/deployment.html" class="sidebar-link" data-course="deployment">
+      <span class="sidebar-num">05</span> How Deployment Works
+    </a>
+    <a href="/lessons/git.html" class="sidebar-link" data-course="git">
+      <span class="sidebar-num">06</span> How Git Works
+    </a>
+  </nav>
+      <a href="/lessons/authentication.html" class="sidebar-link" data-course="authentication">
+        <span class="sidebar-num">07</span> How Auth Works
+      </a>
+      <a href="/lessons/typescript.html" class="sidebar-link" data-course="typescript">
+        <span class="sidebar-num">08</span> How TypeScript Works
+      </a>
+      <a href="/lessons/react.html" class="sidebar-link" data-course="react">
+        <span class="sidebar-num">09</span> How React Works
+      </a>
+      <a href="/lessons/testing.html" class="sidebar-link" data-course="testing">
+        <span class="sidebar-num">10</span> How Testing Works
+      </a>
+      <a href="/lessons/ai-agents.html" class="sidebar-link" data-course="ai-agents">
+        <span class="sidebar-num">11</span> How AI Agents Work
+      </a>
+      <a href="/lessons/shipping.html" class="sidebar-link" data-course="shipping">
+        <span class="sidebar-num">12</span> How to Ship a Product
+      </a>
+  <div class="sidebar-footer">
+    <button class="theme-toggle" id="theme-toggle">
+      <span class="theme-icon" id="theme-icon">☀️</span>
+      <span class="theme-label" id="theme-label">Light Mode</span>
+    </button>
+  </div>
+</aside>
+<button class="sidebar-toggle" id="sidebar-toggle">☰</button>
+
+<div class="content-wrapper">
+
+<div class="breadcrumb"><a href="/index.html">Home</a><span class="sep">›</span><span>How Databases Work</span></div>
+
+<div class="nav">
+  <h1>Database School</h1>
+  <button onclick="goTo(0)" id="nav0" class="active">1. Tables</button>
+  <button onclick="goTo(1)" id="nav1">2. Keys</button>
+  <button onclick="goTo(2)" id="nav2">3. Relationships</button>
+  <button onclick="goTo(3)" id="nav3">4. Schema</button>
+  <button onclick="goTo(4)" id="nav4">5. Queries</button>
+  <button onclick="goTo(5)" id="nav5">6. Paperclip</button>
+  <span class="progress" id="progress">1 / 6</span>
+</div>
+
+<div class="container">
+
+  <!-- LESSON 1: Tables -->
+  <div class="lesson active" id="lesson0">
+    <h2>Lesson 1: Tables</h2>
+    <p class="subtitle">The building blocks of every database.</p>
+
+    <p>You already know this part. A database table is rows and columns — just like a spreadsheet.</p>
+    <p>Each <strong style="color:var(--text-primary)">column</strong> is a type of information (name, email, role). Each <strong style="color:var(--text-primary)">row</strong> is one record — one person, one task, one agent.</p>
+
+    <div class="analogy">
+      <strong>Analogy:</strong> Think of a table as a filing cabinet drawer. Every folder in the drawer has the same tabs (Name, Date, Status). Each folder is one record. The drawer label is the table name.
+    </div>
+
+    <p>Here's what an <strong style="color:var(--accent-blue)">agents</strong> table might look like in Paperclip:</p>
+
+    <div class="db-table">
+      <div class="table-header"><span class="icon">&#9634;</span> agents</div>
+      <table>
+        <tr><th>id</th><th>name</th><th>role</th><th>adapter</th><th>budget</th></tr>
+        <tr><td>1</td><td>Claude</td><td>CTO</td><td>claude-code</td><td>$500/mo</td></tr>
+        <tr><td>2</td><td>Codex</td><td>Engineer</td><td>codex</td><td>$200/mo</td></tr>
+        <tr><td>3</td><td>Scout</td><td>Researcher</td><td>http</td><td>$100/mo</td></tr>
+        <tr><td>4</td><td>Pixel</td><td>Designer</td><td>cursor</td><td>$150/mo</td></tr>
+      </table>
+    </div>
+
+    <p>That's it. Four agents, five columns. Every database in the world — Instagram, your bank, Paperclip — is just a collection of tables like this.</p>
+    <p>The question is: <strong style="color:var(--text-primary)">how do tables talk to each other?</strong> That's where it gets interesting.</p>
+
+    <button class="next-btn" onclick="goTo(1)">Next: Keys &rarr;</button>
+  </div>
+
+  <!-- LESSON 2: Keys -->
+  <div class="lesson" id="lesson1">
+    <h2>Lesson 2: Primary Keys & Foreign Keys</h2>
+    <p class="subtitle">How every row gets an identity, and how tables point to each other.</p>
+
+    <div class="legend">
+      <span><span class="dot pk-dot"></span> Primary Key (PK) — unique ID for this row</span>
+      <span><span class="dot fk-dot"></span> Foreign Key (FK) — points to a row in another table</span>
+    </div>
+
+    <p>Every row needs a unique identifier — something that says "this is the one and only row #3." That's the <strong style="color:var(--accent-yellow)">Primary Key (PK)</strong>. Usually it's just a number that auto-increments: 1, 2, 3, 4...</p>
+
+    <div class="analogy">
+      <strong>Analogy:</strong> A primary key is like a Social Security Number. Two people can have the same name, but they can never have the same SSN. It's how you tell them apart, guaranteed.
+    </div>
+
+    <p>Now, when one table needs to reference a row in another table, it stores that row's primary key. This reference is called a <strong style="color:var(--accent-green)">Foreign Key (FK)</strong>.</p>
+
+    <p>Click on an agent to see which tasks belong to them:</p>
+
+    <div class="btn-row">
+      <button class="btn" onclick="showAgentTasks(1)">Claude (id: 1)</button>
+      <button class="btn" onclick="showAgentTasks(2)">Codex (id: 2)</button>
+      <button class="btn" onclick="showAgentTasks(3)">Scout (id: 3)</button>
+      <button class="btn" onclick="showAgentTasks(4)">Pixel (id: 4)</button>
+    </div>
+
+    <div class="rel-diagram">
+      <div class="db-table" style="flex: 0.8">
+        <div class="table-header"><span class="icon">&#9634;</span> agents</div>
+        <table>
+          <tr><th>id <span class="key-label pk-label">PK</span></th><th>name</th></tr>
+          <tr id="agent-row-1"><td class="pk">1</td><td>Claude</td></tr>
+          <tr id="agent-row-2"><td class="pk">2</td><td>Codex</td></tr>
+          <tr id="agent-row-3"><td class="pk">3</td><td>Scout</td></tr>
+          <tr id="agent-row-4"><td class="pk">4</td><td>Pixel</td></tr>
+        </table>
+      </div>
+      <div class="rel-arrow">&rarr;</div>
+      <div class="db-table" style="flex: 1.2">
+        <div class="table-header"><span class="icon">&#9634;</span> tasks <span class="count-badge" id="task-count">click an agent</span></div>
+        <table id="tasks-table">
+          <tr><th>id <span class="key-label pk-label">PK</span></th><th>title</th><th>agent_id <span class="key-label fk-label">FK</span></th><th>status</th></tr>
+          <tr><td class="pk">1</td><td>Design new API</td><td class="fk">1</td><td>done</td></tr>
+          <tr><td class="pk">2</td><td>Fix login bug</td><td class="fk">2</td><td>in_progress</td></tr>
+          <tr><td class="pk">3</td><td>Research competitors</td><td class="fk">3</td><td>done</td></tr>
+          <tr><td class="pk">4</td><td>Build dashboard</td><td class="fk">1</td><td>in_progress</td></tr>
+          <tr><td class="pk">5</td><td>Write tests</td><td class="fk">2</td><td>todo</td></tr>
+          <tr><td class="pk">6</td><td>Create logo</td><td class="fk">4</td><td>done</td></tr>
+          <tr><td class="pk">7</td><td>Plan roadmap</td><td class="fk">1</td><td>todo</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="result-box" id="key-result">
+      <div class="label">How it works</div>
+      <p style="color:var(--text-muted)">Click an agent above to see the connection.</p>
+    </div>
+
+    <button class="next-btn" onclick="goTo(2)">Next: Relationships &rarr;</button>
+  </div>
+
+  <!-- LESSON 3: Relationships -->
+  <div class="lesson" id="lesson2">
+    <h2>Lesson 3: Relationships</h2>
+    <p class="subtitle">One-to-many, many-to-many, and why it matters.</p>
+
+    <p>Tables don't exist in isolation. The whole power of a database is in how tables <strong style="color:var(--text-primary)">relate</strong> to each other. There are three main types:</p>
+
+    <div class="btn-row">
+      <button class="btn selected" onclick="showRelType('one-to-many')" id="rel-btn-1">One-to-Many</button>
+      <button class="btn" onclick="showRelType('one-to-one')" id="rel-btn-2">One-to-One</button>
+      <button class="btn" onclick="showRelType('many-to-many')" id="rel-btn-3">Many-to-Many</button>
+    </div>
+
+    <div id="rel-one-to-many" class="rel-content">
+      <p>The most common. <strong style="color:var(--text-primary)">One agent has many tasks.</strong> One company has many agents. One project has many issues.</p>
+      <div class="analogy">
+        <strong>Analogy:</strong> One parent, many children. A parent can have 5 kids, but each kid has exactly one biological mother. The "many" side (tasks) stores the foreign key pointing back to the "one" side (agent).
+      </div>
+      <div class="rel-diagram">
+        <div class="db-table">
+          <div class="table-header">&#9634; agents (the "one")</div>
+          <table>
+            <tr><th>id <span class="key-label pk-label">PK</span></th><th>name</th></tr>
+            <tr class="highlight-row"><td class="pk">1</td><td>Claude</td></tr>
+          </table>
+        </div>
+        <div class="rel-arrow">1 &rarr; N</div>
+        <div class="db-table">
+          <div class="table-header">&#9634; tasks (the "many")</div>
+          <table>
+            <tr><th>id</th><th>title</th><th>agent_id <span class="key-label fk-label">FK</span></th></tr>
+            <tr class="highlight-row"><td>1</td><td>Design new API</td><td class="fk">1</td></tr>
+            <tr class="highlight-row"><td>4</td><td>Build dashboard</td><td class="fk">1</td></tr>
+            <tr class="highlight-row"><td>7</td><td>Plan roadmap</td><td class="fk">1</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div id="rel-one-to-one" class="rel-content" style="display:none">
+      <p>Rare but useful. <strong style="color:var(--text-primary)">One agent has exactly one settings record.</strong> It's a 1:1 mapping.</p>
+      <div class="analogy">
+        <strong>Analogy:</strong> One person, one passport. You don't share it with anyone, and you only get one.
+      </div>
+      <div class="rel-diagram">
+        <div class="db-table">
+          <div class="table-header">&#9634; agents</div>
+          <table>
+            <tr><th>id <span class="key-label pk-label">PK</span></th><th>name</th></tr>
+            <tr class="highlight-row"><td class="pk">1</td><td>Claude</td></tr>
+          </table>
+        </div>
+        <div class="rel-arrow">1 &rarr; 1</div>
+        <div class="db-table">
+          <div class="table-header">&#9634; agent_settings</div>
+          <table>
+            <tr><th>agent_id <span class="key-label fk-label">FK + PK</span></th><th>model</th><th>max_tokens</th></tr>
+            <tr class="highlight-row"><td class="fk">1</td><td>opus</td><td>100000</td></tr>
+          </table>
+        </div>
+      </div>
+      <p style="margin-top:16px">Why not just put these columns on the agents table? Sometimes you separate them to keep tables focused, or because the settings are optional and rarely needed.</p>
+    </div>
+
+    <div id="rel-many-to-many" class="rel-content" style="display:none">
+      <p>The interesting one. <strong style="color:var(--text-primary)">An agent can have many skills, and a skill can belong to many agents.</strong></p>
+      <p>You can't do this with a single foreign key. You need a <strong style="color:var(--text-primary)">join table</strong> (also called a junction table) in the middle.</p>
+      <div class="analogy">
+        <strong>Analogy:</strong> Students and classes. A student takes many classes. A class has many students. The "enrollment list" is the join table that connects them.
+      </div>
+      <div class="rel-diagram">
+        <div class="db-table">
+          <div class="table-header">&#9634; agents</div>
+          <table>
+            <tr><th>id <span class="key-label pk-label">PK</span></th><th>name</th></tr>
+            <tr><td class="pk">1</td><td>Claude</td></tr>
+            <tr><td class="pk">2</td><td>Codex</td></tr>
+          </table>
+        </div>
+        <div class="rel-arrow">N &larr;</div>
+        <div class="db-table" style="border-color:#3b82f6">
+          <div class="table-header" style="background:#172554">&#9634; agent_skills (join table)</div>
+          <table>
+            <tr><th>agent_id <span class="key-label fk-label">FK</span></th><th>skill_id <span class="key-label fk-label">FK</span></th></tr>
+            <tr><td class="fk">1</td><td class="fk">1</td></tr>
+            <tr><td class="fk">1</td><td class="fk">2</td></tr>
+            <tr><td class="fk">2</td><td class="fk">1</td></tr>
+            <tr><td class="fk">2</td><td class="fk">3</td></tr>
+          </table>
+        </div>
+        <div class="rel-arrow">&rarr; N</div>
+        <div class="db-table">
+          <div class="table-header">&#9634; skills</div>
+          <table>
+            <tr><th>id <span class="key-label pk-label">PK</span></th><th>name</th></tr>
+            <tr><td class="pk">1</td><td>code-review</td></tr>
+            <tr><td class="pk">2</td><td>deploy</td></tr>
+            <tr><td class="pk">3</td><td>testing</td></tr>
+          </table>
+        </div>
+      </div>
+      <p style="margin-top:16px">The join table has no data of its own — it just holds pairs of foreign keys. Claude has code-review + deploy. Codex has code-review + testing. They share the code-review skill.</p>
+    </div>
+
+    <button class="next-btn" onclick="goTo(3)">Next: Schema &rarr;</button>
+  </div>
+
+  <!-- LESSON 4: Schema -->
+  <div class="lesson" id="lesson3">
+    <h2>Lesson 4: The Schema</h2>
+    <p class="subtitle">The blueprint that defines your entire database.</p>
+
+    <p>You asked what a "schema" is. It's the <strong style="color:var(--text-primary)">blueprint</strong> — the definition of every table, every column, every relationship, and every rule, <em>before any data goes in</em>.</p>
+
+    <div class="analogy">
+      <strong>Analogy:</strong> If the database is a building, the schema is the architectural plans. It defines how many rooms there are, how big they are, which doors connect which rooms, and what each room is for. You draw the plans first, then fill the building with people (data).
+    </div>
+
+    <p>Here's what a schema looks like in code (SQL). This is what those 102 Paperclip migrations are doing — building this blueprint piece by piece:</p>
+
+    <div class="schema-block code-block">
+<span class="kw">CREATE TABLE</span> <span class="tbl">agents</span> (
+  <span class="col">id</span>          <span class="type">INTEGER</span>       <span class="constraint">PRIMARY KEY</span>,  <span class="comment">-- unique ID, auto-increments</span>
+  <span class="col">name</span>        <span class="type">TEXT</span>          <span class="constraint">NOT NULL</span>,     <span class="comment">-- required, can't be blank</span>
+  <span class="col">role</span>        <span class="type">TEXT</span>,                            <span class="comment">-- optional</span>
+  <span class="col">adapter</span>     <span class="type">TEXT</span>          <span class="constraint">NOT NULL</span>,     <span class="comment">-- what kind of agent</span>
+  <span class="col">budget</span>      <span class="type">DECIMAL(10,2)</span>,                    <span class="comment">-- dollars and cents</span>
+  <span class="col">company_id</span>  <span class="type">INTEGER</span>       <span class="constraint">REFERENCES companies(id)</span>  <span class="comment">-- FK!</span>
+);
+    </div>
+
+    <p>Let's break down what each piece means:</p>
+
+    <div class="db-table">
+      <div class="table-header">&#9634; Schema Vocabulary</div>
+      <table>
+        <tr><th style="width:180px">Term</th><th>What it means</th></tr>
+        <tr><td><code style="color:var(--accent-purple)">CREATE TABLE</code></td><td>Make a new table with this name</td></tr>
+        <tr><td><code style="color:var(--accent-yellow)">INTEGER, TEXT</code></td><td>Column types — what kind of data goes here (number, text, date, etc.)</td></tr>
+        <tr><td><code style="color:var(--accent-green)">PRIMARY KEY</code></td><td>This column uniquely identifies each row</td></tr>
+        <tr><td><code style="color:var(--accent-green)">NOT NULL</code></td><td>This column is required — you can't leave it blank</td></tr>
+        <tr><td><code style="color:var(--accent-green)">REFERENCES</code></td><td>This column is a foreign key — it points to a row in another table</td></tr>
+        <tr><td><code style="color:var(--text-secondary)">DECIMAL(10,2)</code></td><td>A number with up to 10 digits and 2 decimal places</td></tr>
+      </table>
+    </div>
+
+    <p style="margin-top:24px">When Paperclip says it has <strong style="color:var(--text-primary)">102 migrations</strong>, that means 102 schema changes applied in order. Migration 1 might create the <code>companies</code> table. Migration 2 adds <code>agents</code>. Migration 50 might add a <code>budget</code> column to agents. Each migration is a small, ordered change to the blueprint.</p>
+
+    <div class="analogy">
+      <strong>Analogy:</strong> Migrations are like building permits. Permit #1: build the foundation. Permit #23: add a second bathroom. Permit #51: knock down a wall and expand the kitchen. You apply them in order, and at the end you have the current building.
+    </div>
+
+    <button class="next-btn" onclick="goTo(4)">Next: Queries &rarr;</button>
+  </div>
+
+  <!-- LESSON 5: Queries -->
+  <div class="lesson" id="lesson4">
+    <h2>Lesson 5: Queries</h2>
+    <p class="subtitle">Asking your database questions.</p>
+
+    <p>Once you have tables with data, you need to <strong style="color:var(--text-primary)">ask questions</strong>. That's what SQL queries do. SQL stands for Structured Query Language — it's how you talk to a database.</p>
+
+    <div class="analogy">
+      <strong>Analogy:</strong> If the database is a librarian with perfect memory, a query is the question you ask them. "Show me all books by Stephen King published after 2020, sorted by rating." The librarian knows exactly where to look.
+    </div>
+
+    <p>Try these queries. Click one to see what it does and what comes back:</p>
+
+    <div class="btn-row">
+      <button class="btn" onclick="runQuery(1)" id="q1">All agents</button>
+      <button class="btn" onclick="runQuery(2)" id="q2">Tasks in progress</button>
+      <button class="btn" onclick="runQuery(3)" id="q3">Claude's tasks</button>
+      <button class="btn" onclick="runQuery(4)" id="q4">Task count per agent</button>
+      <button class="btn" onclick="runQuery(5)" id="q5">Over-budget agents</button>
+    </div>
+
+    <div class="query-box" id="query-display">
+      <div class="label" style="color:var(--text-faint); font-size:12px; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">SQL Query</div>
+      <code id="query-code" style="color:var(--text-faint)">-- click a query above</code>
+    </div>
+
+    <div class="result-box" id="query-result">
+      <div class="label">Result</div>
+      <p style="color:var(--text-faint)" id="query-result-text">Results will appear here.</p>
+    </div>
+
+    <div id="query-explanation" style="margin-top:16px"></div>
+
+    <button class="next-btn" onclick="goTo(5)">Next: Paperclip's Scale &rarr;</button>
+  </div>
+
+  <!-- LESSON 6: Paperclip Scale -->
+  <div class="lesson" id="lesson5">
+    <h2>Lesson 6: Paperclip's Database</h2>
+    <p class="subtitle">Now you can appreciate what 102 migrations really means.</p>
+
+    <p>Everything you just learned — tables, keys, relationships, schemas, queries — Paperclip uses all of it. Here's a simplified map of how the major tables connect:</p>
+
+    <div class="schema-block" style="line-height:2; font-size: 12px;">
+<span class="tbl">companies</span>
+  <span class="comment">|</span>
+  <span class="comment">├──</span> <span class="tbl">agents</span>         <span class="comment">(many agents per company)</span>
+  <span class="comment">|     ├──</span> <span class="tbl">heartbeats</span>   <span class="comment">(wake-up schedule per agent)</span>
+  <span class="comment">|     ├──</span> <span class="tbl">agent_skills</span> <span class="comment">(many-to-many with skills)</span>
+  <span class="comment">|     └──</span> <span class="tbl">cost_events</span>  <span class="comment">(every dollar spent, tracked)</span>
+  <span class="comment">|</span>
+  <span class="comment">├──</span> <span class="tbl">projects</span>       <span class="comment">(many projects per company)</span>
+  <span class="comment">|     └──</span> <span class="tbl">goals</span>        <span class="comment">(many goals per project)</span>
+  <span class="comment">|           └──</span> <span class="tbl">issues</span>   <span class="comment">(many tasks per goal)</span>
+  <span class="comment">|                 ├──</span> <span class="tbl">comments</span>
+  <span class="comment">|                 ├──</span> <span class="tbl">attachments</span>
+  <span class="comment">|                 ├──</span> <span class="tbl">work_products</span>
+  <span class="comment">|                 └──</span> <span class="tbl">execution_logs</span>
+  <span class="comment">|</span>
+  <span class="comment">├──</span> <span class="tbl">budgets</span>        <span class="comment">(spending limits per scope)</span>
+  <span class="comment">├──</span> <span class="tbl">approvals</span>      <span class="comment">(human sign-off records)</span>
+  <span class="comment">├──</span> <span class="tbl">activity_log</span>   <span class="comment">(audit trail of everything)</span>
+  <span class="comment">├──</span> <span class="tbl">secrets</span>        <span class="comment">(encrypted credentials)</span>
+  <span class="comment">├──</span> <span class="tbl">routines</span>       <span class="comment">(scheduled recurring work)</span>
+  <span class="comment">└──</span> <span class="tbl">plugins</span>        <span class="comment">(installed extensions)</span>
+    </div>
+
+    <p>Every arrow you see is a <strong style="color:var(--accent-green)">foreign key</strong>. Every indentation is a <strong style="color:var(--accent-yellow)">one-to-many relationship</strong>. The whole tree starts from <strong style="color:var(--accent-blue)">companies</strong> — that's why Paperclip can run multiple companies in one database with complete isolation.</p>
+
+    <div class="db-table">
+      <div class="table-header">&#9634; By the Numbers</div>
+      <table>
+        <tr><th>Metric</th><th>What it means</th></tr>
+        <tr><td>102 migrations</td><td>102 ordered changes to build this schema over time</td></tr>
+        <tr><td>~50-80 tables</td><td>Each one stores a different kind of thing</td></tr>
+        <tr><td>Hundreds of columns</td><td>Every property of every entity</td></tr>
+        <tr><td>Dozens of foreign keys</td><td>Every relationship between tables</td></tr>
+        <tr><td>Indexes</td><td>Speed shortcuts so queries don't scan every row</td></tr>
+        <tr><td>Constraints</td><td>Rules the database enforces (no null names, no negative budgets)</td></tr>
+      </table>
+    </div>
+
+    <p style="margin-top: 24px;">You now understand the core concepts behind every database in the world — from your bank to Instagram to Paperclip. Tables, keys, relationships, schemas, queries, and migrations. Everything else is just details built on top of these fundamentals.</p>
+
+    <div class="analogy">
+      <strong>What you learned:</strong><br><br>
+      <strong style="color:var(--text-primary)">Table</strong> = a spreadsheet of one kind of thing<br>
+      <strong style="color:var(--accent-yellow)">Primary Key</strong> = each row's unique ID<br>
+      <strong style="color:var(--accent-green)">Foreign Key</strong> = a column that points to another table's row<br>
+      <strong style="color:var(--accent-blue)">Schema</strong> = the blueprint defining all tables and rules<br>
+      <strong style="color:var(--accent-purple)">Query</strong> = a question you ask the database<br>
+      <strong style="color:var(--text-primary)">Migration</strong> = one ordered change to the blueprint
+    </div>
+
+    <div class="next-course-banner">
+      <h3>Up Next</h3>
+      <p>Continue to Course 02: The Codebase — See how a real production app is organized.</p>
+      <a href="/lessons/codebase.html">Start The Codebase →</a>
+    </div>
+  </div>
+
+</div>
+
+</div>
+
+<script>
+let current = 0;
+const total = 6;
+
+function goTo(n) {
+  document.getElementById('lesson' + current).classList.remove('active');
+  document.getElementById('nav' + current).classList.remove('active');
+  current = n;
+  document.getElementById('lesson' + current).classList.add('active');
+  document.getElementById('nav' + current).classList.add('active');
+  document.getElementById('progress').textContent = (n + 1) + ' / ' + total;
+  window.scrollTo(0, 0);
+}
+
+// Lesson 2: Interactive FK demo
+const taskData = {
+  1: { name: 'Claude', tasks: [
+    { id: 1, title: 'Design new API', status: 'done' },
+    { id: 4, title: 'Build dashboard', status: 'in_progress' },
+    { id: 7, title: 'Plan roadmap', status: 'todo' }
+  ]},
+  2: { name: 'Codex', tasks: [
+    { id: 2, title: 'Fix login bug', status: 'in_progress' },
+    { id: 5, title: 'Write tests', status: 'todo' }
+  ]},
+  3: { name: 'Scout', tasks: [
+    { id: 3, title: 'Research competitors', status: 'done' }
+  ]},
+  4: { name: 'Pixel', tasks: [
+    { id: 6, title: 'Create logo', status: 'done' }
+  ]}
+};
+
+function showAgentTasks(agentId) {
+  // Highlight agent row
+  for (let i = 1; i <= 4; i++) {
+    const row = document.getElementById('agent-row-' + i);
+    row.classList.toggle('highlight-row', i === agentId);
+  }
+
+  // Highlight matching task rows
+  const table = document.getElementById('tasks-table');
+  const rows = table.querySelectorAll('tr');
+  for (let i = 1; i < rows.length; i++) {
+    const fkCell = rows[i].cells[2];
+    rows[i].classList.toggle('highlight-row', parseInt(fkCell.textContent) === agentId);
+  }
+
+  const data = taskData[agentId];
+  document.getElementById('task-count').textContent = data.tasks.length + ' tasks';
+  document.getElementById('key-result').innerHTML =
+    '<div class="label">How it works</div>' +
+    '<p style="color:var(--text-body)">The <strong style="color:var(--accent-blue)">tasks</strong> table has an <code style="color:var(--accent-green)">agent_id</code> column. Every task where <code style="color:var(--accent-green)">agent_id = ' + agentId + '</code> belongs to <strong style="color:var(--text-primary)">' + data.name + '</strong>.</p>' +
+    '<p style="color:var(--text-muted); margin-top:8px">' + data.name + ' doesn\'t "contain" their tasks. The tasks point back to ' + data.name + ' using the foreign key. This is how all relationships work in databases.</p>';
+
+  // Highlight buttons
+  document.querySelectorAll('.btn-row .btn').forEach((b, i) => {
+    b.classList.toggle('selected', i === agentId - 1);
+  });
+}
+
+// Lesson 3: Relationship types
+function showRelType(type) {
+  document.getElementById('rel-one-to-many').style.display = type === 'one-to-many' ? 'block' : 'none';
+  document.getElementById('rel-one-to-one').style.display = type === 'one-to-one' ? 'block' : 'none';
+  document.getElementById('rel-many-to-many').style.display = type === 'many-to-many' ? 'block' : 'none';
+  document.getElementById('rel-btn-1').classList.toggle('selected', type === 'one-to-many');
+  document.getElementById('rel-btn-2').classList.toggle('selected', type === 'one-to-one');
+  document.getElementById('rel-btn-3').classList.toggle('selected', type === 'many-to-many');
+}
+
+// Lesson 5: Interactive queries
+const queries = {
+  1: {
+    sql: '<span class="keyword">SELECT</span> <span class="col-name">*</span> <span class="keyword">FROM</span> <span class="table-name">agents</span>;',
+    result: `<table style="width:100%;font-size:13px;border-collapse:collapse">
+      <tr style="color:var(--text-table-header)"><th style="text-align:left;padding:6px">id</th><th style="text-align:left;padding:6px">name</th><th style="text-align:left;padding:6px">role</th><th style="text-align:left;padding:6px">adapter</th></tr>
+      <tr style="color:var(--text-body)"><td style="padding:6px">1</td><td style="padding:6px">Claude</td><td style="padding:6px">CTO</td><td style="padding:6px">claude-code</td></tr>
+      <tr style="color:var(--text-body)"><td style="padding:6px">2</td><td style="padding:6px">Codex</td><td style="padding:6px">Engineer</td><td style="padding:6px">codex</td></tr>
+      <tr style="color:var(--text-body)"><td style="padding:6px">3</td><td style="padding:6px">Scout</td><td style="padding:6px">Researcher</td><td style="padding:6px">http</td></tr>
+      <tr style="color:var(--text-body)"><td style="padding:6px">4</td><td style="padding:6px">Pixel</td><td style="padding:6px">Designer</td><td style="padding:6px">cursor</td></tr>
+    </table>`,
+    explain: '<p style="color:var(--text-muted)"><code style="color:var(--accent-purple)">SELECT *</code> means "give me all columns." <code style="color:var(--accent-purple)">FROM agents</code> means "from the agents table." This is the simplest possible query — give me everything.</p>'
+  },
+  2: {
+    sql: '<span class="keyword">SELECT</span> <span class="col-name">title</span>, <span class="col-name">status</span>\n<span class="keyword">FROM</span>   <span class="table-name">tasks</span>\n<span class="keyword">WHERE</span>  <span class="col-name">status</span> = <span class="value">\'in_progress\'</span>;',
+    result: `<table style="width:100%;font-size:13px;border-collapse:collapse">
+      <tr style="color:var(--text-table-header)"><th style="text-align:left;padding:6px">title</th><th style="text-align:left;padding:6px">status</th></tr>
+      <tr style="color:var(--text-body)"><td style="padding:6px">Fix login bug</td><td style="padding:6px">in_progress</td></tr>
+      <tr style="color:var(--text-body)"><td style="padding:6px">Build dashboard</td><td style="padding:6px">in_progress</td></tr>
+    </table>`,
+    explain: '<p style="color:var(--text-muted)"><code style="color:var(--accent-purple)">WHERE</code> filters rows. Only rows where status equals "in_progress" come back. It\'s like saying "only show me the folders with a yellow tab."</p>'
+  },
+  3: {
+    sql: '<span class="keyword">SELECT</span> <span class="table-name">tasks</span>.<span class="col-name">title</span>, <span class="table-name">agents</span>.<span class="col-name">name</span>\n<span class="keyword">FROM</span>   <span class="table-name">tasks</span>\n<span class="keyword">JOIN</span>   <span class="table-name">agents</span> <span class="keyword">ON</span> <span class="table-name">agents</span>.<span class="col-name">id</span> = <span class="table-name">tasks</span>.<span class="col-name">agent_id</span>\n<span class="keyword">WHERE</span>  <span class="table-name">agents</span>.<span class="col-name">name</span> = <span class="value">\'Claude\'</span>;',
+    result: `<table style="width:100%;font-size:13px;border-collapse:collapse">
+      <tr style="color:var(--text-table-header)"><th style="text-align:left;padding:6px">title</th><th style="text-align:left;padding:6px">name</th></tr>
+      <tr style="color:var(--text-body)"><td style="padding:6px">Design new API</td><td style="padding:6px">Claude</td></tr>
+      <tr style="color:var(--text-body)"><td style="padding:6px">Build dashboard</td><td style="padding:6px">Claude</td></tr>
+      <tr style="color:var(--text-body)"><td style="padding:6px">Plan roadmap</td><td style="padding:6px">Claude</td></tr>
+    </table>`,
+    explain: '<p style="color:var(--text-muted)"><code style="color:var(--accent-purple)">JOIN</code> is the big one. It combines two tables using the foreign key. "Match each task to its agent where agent.id equals task.agent_id." This is how you ask questions that span multiple tables.</p>'
+  },
+  4: {
+    sql: '<span class="keyword">SELECT</span>   <span class="table-name">agents</span>.<span class="col-name">name</span>, <span class="keyword">COUNT</span>(<span class="table-name">tasks</span>.<span class="col-name">id</span>) <span class="keyword">AS</span> <span class="col-name">task_count</span>\n<span class="keyword">FROM</span>     <span class="table-name">agents</span>\n<span class="keyword">JOIN</span>     <span class="table-name">tasks</span> <span class="keyword">ON</span> <span class="table-name">tasks</span>.<span class="col-name">agent_id</span> = <span class="table-name">agents</span>.<span class="col-name">id</span>\n<span class="keyword">GROUP BY</span> <span class="table-name">agents</span>.<span class="col-name">name</span>\n<span class="keyword">ORDER BY</span> <span class="col-name">task_count</span> <span class="keyword">DESC</span>;',
+    result: `<table style="width:100%;font-size:13px;border-collapse:collapse">
+      <tr style="color:var(--text-table-header)"><th style="text-align:left;padding:6px">name</th><th style="text-align:left;padding:6px">task_count</th></tr>
+      <tr style="color:var(--text-body)"><td style="padding:6px">Claude</td><td style="padding:6px">3</td></tr>
+      <tr style="color:var(--text-body)"><td style="padding:6px">Codex</td><td style="padding:6px">2</td></tr>
+      <tr style="color:var(--text-body)"><td style="padding:6px">Scout</td><td style="padding:6px">1</td></tr>
+      <tr style="color:var(--text-body)"><td style="padding:6px">Pixel</td><td style="padding:6px">1</td></tr>
+    </table>`,
+    explain: '<p style="color:var(--text-muted)"><code style="color:var(--accent-purple)">GROUP BY</code> bunches rows together. <code style="color:var(--accent-purple)">COUNT()</code> counts how many are in each bunch. <code style="color:var(--accent-purple)">ORDER BY ... DESC</code> sorts highest first. This is how dashboards show "who has the most work."</p>'
+  },
+  5: {
+    sql: '<span class="keyword">SELECT</span> <span class="col-name">name</span>, <span class="col-name">budget</span>, <span class="col-name">total_spent</span>\n<span class="keyword">FROM</span>   <span class="table-name">agents</span>\n<span class="keyword">WHERE</span>  <span class="col-name">total_spent</span> > <span class="col-name">budget</span>;',
+    result: `<table style="width:100%;font-size:13px;border-collapse:collapse">
+      <tr style="color:var(--text-table-header)"><th style="text-align:left;padding:6px">name</th><th style="text-align:left;padding:6px">budget</th><th style="text-align:left;padding:6px">total_spent</th></tr>
+      <tr style="color:var(--text-body)"><td style="padding:6px">(no results)</td><td style="padding:6px"></td><td style="padding:6px"></td></tr>
+    </table>`,
+    explain: '<p style="color:var(--text-muted)">No one is over budget — good! But this is how Paperclip watches spending. A query like this runs on every heartbeat. If it returns results, the agent gets paused. The database is doing the enforcement.</p>'
+  }
+};
+
+function runQuery(n) {
+  for (let i = 1; i <= 5; i++) {
+    document.getElementById('q' + i).classList.toggle('selected', i === n);
+  }
+  const q = queries[n];
+  document.getElementById('query-code').innerHTML = q.sql;
+  document.getElementById('query-result-text').innerHTML = q.result;
+  document.getElementById('query-explanation').innerHTML = q.explain;
+  const box = document.getElementById('query-result');
+  box.classList.add('flash');
+  setTimeout(() => box.classList.remove('flash'), 300);
+}
+</script>
+<script src="/js/shared.js"></script>
+
+</body>
+</html>

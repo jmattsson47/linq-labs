@@ -1,0 +1,2262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How to Ship a Product — The Fundamentals</title>
+<link rel="stylesheet" href="/css/shared.css">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+/* ===== TOP NAV ===== */
+.top-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-primary);
+  padding: 10px 16px;
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+@media (min-width: 1024px) {
+  .top-nav { left: 280px; }
+}
+.top-nav::-webkit-scrollbar { height: 4px; }
+.top-nav::-webkit-scrollbar-thumb { background: var(--border-nav-btn); border-radius: 2px; }
+
+.nav-btn {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-nav-btn);
+  color: var(--text-muted);
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  white-space: nowrap;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.nav-btn:hover { border-color: var(--text-faint); color: var(--text-body); }
+.nav-btn.active {
+  background: var(--accent-blue-bg);
+  border-color: var(--accent-blue-bg);
+  color: var(--text-primary);
+}
+
+/* ===== CONTAINER ===== */
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 80px 20px 60px;
+}
+
+/* ===== LESSONS ===== */
+.lesson { display: none; }
+.lesson.active { display: block; }
+
+.lesson h1 {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+}
+.lesson .subtitle {
+  font-size: 15px;
+  color: var(--text-muted);
+  margin-bottom: 32px;
+}
+
+h2 {
+  font-size: 22px;
+  color: var(--text-primary);
+  margin: 36px 0 14px;
+}
+h3 {
+  font-size: 18px;
+  color: var(--text-secondary);
+  margin: 24px 0 10px;
+}
+
+p { margin-bottom: 16px; color: var(--text-body); }
+
+/* ===== CARDS ===== */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-secondary);
+  border-radius: 10px;
+  padding: 24px;
+  margin: 20px 0;
+}
+.card-dark {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  padding: 24px;
+  margin: 20px 0;
+}
+
+/* ===== ANALOGY BOX ===== */
+.analogy {
+  background: var(--bg-analogy);
+  border: 1px solid var(--border-analogy);
+  border-radius: 10px;
+  padding: 20px 24px;
+  margin: 24px 0;
+}
+.analogy strong { color: var(--accent-indigo); }
+.analogy p { color: #b4b4d0; margin-bottom: 0; }
+.analogy .analogy-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--accent-indigo);
+  margin-bottom: 8px;
+}
+
+/* ===== CODE BLOCKS ===== */
+.code-block {
+  background: var(--bg-code);
+  border: 1px solid var(--border-secondary);
+  border-radius: 8px;
+  padding: 18px 20px;
+  margin: 16px 0;
+  overflow-x: auto;
+  font-family: 'SF Mono', Monaco, monospace;
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+.code-block .kw { color: var(--accent-purple); }
+.code-block .fn { color: var(--accent-blue); }
+.code-block .str { color: var(--accent-green); }
+.code-block .typ { color: var(--accent-yellow); }
+.code-block .cm { color: var(--text-faint); }
+.code-block .op { color: var(--text-secondary); }
+
+/* inline code */
+p code, li code {
+  background: var(--bg-analogy);
+  padding: 2px 7px;
+  border-radius: 4px;
+  color: var(--accent-blue);
+  font-size: 13px;
+}
+
+/* ===== INTERACTIVE BUTTONS ===== */
+.btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0;
+}
+.ibtn {
+  background: var(--bg-btn);
+  border: 1px solid var(--border-btn);
+  color: var(--text-secondary);
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.ibtn:hover { border-color: var(--accent-blue); color: var(--text-secondary); }
+.ibtn.selected {
+  background: var(--bg-btn-selected);
+  border-color: var(--border-btn-selected);
+  color: var(--text-primary);
+}
+
+/* ===== NEXT BUTTON ===== */
+.next-btn {
+  display: inline-block;
+  background: var(--accent-blue-bg);
+  color: var(--text-primary);
+  border: none;
+  padding: 14px 36px;
+  border-radius: 10px;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 40px;
+  transition: background 0.2s;
+  font-family: inherit;
+  font-weight: 600;
+}
+.next-btn:hover { background: #1d4ed8; }
+
+/* ===== BREADCRUMB ===== */
+.breadcrumb { margin-top: 64px; padding-top: 8px; }
+
+/* ===== NEXT COURSE BANNER ===== */
+.next-course-banner { background: var(--bg-secondary); border: 1px solid var(--border-primary); border-radius: 10px; padding: 24px; margin-top: 32px; text-align: center; }
+.next-course-banner h3 { color: var(--text-primary); margin: 0 0 8px; font-size: 18px; }
+.next-course-banner p { color: var(--text-muted); font-size: 15px; margin: 0 0 16px; }
+.next-course-banner a { display: inline-block; background: var(--accent-blue-bg); color: var(--text-primary); padding: 10px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px; transition: background 0.2s; }
+.next-course-banner a:hover { background: #3b82f6; }
+
+/* ===== LESSON 1: MVP BUILDER ===== */
+.feature-list {
+  list-style: none;
+  padding: 0;
+  margin: 16px 0;
+}
+.feature-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+  margin-bottom: 8px;
+  transition: all 0.3s;
+}
+.feature-item.core {
+  border-color: var(--accent-green);
+  background: var(--bg-card);
+}
+.feature-item.removed {
+  opacity: 0.3;
+  text-decoration: line-through;
+  border-color: var(--border-primary);
+  background: var(--bg-primary);
+}
+.feature-item .feature-name {
+  color: var(--text-body);
+  font-size: 14px;
+}
+.feature-item .feature-tag {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.feature-tag.essential {
+  background: var(--accent-green);
+  color: #000;
+}
+.feature-tag.nice {
+  background: var(--accent-yellow);
+  color: #000;
+}
+.feature-tag.cut {
+  background: var(--text-faint);
+  color: var(--bg-primary);
+}
+.remove-btn {
+  background: none;
+  border: 1px solid var(--border-btn);
+  color: var(--text-muted);
+  padding: 4px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: inherit;
+  transition: all 0.2s;
+  margin-left: 12px;
+}
+.remove-btn:hover {
+  border-color: #f87171;
+  color: #f87171;
+}
+.mvp-counter {
+  text-align: center;
+  padding: 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-secondary);
+  border-radius: 10px;
+  margin-top: 16px;
+}
+.mvp-counter .count {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.mvp-counter .label {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+.mvp-message {
+  margin-top: 12px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  text-align: center;
+  transition: all 0.3s;
+}
+.mvp-message.good {
+  background: var(--bg-card);
+  border: 1px solid var(--accent-green);
+  color: var(--accent-green);
+}
+.evolution-track {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin: 24px 0;
+  overflow-x: auto;
+  padding: 16px 0;
+}
+.evo-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 120px;
+  text-align: center;
+}
+.evo-icon {
+  font-size: 36px;
+  margin-bottom: 8px;
+}
+.evo-label {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+.evo-desc {
+  font-size: 11px;
+  color: var(--text-faint);
+}
+.evo-arrow {
+  font-size: 24px;
+  color: var(--border-btn);
+  min-width: 40px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+/* ===== LESSON 2: STACK DECISION ===== */
+.stack-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+  margin: 20px 0;
+}
+.stack-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.stack-card:hover {
+  border-color: var(--accent-blue);
+}
+.stack-card.selected {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 16px rgba(59, 130, 246, 0.15);
+}
+.stack-card h4 {
+  color: var(--text-primary);
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+.stack-card p {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 0;
+}
+.stack-card .stack-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+.stack-tool-tag {
+  background: var(--bg-btn);
+  border: 1px solid var(--border-btn);
+  color: var(--accent-blue);
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.decision-flow {
+  margin: 24px 0;
+}
+.decision-step {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 16px;
+  display: none;
+}
+.decision-step.active {
+  display: block;
+  animation: fadeSlideIn 0.3s ease;
+}
+.decision-step h4 {
+  color: var(--text-primary);
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+.decision-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.decision-opt {
+  background: var(--bg-btn);
+  border: 1px solid var(--border-btn);
+  color: var(--text-body);
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+.decision-opt:hover {
+  border-color: var(--accent-blue);
+  color: var(--text-primary);
+}
+.decision-opt.chosen {
+  background: var(--bg-btn-selected);
+  border-color: var(--accent-blue);
+  color: var(--text-primary);
+}
+.decision-result {
+  background: var(--bg-card);
+  border: 1px solid var(--accent-green);
+  border-radius: 10px;
+  padding: 20px;
+  margin-top: 16px;
+  display: none;
+}
+.decision-result.visible {
+  display: block;
+  animation: fadeSlideIn 0.3s ease;
+}
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== LESSON 3: WIREFRAME ===== */
+.wireframe-steps {
+  margin: 20px 0;
+}
+.wf-step {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 12px;
+  display: none;
+}
+.wf-step.visible {
+  display: block;
+  animation: fadeSlideIn 0.3s ease;
+}
+.wf-step h4 {
+  color: var(--text-primary);
+  font-size: 15px;
+  margin-bottom: 10px;
+}
+.wireframe-box {
+  background: var(--bg-primary);
+  border: 2px dashed var(--border-secondary);
+  border-radius: 8px;
+  padding: 20px;
+  min-height: 200px;
+  position: relative;
+}
+.wf-element {
+  background: var(--bg-card);
+  border: 1px solid var(--border-secondary);
+  border-radius: 6px;
+  padding: 8px 14px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: var(--text-muted);
+  text-align: center;
+}
+.wf-element.header {
+  background: var(--accent-blue-bg);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+.wf-element.input {
+  background: var(--bg-secondary);
+  border-style: solid;
+  text-align: left;
+}
+.wf-element.button {
+  background: var(--accent-blue-bg);
+  color: var(--text-primary);
+  display: inline-block;
+  cursor: default;
+  font-weight: 600;
+}
+.wf-element.list-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+}
+.wf-element.list-item .checkbox {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border-btn);
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+.wf-nav-btn {
+  background: var(--bg-btn);
+  border: 1px solid var(--border-btn);
+  color: var(--text-body);
+  padding: 8px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: inherit;
+  transition: all 0.2s;
+  margin-top: 12px;
+}
+.wf-nav-btn:hover {
+  border-color: var(--accent-blue);
+  color: var(--text-primary);
+}
+
+/* ===== LESSON 4: PHASES ===== */
+.phases-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin: 20px 0;
+}
+.phase-column {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  padding: 16px;
+  min-height: 200px;
+}
+.phase-column h4 {
+  font-size: 14px;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+.phase-column .phase-desc {
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-bottom: 12px;
+}
+.phase-drop-zone {
+  min-height: 100px;
+  border: 2px dashed var(--border-secondary);
+  border-radius: 8px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: border-color 0.2s;
+}
+.phase-drop-zone.drag-over {
+  border-color: var(--accent-blue);
+  background: var(--accent-blue-bg);
+}
+.drag-feature {
+  background: var(--bg-btn);
+  border: 1px solid var(--border-btn);
+  color: var(--text-body);
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: grab;
+  transition: all 0.2s;
+  user-select: none;
+}
+.drag-feature:active {
+  cursor: grabbing;
+  opacity: 0.7;
+}
+.drag-feature.placed {
+  background: var(--bg-btn-selected);
+  border-color: var(--accent-blue);
+  color: var(--text-primary);
+}
+.feature-bank {
+  background: var(--bg-card);
+  border: 1px solid var(--border-secondary);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+.feature-bank h4 {
+  font-size: 14px;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+}
+.feature-bank-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ===== LESSON 5: CHECKLIST ===== */
+.launch-checklist {
+  list-style: none;
+  padding: 0;
+  margin: 20px 0;
+}
+.check-item {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  margin-bottom: 8px;
+  overflow: hidden;
+  transition: all 0.2s;
+}
+.check-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.check-header:hover {
+  background: var(--bg-card);
+}
+.check-box {
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--border-btn);
+  border-radius: 6px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: all 0.2s;
+  color: transparent;
+}
+.check-item.checked .check-box {
+  background: var(--accent-green);
+  border-color: var(--accent-green);
+  color: #000;
+}
+.check-title {
+  font-size: 14px;
+  color: var(--text-body);
+  flex: 1;
+}
+.check-item.checked .check-title {
+  color: var(--text-muted);
+}
+.check-badge {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+.check-badge.required {
+  background: var(--accent-blue-bg);
+  color: var(--accent-blue);
+}
+.check-badge.recommended {
+  background: var(--bg-btn);
+  color: var(--accent-yellow);
+}
+.check-badge.optional {
+  background: var(--bg-btn);
+  color: var(--text-faint);
+}
+.check-expand {
+  color: var(--text-faint);
+  font-size: 18px;
+  transition: transform 0.2s;
+}
+.check-item.expanded .check-expand {
+  transform: rotate(180deg);
+}
+.check-detail {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+  padding: 0 16px;
+}
+.check-item.expanded .check-detail {
+  max-height: 300px;
+  padding: 0 16px 16px;
+}
+.check-detail p {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 0;
+}
+.checklist-progress {
+  background: var(--bg-card);
+  border: 1px solid var(--border-secondary);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+.progress-bar-outer {
+  height: 8px;
+  background: var(--bg-primary);
+  border-radius: 4px;
+  margin-top: 10px;
+  overflow: hidden;
+}
+.progress-bar-inner {
+  height: 100%;
+  background: var(--accent-green);
+  border-radius: 4px;
+  width: 0%;
+  transition: width 0.4s ease;
+}
+
+/* ===== LESSON 6: GETTING USERS ===== */
+.platform-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin: 20px 0;
+}
+.platform-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.platform-card:hover {
+  border-color: var(--accent-blue);
+}
+.platform-card.expanded {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.1);
+}
+.platform-card h4 {
+  font-size: 15px;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+.platform-card .platform-type {
+  font-size: 11px;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+.platform-card .platform-tip {
+  font-size: 13px;
+  color: var(--text-muted);
+  display: none;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-primary);
+}
+.platform-card.expanded .platform-tip {
+  display: block;
+}
+.feedback-loop {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin: 30px 0;
+  flex-wrap: wrap;
+}
+.loop-step {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  padding: 16px 20px;
+  text-align: center;
+  min-width: 100px;
+}
+.loop-step .loop-icon {
+  font-size: 24px;
+  margin-bottom: 6px;
+}
+.loop-step .loop-label {
+  font-size: 13px;
+  color: var(--text-body);
+  font-weight: 600;
+}
+.loop-arrow {
+  font-size: 20px;
+  color: var(--border-btn);
+  min-width: 30px;
+  text-align: center;
+}
+
+/* ===== LESSON 7: MONITORING ===== */
+.dashboard-mock {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  padding: 20px;
+  margin: 20px 0;
+}
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.dashboard-header h4 {
+  color: var(--text-primary);
+  font-size: 15px;
+}
+.dashboard-header .status-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--accent-green);
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 6px;
+}
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.metric-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-secondary);
+  border-radius: 8px;
+  padding: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+.metric-card:hover {
+  border-color: var(--accent-blue);
+}
+.metric-card.selected {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.15);
+}
+.metric-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.metric-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 4px;
+}
+.metric-detail {
+  background: var(--bg-card);
+  border: 1px solid var(--border-secondary);
+  border-radius: 8px;
+  padding: 16px;
+  display: none;
+  margin-top: 12px;
+  animation: fadeSlideIn 0.3s ease;
+}
+.metric-detail.visible {
+  display: block;
+}
+.metric-detail h5 {
+  color: var(--text-primary);
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+.metric-detail p {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 0;
+}
+
+/* ===== LESSON 8: JOURNEY MAP ===== */
+.journey-map {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
+  margin: 24px 0;
+}
+.journey-node {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  padding: 16px 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.journey-node:hover {
+  border-color: var(--accent-blue);
+  transform: translateY(-2px);
+}
+.journey-node.highlighted {
+  border-color: var(--accent-green);
+  box-shadow: 0 0 16px rgba(34, 197, 94, 0.15);
+}
+.journey-node .journey-num {
+  font-size: 11px;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+.journey-node .journey-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-body);
+}
+.journey-node.highlighted .journey-title {
+  color: var(--accent-green);
+}
+.journey-detail {
+  background: var(--bg-card);
+  border: 1px solid var(--border-secondary);
+  border-radius: 10px;
+  padding: 20px;
+  margin-top: 16px;
+  display: none;
+  animation: fadeSlideIn 0.3s ease;
+}
+.journey-detail.visible {
+  display: block;
+}
+.journey-detail h4 {
+  color: var(--text-primary);
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+.journey-detail p {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 0;
+}
+.connections-list {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.connection-tag {
+  background: var(--bg-btn);
+  border: 1px solid var(--border-btn);
+  color: var(--accent-blue);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.celebration {
+  text-align: center;
+  padding: 40px 20px;
+  margin: 30px 0;
+  background: var(--bg-card);
+  border: 1px solid var(--accent-green);
+  border-radius: 12px;
+}
+.celebration h2 {
+  color: var(--accent-green);
+  margin-bottom: 12px;
+}
+.celebration p {
+  color: var(--text-body);
+  font-size: 16px;
+  max-width: 600px;
+  margin: 0 auto 12px;
+}
+.stat-row {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin: 20px 0;
+  flex-wrap: wrap;
+}
+.stat-item {
+  text-align: center;
+}
+.stat-item .stat-num {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.stat-item .stat-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+</style>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <a href="/index.html" class="sidebar-logo">The Fundamentals</a>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="sidebar-section-title">Courses</div>
+    <a href="/lessons/databases.html" class="sidebar-link" data-course="databases">
+      <span class="sidebar-num">01</span> How Databases Work
+    </a>
+    <a href="/lessons/codebase.html" class="sidebar-link" data-course="codebase">
+      <span class="sidebar-num">02</span> The Codebase
+    </a>
+    <a href="/lessons/apis.html" class="sidebar-link" data-course="apis">
+      <span class="sidebar-num">03</span> APIs &amp; HTTP
+    </a>
+    <a href="/lessons/build.html" class="sidebar-link" data-course="build">
+      <span class="sidebar-num">04</span> Build a Mini App
+    </a>
+    <a href="/lessons/deployment.html" class="sidebar-link" data-course="deployment">
+      <span class="sidebar-num">05</span> How Deployment Works
+    </a>
+    <a href="/lessons/git.html" class="sidebar-link" data-course="git">
+      <span class="sidebar-num">06</span> How Git Works
+    </a>
+    <a href="/lessons/authentication.html" class="sidebar-link" data-course="authentication">
+      <span class="sidebar-num">07</span> Authentication
+    </a>
+    <a href="/lessons/typescript.html" class="sidebar-link" data-course="typescript">
+      <span class="sidebar-num">08</span> TypeScript
+    </a>
+    <a href="/lessons/react.html" class="sidebar-link" data-course="react">
+      <span class="sidebar-num">09</span> React
+    </a>
+    <a href="/lessons/testing.html" class="sidebar-link" data-course="testing">
+      <span class="sidebar-num">10</span> Testing
+    </a>
+    <a href="/lessons/ai-agents.html" class="sidebar-link" data-course="ai-agents">
+      <span class="sidebar-num">11</span> AI Agents
+    </a>
+    <a href="/lessons/shipping.html" class="sidebar-link" data-course="shipping" aria-current="page">
+      <span class="sidebar-num">12</span> How to Ship a Product
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <button class="theme-toggle" id="theme-toggle">
+      <span class="theme-icon" id="theme-icon">&#9728;&#65039;</span>
+      <span class="theme-label" id="theme-label">Light Mode</span>
+    </button>
+  </div>
+</aside>
+<button class="sidebar-toggle" id="sidebar-toggle">&#9776;</button>
+
+<div class="content-wrapper">
+
+<div class="breadcrumb"><a href="/index.html">Home</a><span class="sep">&rsaquo;</span><span>How to Ship a Product</span></div>
+
+<!-- Top Nav -->
+<nav class="top-nav" id="topNav">
+  <button class="nav-btn active" onclick="goToLesson(0)">1. Ideas vs Execution</button>
+  <button class="nav-btn" onclick="goToLesson(1)">2. The Stack Decision</button>
+  <button class="nav-btn" onclick="goToLesson(2)">3. Design Before Code</button>
+  <button class="nav-btn" onclick="goToLesson(3)">4. Building in Phases</button>
+  <button class="nav-btn" onclick="goToLesson(4)">5. Launch Checklist</button>
+  <button class="nav-btn" onclick="goToLesson(5)">6. Getting Users</button>
+  <button class="nav-btn" onclick="goToLesson(6)">7. Monitoring</button>
+  <button class="nav-btn" onclick="goToLesson(7)">8. What You've Learned</button>
+</nav>
+
+<div class="container">
+
+<!-- ============================================================
+     LESSON 1: IDEAS ARE CHEAP, EXECUTION IS EVERYTHING
+     ============================================================ -->
+<div class="lesson active" id="lesson0">
+  <h1>Ideas are Cheap, Execution is Everything</h1>
+  <p class="subtitle">Lesson 1 of 8 &mdash; From idea to MVP</p>
+
+  <h2>Everyone Has Ideas</h2>
+  <p>You know someone who says "I had that idea before Uber" or "I thought of that years ago." Ideas are everywhere. They cost nothing. The difference between an idea and a product is shipping it. That's what this course is about.</p>
+
+  <p>The single most important concept in shipping is the <strong style="color:var(--text-primary);">MVP &mdash; Minimum Viable Product</strong>. It's the smallest thing you can build that proves the idea works. Not the full vision. Not every feature. Just the core.</p>
+
+  <h2>The MVP Mindset</h2>
+  <p>Most beginners make the same mistake: they plan every feature before writing a single line of code. They design the settings page before the main feature works. They think about what version 5 looks like before shipping version 1.</p>
+
+  <p>The MVP approach is different. You ask: <strong style="color:var(--text-primary);">what is the one thing this product must do?</strong> Everything else gets cut &mdash; for now.</p>
+
+  <h3>Try It: Strip to the MVP</h3>
+  <p>Imagine you're building a task management app. Below is a list of features someone might plan. Your job: click "Cut" on everything that isn't essential for a v1. Get it down to the core MVP.</p>
+
+  <div class="card">
+    <ul class="feature-list" id="featureList">
+      <li class="feature-item" data-essential="true">
+        <span class="feature-name">Add a task</span>
+        <span class="feature-tag essential">Core</span>
+      </li>
+      <li class="feature-item" data-essential="true">
+        <span class="feature-name">Mark a task as complete</span>
+        <span class="feature-tag essential">Core</span>
+      </li>
+      <li class="feature-item" data-essential="true">
+        <span class="feature-name">View list of tasks</span>
+        <span class="feature-tag essential">Core</span>
+      </li>
+      <li class="feature-item" data-essential="false">
+        <span class="feature-name">Dark mode toggle</span>
+        <div>
+          <span class="feature-tag nice">Nice-to-have</span>
+          <button class="remove-btn" onclick="cutFeature(this)">Cut</button>
+        </div>
+      </li>
+      <li class="feature-item" data-essential="false">
+        <span class="feature-name">Share tasks with team</span>
+        <div>
+          <span class="feature-tag nice">Nice-to-have</span>
+          <button class="remove-btn" onclick="cutFeature(this)">Cut</button>
+        </div>
+      </li>
+      <li class="feature-item" data-essential="false">
+        <span class="feature-name">Calendar integration</span>
+        <div>
+          <span class="feature-tag nice">Nice-to-have</span>
+          <button class="remove-btn" onclick="cutFeature(this)">Cut</button>
+        </div>
+      </li>
+      <li class="feature-item" data-essential="false">
+        <span class="feature-name">Task priority levels</span>
+        <div>
+          <span class="feature-tag nice">Nice-to-have</span>
+          <button class="remove-btn" onclick="cutFeature(this)">Cut</button>
+        </div>
+      </li>
+      <li class="feature-item" data-essential="false">
+        <span class="feature-name">Email notifications</span>
+        <div>
+          <span class="feature-tag nice">Nice-to-have</span>
+          <button class="remove-btn" onclick="cutFeature(this)">Cut</button>
+        </div>
+      </li>
+      <li class="feature-item" data-essential="false">
+        <span class="feature-name">Recurring tasks</span>
+        <div>
+          <span class="feature-tag nice">Nice-to-have</span>
+          <button class="remove-btn" onclick="cutFeature(this)">Cut</button>
+        </div>
+      </li>
+      <li class="feature-item" data-essential="false">
+        <span class="feature-name">Activity analytics dashboard</span>
+        <div>
+          <span class="feature-tag nice">Nice-to-have</span>
+          <button class="remove-btn" onclick="cutFeature(this)">Cut</button>
+        </div>
+      </li>
+    </ul>
+
+    <div class="mvp-counter">
+      <div class="count" id="featureCount">10</div>
+      <div class="label">Features remaining</div>
+    </div>
+    <div class="mvp-message" id="mvpMessage"></div>
+  </div>
+
+  <div class="analogy">
+    <div class="analogy-label">Analogy</div>
+    <p><strong>Don't build a car.</strong> First build a skateboard. Then a scooter. Then a bike. Then a car. At every stage, the user can actually go somewhere. If you try to build a car from day one, you'll spend months building a chassis that nobody can drive.</p>
+  </div>
+
+  <div class="evolution-track">
+    <div class="evo-step">
+      <div class="evo-icon">&#x1F6F9;</div>
+      <div class="evo-label">Skateboard</div>
+      <div class="evo-desc">Works. Moves.</div>
+    </div>
+    <div class="evo-arrow">&rarr;</div>
+    <div class="evo-step">
+      <div class="evo-icon">&#x1F6F4;</div>
+      <div class="evo-label">Scooter</div>
+      <div class="evo-desc">Better control</div>
+    </div>
+    <div class="evo-arrow">&rarr;</div>
+    <div class="evo-step">
+      <div class="evo-icon">&#x1F6B2;</div>
+      <div class="evo-label">Bicycle</div>
+      <div class="evo-desc">Faster, reliable</div>
+    </div>
+    <div class="evo-arrow">&rarr;</div>
+    <div class="evo-step">
+      <div class="evo-icon">&#x1F697;</div>
+      <div class="evo-label">Car</div>
+      <div class="evo-desc">Full product</div>
+    </div>
+  </div>
+
+  <h2>The Key Insight</h2>
+  <p>Shipping something small that works beats planning something big that never launches. You will learn more from 10 users using your MVP than from 10 months of building in isolation. The features you think matter often don't. The ones users actually need will surprise you.</p>
+
+  <p>Cut ruthlessly. Ship quickly. Iterate based on reality, not assumptions.</p>
+
+  <button class="next-btn" onclick="goToLesson(1)">Next: The Stack Decision &rarr;</button>
+</div>
+
+<!-- ============================================================
+     LESSON 2: THE STACK DECISION
+     ============================================================ -->
+<div class="lesson" id="lesson1">
+  <h1>The Stack Decision</h1>
+  <p class="subtitle">Lesson 2 of 8 &mdash; Choosing your tools</p>
+
+  <h2>What Is a "Stack"?</h2>
+  <p>Your "stack" is the combination of tools and technologies you use to build your product. It includes your programming language, framework, database, and hosting platform. Together, they form the foundation everything runs on.</p>
+
+  <p>Here's the truth most beginners need to hear: <strong style="color:var(--text-primary);">there is no perfect stack</strong>. There are only appropriate ones. The best stack is the one you can actually ship with.</p>
+
+  <h2>Common Stacks</h2>
+  <p>Click on each stack to see what it's best for:</p>
+
+  <div class="stack-cards" id="stackCards">
+    <div class="stack-card" onclick="selectStack(0)">
+      <h4>Next.js + Vercel</h4>
+      <p>Full-stack React framework with instant deployment. Great for content sites, dashboards, and SaaS products. The fastest path from code to production.</p>
+      <div class="stack-tools">
+        <span class="stack-tool-tag">React</span>
+        <span class="stack-tool-tag">TypeScript</span>
+        <span class="stack-tool-tag">Vercel</span>
+        <span class="stack-tool-tag">PostgreSQL</span>
+      </div>
+    </div>
+    <div class="stack-card" onclick="selectStack(1)">
+      <h4>Express + PostgreSQL</h4>
+      <p>Classic Node.js backend with a relational database. Full control over your API. Pair with any frontend. Deploy anywhere.</p>
+      <div class="stack-tools">
+        <span class="stack-tool-tag">Node.js</span>
+        <span class="stack-tool-tag">Express</span>
+        <span class="stack-tool-tag">PostgreSQL</span>
+        <span class="stack-tool-tag">Railway</span>
+      </div>
+    </div>
+    <div class="stack-card" onclick="selectStack(2)">
+      <h4>Python + Flask/Django</h4>
+      <p>Python's simplicity makes it great for MVPs, data-heavy apps, and AI integrations. Django includes auth, admin, and ORM out of the box.</p>
+      <div class="stack-tools">
+        <span class="stack-tool-tag">Python</span>
+        <span class="stack-tool-tag">Django</span>
+        <span class="stack-tool-tag">SQLite</span>
+        <span class="stack-tool-tag">Render</span>
+      </div>
+    </div>
+    <div class="stack-card" onclick="selectStack(3)">
+      <h4>Static Site + API</h4>
+      <p>HTML/CSS/JS with a third-party backend (Firebase, Supabase). Zero server management. Perfect for landing pages, tools, and simple apps.</p>
+      <div class="stack-tools">
+        <span class="stack-tool-tag">HTML/CSS</span>
+        <span class="stack-tool-tag">JavaScript</span>
+        <span class="stack-tool-tag">Supabase</span>
+        <span class="stack-tool-tag">Netlify</span>
+      </div>
+    </div>
+  </div>
+
+  <h2>How to Decide</h2>
+  <p>Walk through these decision points. Click the option that fits your project:</p>
+
+  <div class="decision-flow" id="decisionFlow">
+    <div class="decision-step active" id="dStep0">
+      <h4>Step 1: What are you building?</h4>
+      <div class="decision-options">
+        <button class="decision-opt" onclick="decide(0, 'static')">Static site / landing page</button>
+        <button class="decision-opt" onclick="decide(0, 'webapp')">Web app with user accounts</button>
+        <button class="decision-opt" onclick="decide(0, 'api')">API / backend service</button>
+      </div>
+    </div>
+    <div class="decision-step" id="dStep1">
+      <h4>Step 2: What language are you most comfortable with?</h4>
+      <div class="decision-options">
+        <button class="decision-opt" onclick="decide(1, 'js')">JavaScript / TypeScript</button>
+        <button class="decision-opt" onclick="decide(1, 'python')">Python</button>
+        <button class="decision-opt" onclick="decide(1, 'new')">I'm learning &mdash; no preference</button>
+      </div>
+    </div>
+    <div class="decision-step" id="dStep2">
+      <h4>Step 3: How fast do you need to ship?</h4>
+      <div class="decision-options">
+        <button class="decision-opt" onclick="decide(2, 'fast')">This weekend</button>
+        <button class="decision-opt" onclick="decide(2, 'moderate')">A few weeks</button>
+        <button class="decision-opt" onclick="decide(2, 'flexible')">No rush &mdash; I want to learn</button>
+      </div>
+    </div>
+    <div class="decision-result" id="decisionResult">
+      <h4 style="color:var(--accent-green); margin-bottom:8px;" id="resultTitle">Your Recommended Stack</h4>
+      <p id="resultText" style="margin-bottom:0;"></p>
+    </div>
+  </div>
+
+  <div class="analogy">
+    <div class="analogy-label">Key Insight</div>
+    <p><strong>Don't overthink this.</strong> Developers can spend weeks debating stacks instead of building. The best stack is the one that lets you ship. You can always migrate later &mdash; and you probably won't need to.</p>
+  </div>
+
+  <button class="next-btn" onclick="goToLesson(2)">Next: Design Before Code &rarr;</button>
+</div>
+
+<!-- ============================================================
+     LESSON 3: DESIGN BEFORE CODE
+     ============================================================ -->
+<div class="lesson" id="lesson2">
+  <h1>Design Before Code</h1>
+  <p class="subtitle">Lesson 3 of 8 &mdash; Think before you build</p>
+
+  <h2>You Don't Need to Be a Designer</h2>
+  <p>Design isn't about making things pretty. It's about deciding <strong style="color:var(--text-primary);">what the user does on each screen</strong>. Before you write any code, you need to answer: what screens exist, and what happens on each one?</p>
+
+  <p>This is called wireframing, and you can do it with pen and paper. Seriously. A rough sketch beats no plan at all.</p>
+
+  <h2>The Tools</h2>
+  <div class="card">
+    <h3 style="margin-top:0;">Wireframing Tools (simplest to most powerful)</h3>
+    <p><strong style="color:var(--text-primary);">Pen and paper</strong> &mdash; Fastest way to sketch ideas. Zero learning curve. Start here.</p>
+    <p><strong style="color:var(--text-primary);">Figma</strong> &mdash; Free design tool used by professionals. Great for creating interactive mockups.</p>
+    <p><strong style="color:var(--text-primary);">v0 by Vercel</strong> &mdash; Describe your UI in words, get code back. AI-powered prototyping.</p>
+  </div>
+
+  <h2>The Critical Question</h2>
+  <p>For every screen, ask: <strong style="color:var(--text-primary);">What does the user DO here?</strong> Not what it looks like. What action do they take? Every screen should have a clear purpose.</p>
+
+  <h3>Try It: Wireframe a Task Manager</h3>
+  <p>Let's walk through designing the key screens of a simple task manager app, step by step. Click "Next Step" to build up each screen.</p>
+
+  <div class="wireframe-steps">
+    <div class="wf-step visible" id="wfStep0">
+      <h4>Screen 1: The Task List (Home Screen)</h4>
+      <p style="font-size:13px; color:var(--text-muted); margin-bottom:12px;">User action: view all tasks, mark as done</p>
+      <div class="wireframe-box">
+        <div class="wf-element header">My Tasks</div>
+        <div class="wf-element list-item">
+          <div class="checkbox"></div>
+          <span>Buy groceries</span>
+        </div>
+        <div class="wf-element list-item">
+          <div class="checkbox"></div>
+          <span>Read chapter 5</span>
+        </div>
+        <div class="wf-element list-item">
+          <div class="checkbox" style="background:var(--accent-green); border-color:var(--accent-green);"></div>
+          <span style="text-decoration:line-through; opacity:0.5;">Set up database</span>
+        </div>
+        <div class="wf-element button" style="margin-top:12px;">+ Add Task</div>
+      </div>
+      <button class="wf-nav-btn" onclick="showWfStep(1)">Next Step: Add Task Screen &rarr;</button>
+    </div>
+
+    <div class="wf-step" id="wfStep1">
+      <h4>Screen 2: Add a Task</h4>
+      <p style="font-size:13px; color:var(--text-muted); margin-bottom:12px;">User action: type a task name and save it</p>
+      <div class="wireframe-box">
+        <div class="wf-element header">New Task</div>
+        <div class="wf-element input">What do you need to do?</div>
+        <div style="display:flex; gap:8px; margin-top:12px;">
+          <div class="wf-element button">Save</div>
+          <div class="wf-element" style="cursor:default; color:var(--text-muted);">Cancel</div>
+        </div>
+      </div>
+      <p style="font-size:13px; color:var(--text-muted); margin-top:12px;">That's it. One input. One button. This screen doesn't need categories, priorities, due dates, or labels. Not yet.</p>
+      <button class="wf-nav-btn" onclick="showWfStep(2)">Next Step: User Flow &rarr;</button>
+    </div>
+
+    <div class="wf-step" id="wfStep2">
+      <h4>The User Flow</h4>
+      <p style="font-size:13px; color:var(--text-muted); margin-bottom:12px;">How the screens connect:</p>
+      <div class="wireframe-box" style="text-align:center;">
+        <div style="display:flex; align-items:center; justify-content:center; gap:16px; flex-wrap:wrap;">
+          <div class="wf-element header" style="display:inline-block; min-width:120px;">Task List</div>
+          <div style="color:var(--text-faint); font-size:20px;">&rarr;</div>
+          <div class="wf-element header" style="display:inline-block; min-width:120px;">Add Task</div>
+          <div style="color:var(--text-faint); font-size:20px;">&rarr;</div>
+          <div class="wf-element header" style="display:inline-block; min-width:120px;">Task List</div>
+        </div>
+        <p style="font-size:13px; color:var(--text-muted); margin-top:16px; margin-bottom:0;">Open app &rarr; See tasks &rarr; Add new task &rarr; Back to list with new task showing</p>
+      </div>
+      <p style="font-size:13px; color:var(--text-muted); margin-top:12px;">Two screens. One flow. That's your entire MVP design. You can code this in a few hours. If you'd started by designing 15 screens, you'd still be in Figma next week.</p>
+    </div>
+  </div>
+
+  <div class="analogy">
+    <div class="analogy-label">Key Insight</div>
+    <p><strong>The best wireframe is the one that makes you start coding sooner.</strong> Spend 20 minutes sketching, then build. You'll redesign it after you see it working anyway. The goal isn't a perfect design &mdash; it's clarity about what you're building.</p>
+  </div>
+
+  <button class="next-btn" onclick="goToLesson(3)">Next: Building in Phases &rarr;</button>
+</div>
+
+<!-- ============================================================
+     LESSON 4: BUILDING IN PHASES
+     ============================================================ -->
+<div class="lesson" id="lesson3">
+  <h1>Building in Phases</h1>
+  <p class="subtitle">Lesson 4 of 8 &mdash; Ship early, iterate often</p>
+
+  <h2>The Four Phases</h2>
+  <p>Don't try to build everything at once. Break your project into phases, and ship Phase 1 as fast as possible. Each phase builds on the last.</p>
+
+  <div class="card">
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:16px;">
+      <div>
+        <h3 style="color:var(--accent-blue); margin-top:0;">Phase 1: Core Feature</h3>
+        <p style="font-size:13px;">The one thing your app does, working end to end. No auth. No polish. Just the core feature, functional.</p>
+        <p style="font-size:12px; color:var(--text-faint);">Timeline: 1-3 days</p>
+      </div>
+      <div>
+        <h3 style="color:var(--accent-purple); margin-top:0;">Phase 2: Auth + Polish</h3>
+        <p style="font-size:13px;">Add user accounts so data persists. Basic styling so it doesn't look broken. Error messages that help.</p>
+        <p style="font-size:12px; color:var(--text-faint);">Timeline: 3-5 days</p>
+      </div>
+      <div>
+        <h3 style="color:var(--accent-green); margin-top:0;">Phase 3: Deploy + Feedback</h3>
+        <p style="font-size:13px;">Put it on the internet. Share the link. Watch real people use it. Collect feedback.</p>
+        <p style="font-size:12px; color:var(--text-faint);">Timeline: 1-2 days</p>
+      </div>
+      <div>
+        <h3 style="color:var(--accent-yellow); margin-top:0;">Phase 4: Iterate</h3>
+        <p style="font-size:13px;">Fix what's broken. Add what users actually ask for (not what you assumed they wanted). Repeat.</p>
+        <p style="font-size:12px; color:var(--text-faint);">Timeline: Ongoing</p>
+      </div>
+    </div>
+  </div>
+
+  <h2>Try It: Assign Features to Phases</h2>
+  <p>Drag features from the bank into the correct phase. The key insight: <strong style="color:var(--text-primary);">ship Phase 1 &mdash; don't wait for Phase 4 to be perfect.</strong></p>
+
+  <div class="feature-bank" id="featureBank">
+    <h4>Feature Bank</h4>
+    <div class="feature-bank-items" id="bankItems">
+      <div class="drag-feature" draggable="true" data-feature="core" data-correct="1" ondragstart="dragStart(event)" id="f1">Core CRUD operations</div>
+      <div class="drag-feature" draggable="true" data-feature="auth" data-correct="2" ondragstart="dragStart(event)" id="f2">User login / signup</div>
+      <div class="drag-feature" draggable="true" data-feature="deploy" data-correct="3" ondragstart="dragStart(event)" id="f3">Deploy to Vercel</div>
+      <div class="drag-feature" draggable="true" data-feature="analytics" data-correct="4" ondragstart="dragStart(event)" id="f4">Add analytics</div>
+      <div class="drag-feature" draggable="true" data-feature="db" data-correct="1" ondragstart="dragStart(event)" id="f5">Database schema</div>
+      <div class="drag-feature" draggable="true" data-feature="css" data-correct="2" ondragstart="dragStart(event)" id="f6">Clean up CSS / styling</div>
+      <div class="drag-feature" draggable="true" data-feature="share" data-correct="3" ondragstart="dragStart(event)" id="f7">Share with 5 friends</div>
+      <div class="drag-feature" draggable="true" data-feature="feedback" data-correct="4" ondragstart="dragStart(event)" id="f8">Fix bugs from feedback</div>
+    </div>
+  </div>
+
+  <div class="phases-container">
+    <div class="phase-column">
+      <h4 style="color:var(--accent-blue);">Phase 1</h4>
+      <div class="phase-desc">Core feature works</div>
+      <div class="phase-drop-zone" data-phase="1" ondrop="drop(event)" ondragover="dragOver(event)" ondragleave="dragLeave(event)"></div>
+    </div>
+    <div class="phase-column">
+      <h4 style="color:var(--accent-purple);">Phase 2</h4>
+      <div class="phase-desc">Auth + polish</div>
+      <div class="phase-drop-zone" data-phase="2" ondrop="drop(event)" ondragover="dragOver(event)" ondragleave="dragLeave(event)"></div>
+    </div>
+    <div class="phase-column">
+      <h4 style="color:var(--accent-green);">Phase 3</h4>
+      <div class="phase-desc">Deploy + feedback</div>
+      <div class="phase-drop-zone" data-phase="3" ondrop="drop(event)" ondragover="dragOver(event)" ondragleave="dragLeave(event)"></div>
+    </div>
+    <div class="phase-column">
+      <h4 style="color:var(--accent-yellow);">Phase 4</h4>
+      <div class="phase-desc">Iterate</div>
+      <div class="phase-drop-zone" data-phase="4" ondrop="drop(event)" ondragover="dragOver(event)" ondragleave="dragLeave(event)"></div>
+    </div>
+  </div>
+
+  <div id="phaseResult" style="display:none;"></div>
+
+  <div class="analogy">
+    <div class="analogy-label">Key Insight</div>
+    <p><strong>Shipping Phase 1 is the hardest part &mdash; not because it's technically difficult, but because it feels incomplete.</strong> That discomfort is normal. Ship it anyway. A live product that's "not ready" teaches you more than a local project that's "almost done."</p>
+  </div>
+
+  <button class="next-btn" onclick="goToLesson(4)">Next: The Launch Checklist &rarr;</button>
+</div>
+
+<!-- ============================================================
+     LESSON 5: THE LAUNCH CHECKLIST
+     ============================================================ -->
+<div class="lesson" id="lesson4">
+  <h1>The Launch Checklist</h1>
+  <p class="subtitle">Lesson 5 of 8 &mdash; Everything you need before going live</p>
+
+  <h2>Before You Launch</h2>
+  <p>Going live means real people will use your app. That's exciting and terrifying. This checklist covers what you should think about &mdash; but remember, not everything here is required for an MVP. The items marked "Required" are genuinely essential. Everything else can wait.</p>
+
+  <p>Click each item to learn what it means and check it off:</p>
+
+  <div class="checklist-progress">
+    <span style="font-size:14px; color:var(--text-body);">Launch Readiness: <strong id="progressText" style="color:var(--text-primary);">0 / 10</strong></span>
+    <div class="progress-bar-outer">
+      <div class="progress-bar-inner" id="progressBar"></div>
+    </div>
+  </div>
+
+  <ul class="launch-checklist" id="launchChecklist">
+    <li class="check-item" onclick="toggleCheck(this)">
+      <div class="check-header">
+        <div class="check-box">&#10003;</div>
+        <span class="check-title">Error handling</span>
+        <span class="check-badge required">Required</span>
+        <span class="check-expand">&#9662;</span>
+      </div>
+      <div class="check-detail">
+        <p>When something goes wrong (and it will), your app should show a helpful message instead of crashing. Wrap API calls in try/catch. Show "Something went wrong" instead of a blank screen. Log errors so you can fix them later.</p>
+      </div>
+    </li>
+    <li class="check-item" onclick="toggleCheck(this)">
+      <div class="check-header">
+        <div class="check-box">&#10003;</div>
+        <span class="check-title">Mobile responsiveness</span>
+        <span class="check-badge required">Required</span>
+        <span class="check-expand">&#9662;</span>
+      </div>
+      <div class="check-detail">
+        <p>More than half of web traffic is mobile. If your app doesn't work on a phone, you've lost most of your users. Test on a real device. Use responsive CSS. Make sure buttons are tappable and text is readable.</p>
+      </div>
+    </li>
+    <li class="check-item" onclick="toggleCheck(this)">
+      <div class="check-header">
+        <div class="check-box">&#10003;</div>
+        <span class="check-title">Loading states</span>
+        <span class="check-badge required">Required</span>
+        <span class="check-expand">&#9662;</span>
+      </div>
+      <div class="check-detail">
+        <p>When data is loading, show a spinner or skeleton. When a button is clicked and something is processing, disable it and show feedback. Users who click a button and see nothing will click it 10 more times.</p>
+      </div>
+    </li>
+    <li class="check-item" onclick="toggleCheck(this)">
+      <div class="check-header">
+        <div class="check-box">&#10003;</div>
+        <span class="check-title">HTTPS enabled</span>
+        <span class="check-badge required">Required</span>
+        <span class="check-expand">&#9662;</span>
+      </div>
+      <div class="check-detail">
+        <p>Your site must use HTTPS (not HTTP). Every modern hosting platform (Vercel, Netlify, Railway) gives you this for free. Without it, browsers will show a "Not Secure" warning and users will leave immediately.</p>
+      </div>
+    </li>
+    <li class="check-item" onclick="toggleCheck(this)">
+      <div class="check-header">
+        <div class="check-box">&#10003;</div>
+        <span class="check-title">Environment variables</span>
+        <span class="check-badge required">Required</span>
+        <span class="check-expand">&#9662;</span>
+      </div>
+      <div class="check-detail">
+        <p>API keys, database URLs, and secrets must NOT be in your code. Use environment variables. Every hosting platform has a way to set these. If you push a secret to GitHub, consider it compromised.</p>
+      </div>
+    </li>
+    <li class="check-item" onclick="toggleCheck(this)">
+      <div class="check-header">
+        <div class="check-box">&#10003;</div>
+        <span class="check-title">SEO basics</span>
+        <span class="check-badge recommended">Recommended</span>
+        <span class="check-expand">&#9662;</span>
+      </div>
+      <div class="check-detail">
+        <p>Add a descriptive <code>&lt;title&gt;</code> tag, a meta description, and an Open Graph image so your link looks good when shared on social media. Takes 10 minutes and makes a huge difference in how your project is perceived.</p>
+      </div>
+    </li>
+    <li class="check-item" onclick="toggleCheck(this)">
+      <div class="check-header">
+        <div class="check-box">&#10003;</div>
+        <span class="check-title">Analytics</span>
+        <span class="check-badge recommended">Recommended</span>
+        <span class="check-expand">&#9662;</span>
+      </div>
+      <div class="check-detail">
+        <p>You need to know if anyone is using your app. Add a simple analytics tool like Plausible or PostHog. They tell you how many visitors you get, which pages they visit, and where they come from. Without analytics, you're flying blind.</p>
+      </div>
+    </li>
+    <li class="check-item" onclick="toggleCheck(this)">
+      <div class="check-header">
+        <div class="check-box">&#10003;</div>
+        <span class="check-title">Custom domain</span>
+        <span class="check-badge recommended">Recommended</span>
+        <span class="check-expand">&#9662;</span>
+      </div>
+      <div class="check-detail">
+        <p>A custom domain (yourapp.com instead of yourapp.vercel.app) costs about $10/year and makes your project look professional. Not required for MVP, but a small investment that builds credibility.</p>
+      </div>
+    </li>
+    <li class="check-item" onclick="toggleCheck(this)">
+      <div class="check-header">
+        <div class="check-box">&#10003;</div>
+        <span class="check-title">Backup strategy</span>
+        <span class="check-badge optional">Optional</span>
+        <span class="check-expand">&#9662;</span>
+      </div>
+      <div class="check-detail">
+        <p>If you're using a managed database (Supabase, PlanetScale, Railway), backups are usually automatic. If you're self-hosting, set up daily backups. Losing user data is the fastest way to kill trust.</p>
+      </div>
+    </li>
+    <li class="check-item" onclick="toggleCheck(this)">
+      <div class="check-header">
+        <div class="check-box">&#10003;</div>
+        <span class="check-title">Rate limiting</span>
+        <span class="check-badge optional">Optional</span>
+        <span class="check-expand">&#9662;</span>
+      </div>
+      <div class="check-detail">
+        <p>Prevent abuse by limiting how many requests a user can make per minute. Not critical for MVP with 10 users, but important once you grow. Most API frameworks have middleware for this.</p>
+      </div>
+    </li>
+  </ul>
+
+  <div class="analogy">
+    <div class="analogy-label">Key Insight</div>
+    <p><strong>Perfect is the enemy of shipped.</strong> The "Required" items protect your users and your reputation. The "Recommended" items help you grow. The "Optional" items can wait until you have a reason to add them. Don't let this list paralyze you.</p>
+  </div>
+
+  <button class="next-btn" onclick="goToLesson(5)">Next: Getting Users &rarr;</button>
+</div>
+
+<!-- ============================================================
+     LESSON 6: GETTING USERS
+     ============================================================ -->
+<div class="lesson" id="lesson5">
+  <h1>Getting Users</h1>
+  <p class="subtitle">Lesson 6 of 8 &mdash; You built it. Now what?</p>
+
+  <h2>The Hardest Part</h2>
+  <p>"If you build it, they will come" is the biggest lie in tech. Nobody knows your product exists. Nobody is searching for it. You need to go where the people are and tell them about it.</p>
+
+  <p>Your goal isn't a million users. It's <strong style="color:var(--text-primary);">your first 10</strong>. Those 10 will tell you everything you need to know about what works and what doesn't.</p>
+
+  <h2>Where to Share</h2>
+  <p>Click each platform to see specific tips for getting noticed:</p>
+
+  <div class="platform-grid" id="platformGrid">
+    <div class="platform-card" onclick="togglePlatform(this)">
+      <h4>Hacker News</h4>
+      <div class="platform-type">Community</div>
+      <p style="font-size:13px; color:var(--text-muted); margin:0;">Tech-savvy audience. Can drive massive traffic.</p>
+      <div class="platform-tip">Post as "Show HN: [Your Product] &mdash; [What it does]". Be genuine. Explain what you built and why. Respond to every comment. Best posted on weekday mornings (US time).</div>
+    </div>
+    <div class="platform-card" onclick="togglePlatform(this)">
+      <h4>Reddit</h4>
+      <div class="platform-type">Community</div>
+      <p style="font-size:13px; color:var(--text-muted); margin:0;">Subreddits for every niche. Find yours.</p>
+      <div class="platform-tip">Don't just drop a link &mdash; Reddit hates that. Share your story: what problem you solved, what you learned building it. Try r/SideProject, r/webdev, r/InternetIsBeautiful, or niche subreddits related to your product.</div>
+    </div>
+    <div class="platform-card" onclick="togglePlatform(this)">
+      <h4>Twitter / X</h4>
+      <div class="platform-type">Social Media</div>
+      <p style="font-size:13px; color:var(--text-muted); margin:0;">Build in public. Share your journey.</p>
+      <div class="platform-tip">Post a thread about building your product: the problem, your approach, screenshots, and a link. Use the #buildinpublic hashtag. Follow and engage with other builders. Consistency matters more than any single post.</div>
+    </div>
+    <div class="platform-card" onclick="togglePlatform(this)">
+      <h4>Product Hunt</h4>
+      <div class="platform-type">Launch Platform</div>
+      <p style="font-size:13px; color:var(--text-muted); margin:0;">Dedicated platform for launching products.</p>
+      <div class="platform-tip">Best for polished products (Phase 2+). Prepare good screenshots, a clear tagline, and a short description. Launch early in the day (midnight PT). Ask friends to upvote and leave genuine comments. One shot &mdash; make it count.</div>
+    </div>
+    <div class="platform-card" onclick="togglePlatform(this)">
+      <h4>Indie Hackers</h4>
+      <div class="platform-type">Community</div>
+      <p style="font-size:13px; color:var(--text-muted); margin:0;">Community of solo builders and bootstrappers.</p>
+      <div class="platform-tip">Share your revenue numbers, tech stack, and challenges honestly. The community values transparency. Post milestones (&dollar;0 to first user, first paying customer, etc.). They love "how I built this" posts.</div>
+    </div>
+    <div class="platform-card" onclick="togglePlatform(this)">
+      <h4>Friends &amp; Family</h4>
+      <div class="platform-type">Personal Network</div>
+      <p style="font-size:13px; color:var(--text-muted); margin:0;">Your first testers. Low stakes, honest feedback.</p>
+      <div class="platform-tip">Send a direct message with the link. Ask them to try one specific thing ("can you create a task and mark it done?"). Watch them use it if possible. Their confusion is your roadmap for improvements.</div>
+    </div>
+  </div>
+
+  <h2>The Feedback Loop</h2>
+  <p>Getting users isn't a one-time event. It's a cycle. Ship, learn, improve, ship again. Every cycle makes your product better and your audience bigger.</p>
+
+  <div class="feedback-loop">
+    <div class="loop-step">
+      <div class="loop-icon">&#x1F680;</div>
+      <div class="loop-label">Ship</div>
+    </div>
+    <div class="loop-arrow">&rarr;</div>
+    <div class="loop-step">
+      <div class="loop-icon">&#x1F4CA;</div>
+      <div class="loop-label">Learn</div>
+    </div>
+    <div class="loop-arrow">&rarr;</div>
+    <div class="loop-step">
+      <div class="loop-icon">&#x1F527;</div>
+      <div class="loop-label">Improve</div>
+    </div>
+    <div class="loop-arrow">&rarr;</div>
+    <div class="loop-step">
+      <div class="loop-icon">&#x1F501;</div>
+      <div class="loop-label">Repeat</div>
+    </div>
+  </div>
+
+  <div class="analogy">
+    <div class="analogy-label">Key Insight</div>
+    <p><strong>Your first 10 users are worth more than your next 10,000 features.</strong> Talk to them. Watch them use your product. Ask what confused them. Their feedback will reshape your entire roadmap &mdash; and save you from building things nobody wants.</p>
+  </div>
+
+  <button class="next-btn" onclick="goToLesson(6)">Next: Monitoring &amp; Maintaining &rarr;</button>
+</div>
+
+<!-- ============================================================
+     LESSON 7: MONITORING & MAINTAINING
+     ============================================================ -->
+<div class="lesson" id="lesson6">
+  <h1>Monitoring &amp; Maintaining</h1>
+  <p class="subtitle">Lesson 7 of 8 &mdash; Your app is live. Now what?</p>
+
+  <h2>The Day After Launch</h2>
+  <p>Congratulations, your app is live. But shipping is not the end &mdash; it's the beginning. Now you need to know: is it working? Are people using it? Are there errors?</p>
+
+  <p>This is where monitoring comes in. You need eyes on your application at all times, even when you're asleep.</p>
+
+  <h2>The Tools</h2>
+  <div class="card">
+    <h3 style="margin-top:0;">Essential Monitoring Stack</h3>
+    <p><strong style="color:var(--text-primary);">Error Tracking &mdash; Sentry</strong><br>Catches JavaScript errors, API failures, and crashes. Sends you an alert when something breaks. Shows you the exact line of code that failed and what the user was doing.</p>
+    <p><strong style="color:var(--text-primary);">Analytics &mdash; Plausible or PostHog</strong><br>Plausible is simple, privacy-friendly page analytics. PostHog goes deeper with session recordings, feature flags, and funnels. Start with Plausible, upgrade to PostHog when you need more.</p>
+    <p><strong style="color:var(--text-primary);">Uptime Monitoring &mdash; UptimeRobot or Better Stack</strong><br>Pings your site every few minutes. If it goes down, you get a text or email. Free tiers available. Set it up and forget it &mdash; it'll wake you up when something is wrong.</p>
+    <p><strong style="color:var(--text-primary);">Database Backups</strong><br>Most managed databases (Supabase, PlanetScale, Railway) handle backups automatically. If you're self-hosting, set up daily backups to a separate location. Losing data is catastrophic.</p>
+  </div>
+
+  <h2>Reading Your Dashboard</h2>
+  <p>Click on each metric to understand what it tells you and when to worry:</p>
+
+  <div class="dashboard-mock">
+    <div class="dashboard-header">
+      <h4><span class="status-dot"></span> Application Dashboard</h4>
+      <span style="font-size:12px; color:var(--text-faint);">Last 24 hours</span>
+    </div>
+    <div class="metric-grid" id="metricGrid">
+      <div class="metric-card" onclick="selectMetric(0)">
+        <div class="metric-value">247</div>
+        <div class="metric-label">Page Views</div>
+      </div>
+      <div class="metric-card" onclick="selectMetric(1)">
+        <div class="metric-value">99.8%</div>
+        <div class="metric-label">Uptime</div>
+      </div>
+      <div class="metric-card" onclick="selectMetric(2)">
+        <div class="metric-value">3</div>
+        <div class="metric-label">Errors</div>
+      </div>
+      <div class="metric-card" onclick="selectMetric(3)">
+        <div class="metric-value">1.2s</div>
+        <div class="metric-label">Avg Response</div>
+      </div>
+      <div class="metric-card" onclick="selectMetric(4)">
+        <div class="metric-value">42</div>
+        <div class="metric-label">Unique Users</div>
+      </div>
+      <div class="metric-card" onclick="selectMetric(5)">
+        <div class="metric-value">68%</div>
+        <div class="metric-label">Bounce Rate</div>
+      </div>
+    </div>
+
+    <div class="metric-detail" id="metricDetail"></div>
+  </div>
+
+  <h2>Handling Bug Reports</h2>
+  <p>When users report bugs, follow this process:</p>
+
+  <div class="code-block"><span class="cm">1. Reproduce</span> &mdash; Can you make the bug happen on your machine?
+<span class="cm">2. Check logs</span> &mdash; Look at Sentry for error details, check server logs
+<span class="cm">3. Fix</span> &mdash; Write the fix, test it locally
+<span class="cm">4. Deploy</span> &mdash; Push the fix, verify it's resolved in production
+<span class="cm">5. Follow up</span> &mdash; Tell the user it's fixed. They'll love you for it.</div>
+
+  <div class="analogy">
+    <div class="analogy-label">Key Insight</div>
+    <p><strong>Monitoring is not overhead &mdash; it's how you sleep at night.</strong> Set up Sentry and an uptime monitor before you share your app with anyone. It takes 15 minutes and saves you from finding out about problems from angry users.</p>
+  </div>
+
+  <button class="next-btn" onclick="goToLesson(7)">Next: What You've Learned &rarr;</button>
+</div>
+
+<!-- ============================================================
+     LESSON 8: WHAT YOU'VE LEARNED
+     ============================================================ -->
+<div class="lesson" id="lesson7">
+  <h1>What You've Learned</h1>
+  <p class="subtitle">Lesson 8 of 8 &mdash; The complete picture</p>
+
+  <h2>The Journey</h2>
+  <p>You started The Fundamentals knowing nothing about how software works. Let's look at how far you've come. You didn't just learn 12 separate topics &mdash; you learned <strong style="color:var(--text-primary);">one complete picture</strong> of how modern software is built, deployed, and maintained.</p>
+
+  <p>Click each course to see how it connects to everything else:</p>
+
+  <div class="journey-map" id="journeyMap">
+    <div class="journey-node" onclick="showJourney(0)">
+      <div class="journey-num">Course 01</div>
+      <div class="journey-title">Databases</div>
+    </div>
+    <div class="journey-node" onclick="showJourney(1)">
+      <div class="journey-num">Course 02</div>
+      <div class="journey-title">Codebase</div>
+    </div>
+    <div class="journey-node" onclick="showJourney(2)">
+      <div class="journey-num">Course 03</div>
+      <div class="journey-title">APIs</div>
+    </div>
+    <div class="journey-node" onclick="showJourney(3)">
+      <div class="journey-num">Course 04</div>
+      <div class="journey-title">Build</div>
+    </div>
+    <div class="journey-node" onclick="showJourney(4)">
+      <div class="journey-num">Course 05</div>
+      <div class="journey-title">Deployment</div>
+    </div>
+    <div class="journey-node" onclick="showJourney(5)">
+      <div class="journey-num">Course 06</div>
+      <div class="journey-title">Git</div>
+    </div>
+    <div class="journey-node" onclick="showJourney(6)">
+      <div class="journey-num">Course 07</div>
+      <div class="journey-title">Auth</div>
+    </div>
+    <div class="journey-node" onclick="showJourney(7)">
+      <div class="journey-num">Course 08</div>
+      <div class="journey-title">TypeScript</div>
+    </div>
+    <div class="journey-node" onclick="showJourney(8)">
+      <div class="journey-num">Course 09</div>
+      <div class="journey-title">React</div>
+    </div>
+    <div class="journey-node" onclick="showJourney(9)">
+      <div class="journey-num">Course 10</div>
+      <div class="journey-title">Testing</div>
+    </div>
+    <div class="journey-node" onclick="showJourney(10)">
+      <div class="journey-num">Course 11</div>
+      <div class="journey-title">AI Agents</div>
+    </div>
+    <div class="journey-node" onclick="showJourney(11)">
+      <div class="journey-num">Course 12</div>
+      <div class="journey-title">Shipping</div>
+    </div>
+  </div>
+
+  <div class="journey-detail" id="journeyDetail"></div>
+
+  <div class="celebration">
+    <h2>You Did It</h2>
+    <p>From "what is a database?" to shipping a real product. That's not a small thing. Most people never make it this far. You now understand how modern software works &mdash; not just the theory, but the practice.</p>
+    <div class="stat-row">
+      <div class="stat-item">
+        <div class="stat-num">12</div>
+        <div class="stat-label">Courses</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">90+</div>
+        <div class="stat-label">Lessons</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">1</div>
+        <div class="stat-label">Complete Picture</div>
+      </div>
+    </div>
+  </div>
+
+  <h2>What Now?</h2>
+  <p>You have everything you need to build something real. Not a tutorial project. Not a toy. A real product that solves a real problem for real people.</p>
+
+  <div class="card">
+    <h3 style="margin-top:0;">Your Next Steps</h3>
+    <p><strong style="color:var(--text-primary);">1. Pick an idea.</strong> It doesn't have to be original. It has to be something you care about.</p>
+    <p><strong style="color:var(--text-primary);">2. Define the MVP.</strong> What's the one thing it does? Cut everything else.</p>
+    <p><strong style="color:var(--text-primary);">3. Choose your stack.</strong> Use what you know. Don't learn a new framework for this.</p>
+    <p><strong style="color:var(--text-primary);">4. Build Phase 1 this week.</strong> Not this month. This week. Urgency creates clarity.</p>
+    <p><strong style="color:var(--text-primary);">5. Deploy and share.</strong> Put it on the internet. Tell 5 people. Watch what happens.</p>
+    <p style="margin-bottom:0;"><strong style="color:var(--text-primary);">6. Iterate.</strong> Listen to feedback. Fix bugs. Add what matters. Ship again.</p>
+  </div>
+
+  <div style="text-align:center; margin-top:40px; padding:40px 0; border-top: 1px solid var(--border-primary);">
+    <h2 style="margin:0 0 8px;">Tutorial Complete!</h2>
+    <p style="color:var(--text-muted); font-size:15px;">You've learned how to ship a product &mdash; from idea to launch and beyond.</p>
+  </div>
+
+  <div class="next-course-banner" style="border-color: var(--accent-green);">
+    <h3>You've Completed The Fundamentals</h3>
+    <p>12 courses. 90+ interactive lessons. You now understand how modern software works from the ground up. Go build something.</p>
+    <a href="/index.html">Back to Home &rarr;</a>
+  </div>
+</div>
+
+</div><!-- /container -->
+
+</div><!-- end content-wrapper -->
+
+<script>
+// ===== LESSON NAVIGATION =====
+function goToLesson(n) {
+  const lessons = document.querySelectorAll('.lesson');
+  const buttons = document.querySelectorAll('.nav-btn');
+  lessons.forEach((l, i) => {
+    l.classList.toggle('active', i === n);
+  });
+  buttons.forEach((b, i) => {
+    b.classList.toggle('active', i === n);
+  });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ===== LESSON 1: MVP FEATURE CUTTER =====
+let cutCount = 0;
+const totalNonEssential = 7;
+
+function cutFeature(btn) {
+  const item = btn.closest('.feature-item');
+  if (item.classList.contains('removed')) return;
+  item.classList.add('removed');
+  btn.textContent = 'Cut';
+  btn.disabled = true;
+  btn.style.opacity = '0.3';
+  cutCount++;
+  updateMvpCounter();
+}
+
+function updateMvpCounter() {
+  const remaining = 10 - cutCount;
+  document.getElementById('featureCount').textContent = remaining;
+  const msg = document.getElementById('mvpMessage');
+
+  if (cutCount === totalNonEssential) {
+    msg.className = 'mvp-message good';
+    msg.innerHTML = '<strong>That\'s your MVP!</strong> Three features: add tasks, complete tasks, view tasks. That\'s it. You can build this in a day. Everything you cut? It can come back later &mdash; if users actually ask for it.';
+  } else if (cutCount >= 4) {
+    msg.className = 'mvp-message';
+    msg.style.background = 'var(--bg-card)';
+    msg.style.border = '1px solid var(--border-secondary)';
+    msg.style.color = 'var(--text-body)';
+    msg.innerHTML = 'Getting leaner! Keep cutting. What\'s the absolute minimum?';
+  } else if (cutCount >= 1) {
+    msg.className = 'mvp-message';
+    msg.style.background = 'var(--bg-card)';
+    msg.style.border = '1px solid var(--border-secondary)';
+    msg.style.color = 'var(--text-body)';
+    msg.innerHTML = 'Good start. But can you cut more? Be ruthless.';
+  }
+}
+
+// ===== LESSON 2: STACK SELECTOR =====
+function selectStack(index) {
+  const cards = document.querySelectorAll('.stack-card');
+  cards.forEach((c, i) => {
+    c.classList.toggle('selected', i === index);
+  });
+}
+
+// Decision flow
+const decisions = {};
+
+function decide(step, choice) {
+  decisions[step] = choice;
+
+  // Mark chosen button
+  const stepEl = document.getElementById('dStep' + step);
+  stepEl.querySelectorAll('.decision-opt').forEach(btn => {
+    btn.classList.remove('chosen');
+    if (btn.textContent.toLowerCase().includes(choice) ||
+        (choice === 'js' && btn.textContent.includes('JavaScript')) ||
+        (choice === 'python' && btn.textContent.includes('Python')) ||
+        (choice === 'new' && btn.textContent.includes('learning')) ||
+        (choice === 'static' && btn.textContent.includes('Static')) ||
+        (choice === 'webapp' && btn.textContent.includes('Web app')) ||
+        (choice === 'api' && btn.textContent.includes('API')) ||
+        (choice === 'fast' && btn.textContent.includes('weekend')) ||
+        (choice === 'moderate' && btn.textContent.includes('few weeks')) ||
+        (choice === 'flexible' && btn.textContent.includes('No rush'))) {
+      btn.classList.add('chosen');
+    }
+  });
+
+  // Show next step
+  const nextStep = document.getElementById('dStep' + (step + 1));
+  if (nextStep) {
+    nextStep.classList.add('active');
+  }
+
+  // If all 3 decisions made, show result
+  if (decisions[0] && decisions[1] && decisions[2]) {
+    showDecisionResult();
+  }
+}
+
+function showDecisionResult() {
+  const result = document.getElementById('decisionResult');
+  const title = document.getElementById('resultTitle');
+  const text = document.getElementById('resultText');
+
+  let recommendation = '';
+
+  if (decisions[0] === 'static') {
+    recommendation = '<strong style="color:var(--text-primary);">HTML/CSS/JS + Netlify</strong> &mdash; For a static site, you don\'t need a framework. Write HTML, add interactivity with JavaScript, deploy to Netlify or GitHub Pages for free. If you need a backend later, add Supabase.';
+  } else if (decisions[0] === 'api') {
+    if (decisions[1] === 'python') {
+      recommendation = '<strong style="color:var(--text-primary);">Flask + PostgreSQL + Railway</strong> &mdash; Python is great for APIs. Flask keeps it simple. Railway gives you a database and hosting in one place. You can ship a working API today.';
+    } else {
+      recommendation = '<strong style="color:var(--text-primary);">Express + PostgreSQL + Railway</strong> &mdash; Node.js with Express is the most popular API stack. Straightforward, well-documented, runs everywhere. Railway handles hosting and database.';
+    }
+  } else {
+    // webapp
+    if (decisions[1] === 'python') {
+      recommendation = '<strong style="color:var(--text-primary);">Django + PostgreSQL + Render</strong> &mdash; Django includes auth, admin panel, and database ORM out of the box. It\'s the fastest way to build a full web app in Python. Deploy to Render.';
+    } else if (decisions[2] === 'fast') {
+      recommendation = '<strong style="color:var(--text-primary);">Next.js + Supabase + Vercel</strong> &mdash; The fastest path from zero to deployed web app. Supabase gives you auth and a database instantly. Vercel deploys on every git push. Ship this weekend.';
+    } else {
+      recommendation = '<strong style="color:var(--text-primary);">Next.js + PostgreSQL + Vercel</strong> &mdash; The modern full-stack default. React on the frontend, API routes on the backend, PostgreSQL for data. Huge community, great docs, scales well.';
+    }
+  }
+
+  text.innerHTML = recommendation;
+  result.classList.add('visible');
+}
+
+// ===== LESSON 3: WIREFRAME STEPS =====
+function showWfStep(n) {
+  const steps = document.querySelectorAll('.wf-step');
+  // Keep all previous steps visible, show new one
+  for (let i = 0; i <= n; i++) {
+    steps[i].classList.add('visible');
+  }
+}
+
+// ===== LESSON 4: DRAG AND DROP PHASES =====
+let draggedEl = null;
+let placedCount = 0;
+
+function dragStart(e) {
+  draggedEl = e.target;
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', e.target.id);
+  setTimeout(() => {
+    e.target.style.opacity = '0.4';
+  }, 0);
+}
+
+function dragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  e.currentTarget.classList.add('drag-over');
+}
+
+function dragLeave(e) {
+  e.currentTarget.classList.remove('drag-over');
+}
+
+function drop(e) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+
+  if (!draggedEl) return;
+
+  const phase = e.currentTarget.getAttribute('data-phase');
+  const correct = draggedEl.getAttribute('data-correct');
+
+  draggedEl.style.opacity = '1';
+
+  if (phase === correct) {
+    e.currentTarget.appendChild(draggedEl);
+    draggedEl.classList.add('placed');
+    draggedEl.draggable = false;
+    draggedEl.style.cursor = 'default';
+    placedCount++;
+
+    if (placedCount === 8) {
+      const result = document.getElementById('phaseResult');
+      result.style.display = 'block';
+      result.className = 'card';
+      result.style.borderColor = 'var(--accent-green)';
+      result.innerHTML = '<p style="text-align:center; margin:0; color:var(--accent-green); font-weight:600;">All features placed correctly! Notice how Phase 1 is tiny &mdash; just the core feature and the database. That\'s intentional. Ship that first.</p>';
+    }
+  } else {
+    draggedEl.style.opacity = '1';
+    // Brief shake animation
+    draggedEl.style.animation = 'shake 0.3s ease';
+    setTimeout(() => {
+      draggedEl.style.animation = '';
+    }, 300);
+  }
+
+  draggedEl = null;
+}
+
+// ===== LESSON 5: LAUNCH CHECKLIST =====
+let checkedCount = 0;
+const totalChecks = 10;
+
+function toggleCheck(item) {
+  // Toggle expanded
+  const wasExpanded = item.classList.contains('expanded');
+  // Close all
+  document.querySelectorAll('.check-item').forEach(ci => ci.classList.remove('expanded'));
+  // Open this one if it wasn't open
+  if (!wasExpanded) {
+    item.classList.add('expanded');
+  }
+
+  // Toggle checked on click of the checkbox area
+  if (!item.classList.contains('checked')) {
+    item.classList.add('checked');
+    checkedCount++;
+  }
+
+  updateProgress();
+}
+
+function updateProgress() {
+  document.getElementById('progressText').textContent = checkedCount + ' / ' + totalChecks;
+  const pct = (checkedCount / totalChecks) * 100;
+  document.getElementById('progressBar').style.width = pct + '%';
+}
+
+// ===== LESSON 6: PLATFORMS =====
+function togglePlatform(card) {
+  const wasExpanded = card.classList.contains('expanded');
+  document.querySelectorAll('.platform-card').forEach(c => c.classList.remove('expanded'));
+  if (!wasExpanded) {
+    card.classList.add('expanded');
+  }
+}
+
+// ===== LESSON 7: MONITORING DASHBOARD =====
+const metricDetails = [
+  {
+    title: 'Page Views: 247',
+    text: 'Total page loads in the last 24 hours. This tells you overall traffic volume. Compare day over day &mdash; is it growing? A spike might mean someone shared your link. A sudden drop might mean your site is down.'
+  },
+  {
+    title: 'Uptime: 99.8%',
+    text: 'Percentage of time your app was accessible. 99.8% means about 3 minutes of downtime in 24 hours. Anything above 99.5% is acceptable for a small app. Below 99% and you have a real problem &mdash; users are hitting errors regularly.'
+  },
+  {
+    title: 'Errors: 3',
+    text: 'Unhandled errors in the last 24 hours. Check Sentry for details. Three errors is normal &mdash; they might be network timeouts or edge cases. If this number spikes to 50+, something broke in your latest deploy. Roll back immediately.'
+  },
+  {
+    title: 'Avg Response Time: 1.2s',
+    text: 'How long your server takes to respond to requests. Under 200ms is fast. Under 1s is acceptable. Over 2s and users will notice. If this number keeps climbing, you might have a slow database query or an API that\'s timing out.'
+  },
+  {
+    title: 'Unique Users: 42',
+    text: 'Distinct visitors in the last 24 hours. More meaningful than page views because one user might load 10 pages. 42 unique users for a new product is great! Track this week over week to see if you\'re growing.'
+  },
+  {
+    title: 'Bounce Rate: 68%',
+    text: 'Percentage of visitors who left after viewing only one page. 68% is fairly typical for a new app. High bounce rate might mean: your landing page isn\'t compelling, load time is too slow, or users don\'t understand what your product does. Below 50% is good.'
+  }
+];
+
+function selectMetric(index) {
+  const cards = document.querySelectorAll('.metric-card');
+  cards.forEach((c, i) => c.classList.toggle('selected', i === index));
+
+  const detail = document.getElementById('metricDetail');
+  const d = metricDetails[index];
+  detail.innerHTML = '<h5>' + d.title + '</h5><p>' + d.text + '</p>';
+  detail.classList.add('visible');
+}
+
+// ===== LESSON 8: JOURNEY MAP =====
+const journeyData = [
+  {
+    title: 'How Databases Work',
+    desc: 'You learned how data is stored, queried, and structured. Every app you build will use a database &mdash; now you understand what\'s happening under the hood.',
+    connections: ['APIs', 'Build', 'Deployment', 'Auth']
+  },
+  {
+    title: 'The Codebase',
+    desc: 'You learned how projects are organized: files, folders, dependencies, and package managers. This is the foundation every other course builds on.',
+    connections: ['Git', 'Build', 'TypeScript', 'Testing']
+  },
+  {
+    title: 'APIs & HTTP',
+    desc: 'You learned how apps talk to each other. Requests, responses, status codes, REST. Every modern app is built on APIs.',
+    connections: ['Databases', 'Build', 'Auth', 'Deployment']
+  },
+  {
+    title: 'Build a Mini App',
+    desc: 'You put databases, APIs, and codebase knowledge together and built something real. The "aha" moment where theory becomes practice.',
+    connections: ['Databases', 'APIs', 'Codebase', 'Deployment']
+  },
+  {
+    title: 'How Deployment Works',
+    desc: 'You learned how code goes from your laptop to the internet. Servers, containers, CI/CD, environment variables. Now you can share what you build.',
+    connections: ['Git', 'Build', 'Shipping', 'Testing']
+  },
+  {
+    title: 'How Git Works',
+    desc: 'You learned version control: commits, branches, merges, pull requests. The tool every developer uses every single day.',
+    connections: ['Codebase', 'Deployment', 'Build', 'Shipping']
+  },
+  {
+    title: 'Authentication',
+    desc: 'You learned how users log in: passwords, hashing, tokens, sessions, OAuth. Security isn\'t optional &mdash; and now you know how it works.',
+    connections: ['APIs', 'Databases', 'Build', 'Shipping']
+  },
+  {
+    title: 'TypeScript',
+    desc: 'You learned how types catch bugs before they happen. TypeScript makes your code safer, your editor smarter, and your team faster.',
+    connections: ['Codebase', 'React', 'APIs', 'Testing']
+  },
+  {
+    title: 'React',
+    desc: 'You learned the most popular UI framework: components, state, props, hooks. Now you can build interactive interfaces that feel modern.',
+    connections: ['TypeScript', 'APIs', 'Build', 'Testing']
+  },
+  {
+    title: 'Testing',
+    desc: 'You learned how to prove your code works: unit tests, integration tests, test-driven development. Confidence to change code without fear.',
+    connections: ['Codebase', 'React', 'APIs', 'Deployment']
+  },
+  {
+    title: 'AI Agents',
+    desc: 'You learned how AI tools like Claude Code can help you build faster: generating code, debugging, and understanding codebases. The future of development.',
+    connections: ['Build', 'Codebase', 'APIs', 'Shipping']
+  },
+  {
+    title: 'How to Ship a Product',
+    desc: 'You learned everything you need to go from idea to live product: MVPs, stacks, design, phases, launching, getting users, and monitoring. This is where it all comes together.',
+    connections: ['Databases', 'APIs', 'Deployment', 'Git', 'Auth', 'Testing']
+  }
+];
+
+function showJourney(index) {
+  const nodes = document.querySelectorAll('.journey-node');
+  nodes.forEach((n, i) => n.classList.toggle('highlighted', i === index));
+
+  const detail = document.getElementById('journeyDetail');
+  const d = journeyData[index];
+
+  let connectionsHTML = '<div class="connections-list">';
+  d.connections.forEach(c => {
+    connectionsHTML += '<span class="connection-tag">Connects to: ' + c + '</span>';
+  });
+  connectionsHTML += '</div>';
+
+  detail.innerHTML = '<h4>' + d.title + '</h4><p>' + d.desc + '</p>' + connectionsHTML;
+  detail.classList.add('visible');
+}
+
+// ===== SHAKE ANIMATION (for wrong drag) =====
+const shakeStyle = document.createElement('style');
+shakeStyle.textContent = '@keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }';
+document.head.appendChild(shakeStyle);
+</script>
+<script src="/js/shared.js"></script>
+</body>
+</html>

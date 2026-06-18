@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Codebase — The Fundamentals</title>
+  <link rel="stylesheet" href="/css/shared.css">
+  <style>
+    /* LESSON-SPECIFIC styles only — converted to use CSS variables */
+    .lesson { display: none; }
+    .lesson.active { display: block; }
+    .lesson h2 { font-size: 28px; color: var(--text-primary); margin-bottom: 8px; }
+    .lesson .subtitle { color: var(--text-muted); font-size: 16px; margin-bottom: 32px; }
+    .lesson p { color: var(--text-tertiary); line-height: 1.7; margin-bottom: 16px; font-size: 15px; }
+    .lesson .analogy { background: var(--bg-analogy); border: 1px solid var(--border-analogy); border-radius: 10px; padding: 20px 24px; margin: 20px 0; }
+    .lesson .analogy strong { color: var(--accent-indigo); }
+
+    .db-table { margin: 24px 0; border-radius: 10px; overflow: hidden; border: 1px solid var(--border-tertiary); }
+    .db-table .table-header { background: var(--bg-table-header); padding: 10px 16px; font-weight: 600; font-size: 14px; color: var(--accent-blue); display: flex; align-items: center; gap: 8px; }
+    .db-table table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .db-table th { background: var(--bg-table-th); padding: 10px 16px; text-align: left; color: var(--text-table-header); font-weight: 500; border-bottom: 1px solid var(--border-table); }
+    .db-table td { padding: 10px 16px; border-bottom: 1px solid var(--border-table-row); color: var(--text-body); }
+    .db-table tr:last-child td { border-bottom: none; }
+    .db-table tr:hover td { background: var(--bg-table-hover); }
+
+    .file-tree { background: var(--bg-card); border: 1px solid var(--border-secondary); border-radius: 10px; padding: 20px 24px; margin: 20px 0; font-family: 'SF Mono', Monaco, monospace; font-size: 13px; line-height: 2; }
+    .file-tree .folder { color: var(--accent-blue); cursor: pointer; }
+    .file-tree .folder:hover { color: #93bbfc; }
+    .file-tree .file { color: var(--text-table-header); }
+    .file-tree .desc { color: var(--text-faint); font-family: -apple-system, sans-serif; font-size: 12px; }
+    .file-tree .highlight { color: var(--accent-yellow); }
+    .file-tree .indent { padding-left: 24px; }
+    .file-tree .indent2 { padding-left: 48px; }
+    .file-tree .indent3 { padding-left: 72px; }
+
+    .arch-box { background: var(--bg-card); border: 1px solid var(--border-secondary); border-radius: 10px; padding: 24px; margin: 20px 0; font-family: 'SF Mono', Monaco, monospace; font-size: 12px; line-height: 1.8; white-space: pre; overflow-x: auto; }
+    .arch-box .layer { color: var(--accent-purple); font-weight: 600; }
+    .arch-box .component { color: var(--accent-blue); }
+    .arch-box .arrow { color: var(--text-faint); }
+    .arch-box .note { color: var(--text-faint); font-family: -apple-system, sans-serif; }
+    .arch-box .data { color: var(--accent-green); }
+    .arch-box .highlight { color: var(--accent-yellow); }
+
+    .btn-row { display: flex; gap: 10px; margin: 24px 0; flex-wrap: wrap; }
+    .btn { background: var(--bg-btn); border: 1px solid var(--border-btn); color: var(--text-nav); padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; transition: all 0.2s; }
+    .btn:hover { background: #253349; color: var(--text-primary); border-color: #4b6a9b; }
+    .btn.selected { background: var(--bg-btn-selected); border-color: var(--border-btn-selected); color: var(--accent-blue); }
+
+    .detail-box { background: var(--bg-card); border: 1px solid #1a2332; border-radius: 10px; padding: 20px; margin: 16px 0; min-height: 80px; transition: all 0.3s; }
+    .detail-box .label { color: var(--text-faint); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+
+    .code-block { background: var(--bg-code); border: 1px solid var(--border-secondary); border-radius: 8px; padding: 16px 20px; margin: 16px 0; font-family: 'SF Mono', Monaco, monospace; font-size: 13px; line-height: 1.7; overflow-x: auto; }
+    .code-block .kw { color: var(--accent-purple); }
+    .code-block .fn { color: var(--accent-blue); }
+    .code-block .str { color: var(--accent-green); }
+    .code-block .comment { color: var(--text-faint); }
+    .code-block .type { color: var(--accent-yellow); }
+    .code-block .var { color: var(--text-secondary); }
+
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin: 24px 0; }
+    .stat-card { background: var(--bg-secondary); border: 1px solid var(--border-primary); border-radius: 10px; padding: 16px; text-align: center; }
+    .stat-card .number { font-size: 28px; font-weight: 700; color: var(--text-primary); }
+    .stat-card .label { font-size: 12px; color: #666; margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
+
+    .flow-step { display: flex; align-items: flex-start; gap: 16px; margin: 16px 0; }
+    .flow-num { background: var(--accent-blue-bg); color: var(--text-primary); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0; }
+    .flow-content { flex: 1; }
+    .flow-content h4 { color: var(--text-primary); margin-bottom: 4px; font-size: 15px; }
+    .flow-content p { color: var(--text-muted); font-size: 14px; margin: 0; }
+    .flow-content code { background: var(--bg-btn); padding: 2px 6px; border-radius: 4px; font-size: 13px; color: var(--accent-blue); }
+
+    .next-btn { display: inline-block; margin-top: 32px; background: var(--accent-blue-bg); border: none; color: var(--text-primary); padding: 12px 28px; border-radius: 8px; cursor: pointer; font-size: 15px; font-weight: 500; transition: all 0.2s; }
+    .next-btn:hover { background: #3b82f6; }
+
+    .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-left: 6px; }
+    .tag-server { background: #422006; color: var(--accent-yellow); }
+    .tag-ui { background: #052e16; color: var(--accent-green); }
+    .tag-db { background: #1e1b4b; color: var(--accent-indigo); }
+    .tag-pkg { background: #1c1917; color: #a8a29e; }
+
+    .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
+    .compare-card { background: var(--bg-secondary); border: 1px solid var(--border-primary); border-radius: 10px; padding: 20px; }
+    .compare-card h4 { color: var(--text-primary); margin-bottom: 8px; font-size: 15px; }
+    .compare-card p { color: var(--text-muted); font-size: 14px; margin: 0; }
+
+    @media (max-width: 700px) {
+      .compare-grid { grid-template-columns: 1fr; }
+    }
+
+    .nav { position: fixed; top: 0; left: 0; right: 0; background: var(--bg-secondary); border-bottom: 1px solid var(--border-primary); padding: 12px 32px; display: flex; align-items: center; gap: 16px; z-index: 100; flex-wrap: wrap; }
+    .nav h1 { font-size: 16px; color: var(--text-primary); margin-right: 24px; }
+    .nav button { background: var(--bg-tertiary); border: 1px solid var(--border-nav-btn); color: var(--text-dim); padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; transition: all 0.2s; }
+    .nav button:hover { background: #252525; color: var(--text-primary); border-color: #444; }
+    .nav button.active { background: var(--accent-blue-bg); border-color: #3b82f6; color: var(--text-primary); }
+    .progress { margin-left: auto; font-size: 13px; color: var(--text-faint); }
+
+    @media (min-width: 1024px) {
+      .nav { left: 280px; }
+    }
+
+    .breadcrumb { margin-top: 64px; padding-top: 8px; }
+  </style>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <a href="/index.html" class="sidebar-logo">The Fundamentals</a>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="sidebar-section-title">Courses</div>
+    <a href="/lessons/databases.html" class="sidebar-link" data-course="databases">
+      <span class="sidebar-num">01</span> How Databases Work
+    </a>
+    <a href="/lessons/codebase.html" class="sidebar-link" data-course="codebase" aria-current="page">
+      <span class="sidebar-num">02</span> The Codebase
+    </a>
+    <a href="/lessons/apis.html" class="sidebar-link" data-course="apis">
+      <span class="sidebar-num">03</span> APIs &amp; HTTP
+    </a>
+    <a href="/lessons/build.html" class="sidebar-link" data-course="build">
+      <span class="sidebar-num">04</span> Build a Mini App
+    </a>
+    <a href="/lessons/deployment.html" class="sidebar-link" data-course="deployment">
+      <span class="sidebar-num">05</span> How Deployment Works
+    </a>
+    <a href="/lessons/git.html" class="sidebar-link" data-course="git">
+      <span class="sidebar-num">06</span> How Git Works
+    </a>
+  </nav>
+      <a href="/lessons/authentication.html" class="sidebar-link" data-course="authentication">
+        <span class="sidebar-num">07</span> How Auth Works
+      </a>
+      <a href="/lessons/typescript.html" class="sidebar-link" data-course="typescript">
+        <span class="sidebar-num">08</span> How TypeScript Works
+      </a>
+      <a href="/lessons/react.html" class="sidebar-link" data-course="react">
+        <span class="sidebar-num">09</span> How React Works
+      </a>
+      <a href="/lessons/testing.html" class="sidebar-link" data-course="testing">
+        <span class="sidebar-num">10</span> How Testing Works
+      </a>
+      <a href="/lessons/ai-agents.html" class="sidebar-link" data-course="ai-agents">
+        <span class="sidebar-num">11</span> How AI Agents Work
+      </a>
+      <a href="/lessons/shipping.html" class="sidebar-link" data-course="shipping">
+        <span class="sidebar-num">12</span> How to Ship a Product
+      </a>
+  <div class="sidebar-footer">
+    <button class="theme-toggle" id="theme-toggle">
+      <span class="theme-icon" id="theme-icon">☀️</span>
+      <span class="theme-label" id="theme-label">Light Mode</span>
+    </button>
+  </div>
+</aside>
+<button class="sidebar-toggle" id="sidebar-toggle">☰</button>
+
+<div class="content-wrapper">
+
+<div class="breadcrumb"><a href="/index.html">Home</a><span class="sep">›</span><span>The Codebase</span></div>
+
+<div class="nav">
+  <h1>Paperclip Codebase</h1>
+  <button onclick="goTo(0)" id="nav0" class="active">1. Big Picture</button>
+  <button onclick="goTo(1)" id="nav1">2. File Map</button>
+  <button onclick="goTo(2)" id="nav2">3. Server</button>
+  <button onclick="goTo(3)" id="nav3">4. Database</button>
+  <button onclick="goTo(4)" id="nav4">5. UI</button>
+  <button onclick="goTo(5)" id="nav5">6. Adapters</button>
+  <button onclick="goTo(6)" id="nav6">7. Heartbeat</button>
+  <button onclick="goTo(7)" id="nav7">8. How It Flows</button>
+  <span class="progress" id="progress">1 / 8</span>
+</div>
+
+<div class="container">
+
+  <!-- LESSON 1: Big Picture -->
+  <div class="lesson active" id="lesson0">
+    <h2>The Big Picture</h2>
+    <p class="subtitle">What you're looking at when you open the Paperclip repo.</p>
+
+    <div class="stat-grid">
+      <div class="stat-card"><div class="number">2,049</div><div class="label">TypeScript Files</div></div>
+      <div class="stat-card"><div class="number">4</div><div class="label">Major Pieces</div></div>
+      <div class="stat-card"><div class="number">11</div><div class="label">Agent Adapters</div></div>
+      <div class="stat-card"><div class="number">102</div><div class="label">DB Migrations</div></div>
+    </div>
+
+    <p>Paperclip is a <strong style="color:var(--text-primary)">monorepo</strong> — meaning all the code for the entire product lives in one repository, organized into folders. There are four major pieces:</p>
+
+    <div class="arch-box"><span class="layer">  SERVER</span>    <span class="note">The brain. A Node.js API that manages everything.</span>
+     <span class="arrow">  │</span>
+     <span class="arrow">  ├──</span> <span class="component">Routes</span>        <span class="note">Doors where requests come in</span>
+     <span class="arrow">  ├──</span> <span class="component">Services</span>      <span class="note">Business logic (the actual thinking)</span>
+     <span class="arrow">  ├──</span> <span class="component">Adapters</span>      <span class="note">How to talk to each type of agent</span>
+     <span class="arrow">  └──</span> <span class="component">Middleware</span>     <span class="note">Security checkpoints at every door</span>
+
+<span class="layer">  DATABASE</span>   <span class="note">PostgreSQL. Where all the data lives.</span>
+     <span class="arrow">  │</span>
+     <span class="arrow">  ├──</span> <span class="data">Schema</span>         <span class="note">The blueprint (table definitions)</span>
+     <span class="arrow">  └──</span> <span class="data">Migrations</span>     <span class="note">102 ordered changes to build the blueprint</span>
+
+<span class="layer">  UI</span>         <span class="note">React dashboard. What you see in the browser.</span>
+     <span class="arrow">  │</span>
+     <span class="arrow">  ├──</span> <span class="component">Pages</span>         <span class="note">Each screen (Dashboard, Agents, Issues...)</span>
+     <span class="arrow">  ├──</span> <span class="component">Components</span>    <span class="note">Reusable building blocks (buttons, cards, forms)</span>
+     <span class="arrow">  └──</span> <span class="component">Hooks</span>         <span class="note">Data fetching and state management</span>
+
+<span class="layer">  CLI</span>        <span class="note">Command-line tool for setup and management.</span>
+     <span class="arrow">  │</span>
+     <span class="arrow">  └──</span> <span class="component">Commands</span>      <span class="note">onboard, configure, start, etc.</span></div>
+
+    <div class="analogy">
+      <strong>Analogy:</strong> Think of a restaurant. The <strong>server</strong> is the kitchen — it takes orders, prepares food, and sends it out. The <strong>database</strong> is the pantry and recipe book — it stores all the ingredients and knows where everything is. The <strong>UI</strong> is the dining room — it's what the customer sees and interacts with. The <strong>CLI</strong> is the back door the staff uses to set up before opening.
+    </div>
+
+    <button class="next-btn" onclick="goTo(1)">Next: File Map &rarr;</button>
+  </div>
+
+  <!-- LESSON 2: File Map -->
+  <div class="lesson" id="lesson1">
+    <h2>The File Map</h2>
+    <p class="subtitle">Where everything lives on disk.</p>
+
+    <p>Click on any folder to learn what it does:</p>
+
+    <div class="btn-row">
+      <button class="btn selected" onclick="showFolder('server')" id="fb-server">server/ <span class="tag tag-server">549 files</span></button>
+      <button class="btn" onclick="showFolder('ui')" id="fb-ui">ui/ <span class="tag tag-ui">726 files</span></button>
+      <button class="btn" onclick="showFolder('packages')" id="fb-packages">packages/ <span class="tag tag-pkg">774 files</span></button>
+      <button class="btn" onclick="showFolder('cli')" id="fb-cli">cli/ <span class="tag tag-db">CLI</span></button>
+      <button class="btn" onclick="showFolder('other')" id="fb-other">Other</button>
+    </div>
+
+    <div class="detail-box" id="folder-detail">
+      <div id="folder-content-server">
+        <div class="file-tree">
+<span class="folder">server/src/</span>
+<div class="indent"><span class="folder">routes/</span> <span class="desc">- 43 files. Each one is a door into the server (agents, issues, costs...)</span></div>
+<div class="indent"><span class="folder">services/</span> <span class="desc">- 130+ files. The real brains. Business logic, heartbeat engine, budgets.</span></div>
+<div class="indent"><span class="folder">adapters/</span> <span class="desc">- How the server talks to Claude Code, Codex, Cursor, etc.</span></div>
+<div class="indent"><span class="folder">middleware/</span> <span class="desc">- Security guards. Auth, logging, rate limiting.</span></div>
+<div class="indent"><span class="folder">realtime/</span> <span class="desc">- WebSocket server for live updates to the dashboard.</span></div>
+<div class="indent"><span class="folder">storage/</span> <span class="desc">- File storage (attachments, work products).</span></div>
+<div class="indent"><span class="file">app.ts</span> <span class="desc">- Wires all routes and middleware together.</span></div>
+<div class="indent"><span class="file">index.ts</span> <span class="desc">- The entry point. Starts the server, connects the DB.</span></div>
+<div class="indent"><span class="highlight">config.ts</span> <span class="desc">- Reads environment variables and config files.</span></div>
+        </div>
+        <p style="margin-top:12px">The server is the biggest piece. The <code style="color:var(--accent-yellow)">services/heartbeat.ts</code> file alone is <strong style="color:var(--text-primary)">11,573 lines</strong> — it's the engine that wakes agents up and gives them work.</p>
+      </div>
+      <div id="folder-content-ui" style="display:none">
+        <div class="file-tree">
+<span class="folder">ui/src/</span>
+<div class="indent"><span class="folder">pages/</span> <span class="desc">- 70+ page components. Each one is a screen in the app.</span></div>
+<div class="indent2"><span class="file">Dashboard.tsx</span> <span class="desc">- The home screen with stats and activity</span></div>
+<div class="indent2"><span class="file">Agents.tsx</span> <span class="desc">- List of all agents</span></div>
+<div class="indent2"><span class="file">AgentDetail.tsx</span> <span class="desc">- One agent's profile, tasks, settings</span></div>
+<div class="indent2"><span class="file">Issues.tsx</span> <span class="desc">- Task board (like Trello)</span></div>
+<div class="indent2"><span class="file">IssueDetail.tsx</span> <span class="desc">- One task with comments, status, history</span></div>
+<div class="indent2"><span class="file">OrgChart.tsx</span> <span class="desc">- Visual org chart of agent hierarchy</span></div>
+<div class="indent2"><span class="file">Costs.tsx</span> <span class="desc">- Spending dashboard</span></div>
+<div class="indent2"><span class="file">...</span> <span class="desc">and 60+ more pages</span></div>
+<div class="indent"><span class="folder">components/</span> <span class="desc">- 200+ reusable UI pieces (buttons, cards, modals...)</span></div>
+<div class="indent"><span class="folder">hooks/</span> <span class="desc">- React hooks for fetching data from the API</span></div>
+<div class="indent"><span class="folder">context/</span> <span class="desc">- Shared state (current company, current user)</span></div>
+<div class="indent"><span class="file">App.tsx</span> <span class="desc">- The router. Maps URLs to pages.</span></div>
+        </div>
+        <p style="margin-top:12px">The UI is a React app built with TypeScript. It communicates with the server entirely through API calls — it never touches the database directly.</p>
+      </div>
+      <div id="folder-content-packages" style="display:none">
+        <div class="file-tree">
+<span class="folder">packages/</span>
+<div class="indent"><span class="highlight">db/</span> <span class="desc">- Database schema, migrations, and connection management</span></div>
+<div class="indent2"><span class="file">migrations/</span> <span class="desc">- 102 migration files, applied in order</span></div>
+<div class="indent2"><span class="file">schema/</span> <span class="desc">- Table definitions in TypeScript (using Drizzle ORM)</span></div>
+<div class="indent"><span class="folder">shared/</span> <span class="desc">- Types and utilities shared between server and UI</span></div>
+<div class="indent"><span class="folder">adapters/</span> <span class="desc">- 11 agent adapter packages:</span></div>
+<div class="indent2"><span class="file">claude-local/</span> <span class="desc">- Claude Code integration</span></div>
+<div class="indent2"><span class="file">codex-local/</span> <span class="desc">- OpenAI Codex integration</span></div>
+<div class="indent2"><span class="file">cursor-local/</span> <span class="desc">- Cursor integration</span></div>
+<div class="indent2"><span class="file">openclaw-gateway/</span> <span class="desc">- OpenClaw HTTP agent</span></div>
+<div class="indent2"><span class="file">gemini-local/</span> <span class="desc">- Google Gemini integration</span></div>
+<div class="indent2"><span class="file">...</span> <span class="desc">+ 6 more adapters</span></div>
+<div class="indent"><span class="folder">plugins/</span> <span class="desc">- Plugin SDK and example plugins</span></div>
+<div class="indent"><span class="folder">mcp-server/</span> <span class="desc">- Model Context Protocol server</span></div>
+<div class="indent"><span class="folder">skills-catalog/</span> <span class="desc">- Pre-built skills agents can learn</span></div>
+        </div>
+      </div>
+      <div id="folder-content-cli" style="display:none">
+        <div class="file-tree">
+<span class="folder">cli/src/</span>
+<div class="indent"><span class="file">commands/</span> <span class="desc">- CLI commands (onboard, configure, start, etc.)</span></div>
+<div class="indent"><span class="file">index.ts</span> <span class="desc">- Entry point, parses arguments</span></div>
+        </div>
+        <p style="margin-top:12px">The CLI is the smallest piece. It's the tool you use to set up and configure Paperclip. When you ran <code style="color:var(--accent-green)">npx paperclipai onboard --yes</code>, that's the CLI.</p>
+      </div>
+      <div id="folder-content-other" style="display:none">
+        <div class="file-tree">
+<span class="folder">Root files and folders:</span>
+<div class="indent"><span class="file">package.json</span> <span class="desc">- Project config, dependencies, scripts (pnpm dev, pnpm build)</span></div>
+<div class="indent"><span class="file">pnpm-workspace.yaml</span> <span class="desc">- Tells pnpm this is a monorepo with multiple packages</span></div>
+<div class="indent"><span class="file">tsconfig.json</span> <span class="desc">- TypeScript configuration</span></div>
+<div class="indent"><span class="file">Dockerfile</span> <span class="desc">- Instructions to build a Docker container</span></div>
+<div class="indent"><span class="file">vitest.config.ts</span> <span class="desc">- Test configuration</span></div>
+<div class="indent"><span class="folder">scripts/</span> <span class="desc">- 70 build/dev helper scripts</span></div>
+<div class="indent"><span class="folder">docker/</span> <span class="desc">- Docker Compose configs for different setups</span></div>
+<div class="indent"><span class="folder">docs/</span> <span class="desc">- Documentation site source</span></div>
+<div class="indent"><span class="folder">tests/</span> <span class="desc">- End-to-end Playwright tests</span></div>
+<div class="indent"><span class="folder">evals/</span> <span class="desc">- AI evaluation benchmarks</span></div>
+        </div>
+      </div>
+    </div>
+
+    <button class="next-btn" onclick="goTo(2)">Next: The Server &rarr;</button>
+  </div>
+
+  <!-- LESSON 3: Server -->
+  <div class="lesson" id="lesson2">
+    <h2>The Server</h2>
+    <p class="subtitle">Routes, Services, Middleware — the three layers of the backend.</p>
+
+    <p>The server follows a clean pattern. Every request flows through three layers:</p>
+
+    <div class="arch-box"><span class="highlight">Request from browser or agent</span>
+     <span class="arrow">│</span>
+     <span class="arrow">▼</span>
+<span class="layer">MIDDLEWARE</span>  <span class="note">Is this request allowed? Who is making it?</span>
+     <span class="arrow">│</span>
+     <span class="arrow">▼</span>
+<span class="layer">ROUTE</span>      <span class="note">What are they asking for? Parse the request.</span>
+     <span class="arrow">│</span>
+     <span class="arrow">▼</span>
+<span class="layer">SERVICE</span>    <span class="note">Do the actual work. Talk to the database. Return results.</span>
+     <span class="arrow">│</span>
+     <span class="arrow">▼</span>
+<span class="data">DATABASE</span>   <span class="note">Read or write data.</span></div>
+
+    <div class="analogy">
+      <strong>Analogy:</strong> A building with security. <strong>Middleware</strong> is the security guard at the front door — checking IDs, turning away unauthorized people. The <strong>route</strong> is the receptionist — figuring out which department you need. The <strong>service</strong> is the person in that department who actually does the work.
+    </div>
+
+    <p>Click each layer to see real examples from the codebase:</p>
+
+    <div class="btn-row">
+      <button class="btn selected" onclick="showLayer('middleware')" id="lb-middleware">Middleware</button>
+      <button class="btn" onclick="showLayer('routes')" id="lb-routes">Routes</button>
+      <button class="btn" onclick="showLayer('services')" id="lb-services">Services</button>
+    </div>
+
+    <div id="layer-detail">
+      <div id="layer-middleware">
+        <p><strong style="color:var(--text-primary)">Middleware</strong> runs on every request before it reaches the route. It handles cross-cutting concerns.</p>
+        <div class="db-table">
+          <div class="table-header">server/src/middleware/</div>
+          <table>
+            <tr><th>File</th><th>What it does</th></tr>
+            <tr><td style="color:var(--accent-blue)">auth.ts</td><td>Checks who you are (API key? browser session? agent JWT?)</td></tr>
+            <tr><td style="color:var(--accent-blue)">board-mutation-guard.ts</td><td>Blocks dangerous writes unless you're an admin</td></tr>
+            <tr><td style="color:var(--accent-blue)">private-hostname-guard.ts</td><td>Blocks requests from unauthorized networks</td></tr>
+            <tr><td style="color:var(--accent-blue)">trust-proxy.ts</td><td>Handles requests coming through reverse proxies</td></tr>
+            <tr><td style="color:var(--accent-blue)">logger.ts</td><td>Logs every request for debugging</td></tr>
+          </table>
+        </div>
+        <p>If middleware rejects a request, it never reaches the route. The request is dead on arrival.</p>
+      </div>
+      <div id="layer-routes" style="display:none">
+        <p><strong style="color:var(--text-primary)">Routes</strong> define the API endpoints. Each file handles one resource type.</p>
+        <div class="db-table">
+          <div class="table-header">server/src/routes/ (43 files)</div>
+          <table>
+            <tr><th>File</th><th>Endpoints it creates</th></tr>
+            <tr><td style="color:var(--accent-blue)">agents.ts</td><td>GET /api/agents, POST /api/agents, PATCH /api/agents/:id</td></tr>
+            <tr><td style="color:var(--accent-blue)">issues.ts</td><td>GET /api/issues, POST /api/issues, checkout, comments...</td></tr>
+            <tr><td style="color:var(--accent-blue)">costs.ts</td><td>GET /api/costs (spending data for dashboards)</td></tr>
+            <tr><td style="color:var(--accent-blue)">approvals.ts</td><td>GET/POST approval workflows</td></tr>
+            <tr><td style="color:var(--accent-blue)">health.ts</td><td>GET /api/health (is the server alive?)</td></tr>
+          </table>
+        </div>
+        <div class="code-block">
+<span class="comment">// Simplified example of what a route looks like:</span>
+
+<span class="kw">router</span>.<span class="fn">get</span>(<span class="str">"/api/agents"</span>, <span class="kw">async</span> (<span class="var">req</span>, <span class="var">res</span>) => {
+  <span class="comment">// req = the incoming request (who's asking? what filters?)</span>
+  <span class="kw">const</span> <span class="var">agents</span> = <span class="kw">await</span> <span class="fn">agentService</span>.<span class="fn">listAgents</span>(<span class="var">req</span>.<span class="var">companyId</span>);
+  <span class="comment">// res = the response we send back</span>
+  <span class="var">res</span>.<span class="fn">json</span>(<span class="var">agents</span>);
+});
+        </div>
+      </div>
+      <div id="layer-services" style="display:none">
+        <p><strong style="color:var(--text-primary)">Services</strong> contain the real business logic. This is where decisions are made and data is read/written.</p>
+        <div class="db-table">
+          <div class="table-header">server/src/services/ (130+ files) - The heavy hitters</div>
+          <table>
+            <tr><th>File</th><th>Lines</th><th>What it does</th></tr>
+            <tr><td style="color:var(--accent-yellow)">heartbeat.ts</td><td>11,573</td><td>The engine. Wakes agents, assigns work, tracks runs.</td></tr>
+            <tr><td style="color:var(--accent-blue)">issues.ts</td><td>6,520</td><td>Task management: create, assign, checkout, update, close.</td></tr>
+            <tr><td style="color:var(--accent-blue)">agents.ts</td><td>826</td><td>Agent CRUD, status management, hire/fire.</td></tr>
+            <tr><td style="color:var(--accent-blue)">budgets.ts</td><td>-</td><td>Budget enforcement, spending limits, hard stops.</td></tr>
+            <tr><td style="color:var(--accent-blue)">approvals.ts</td><td>-</td><td>Human approval workflows, gates.</td></tr>
+            <tr><td style="color:var(--accent-blue)">company-portability.ts</td><td>-</td><td>Export/import entire organizations.</td></tr>
+          </table>
+        </div>
+        <p>Notice the heartbeat service is <strong style="color:var(--accent-yellow)">14x larger</strong> than the agent service. That's because coordinating agent execution is the hardest problem Paperclip solves.</p>
+      </div>
+    </div>
+
+    <button class="next-btn" onclick="goTo(3)">Next: The Database &rarr;</button>
+  </div>
+
+  <!-- LESSON 4: Database -->
+  <div class="lesson" id="lesson3">
+    <h2>The Database Layer</h2>
+    <p class="subtitle">How Paperclip talks to PostgreSQL.</p>
+
+    <p>The server doesn't write raw SQL. It uses an <strong style="color:var(--text-primary)">ORM</strong> (Object-Relational Mapper) called <strong style="color:var(--accent-blue)">Drizzle</strong>. An ORM lets you write database queries in TypeScript instead of SQL.</p>
+
+    <div class="compare-grid">
+      <div class="compare-card">
+        <h4 style="color:var(--accent-purple)">Raw SQL</h4>
+        <div class="code-block" style="margin:8px 0 0">
+<span class="str">SELECT * FROM agents
+WHERE company_id = 5
+AND status = 'active'</span>
+        </div>
+      </div>
+      <div class="compare-card">
+        <h4 style="color:var(--accent-blue)">Drizzle ORM (TypeScript)</h4>
+        <div class="code-block" style="margin:8px 0 0">
+<span class="var">db</span>.<span class="fn">select</span>()
+  .<span class="fn">from</span>(<span class="var">agents</span>)
+  .<span class="fn">where</span>(
+    <span class="fn">and</span>(
+      <span class="fn">eq</span>(<span class="var">agents</span>.<span class="var">companyId</span>, <span class="type">5</span>),
+      <span class="fn">eq</span>(<span class="var">agents</span>.<span class="var">status</span>, <span class="str">"active"</span>)
+    )
+  )
+        </div>
+      </div>
+    </div>
+
+    <p>They do the same thing. The ORM version gives you type safety — if you misspell a column name, TypeScript catches it before the code even runs.</p>
+
+    <div class="analogy">
+      <strong>Analogy:</strong> SQL is speaking the database's native language. An ORM is like a translator that lets you speak TypeScript and it converts to SQL for you. You get autocomplete, error checking, and you never have to worry about SQL syntax.
+    </div>
+
+    <p>The schema lives in <code style="color:var(--accent-blue)">packages/db/src/schema/</code>. Here's a simplified version of how a table is defined:</p>
+
+    <div class="code-block">
+<span class="comment">// packages/db/src/schema/agents.ts (simplified)</span>
+
+<span class="kw">import</span> { <span class="var">pgTable</span>, <span class="var">serial</span>, <span class="var">text</span>, <span class="var">integer</span> } <span class="kw">from</span> <span class="str">"drizzle-orm/pg-core"</span>;
+
+<span class="kw">export const</span> <span class="var">agents</span> = <span class="fn">pgTable</span>(<span class="str">"agents"</span>, {
+  <span class="var">id</span>:        <span class="fn">serial</span>(<span class="str">"id"</span>).<span class="fn">primaryKey</span>(),       <span class="comment">// auto-incrementing PK</span>
+  <span class="var">name</span>:      <span class="fn">text</span>(<span class="str">"name"</span>).<span class="fn">notNull</span>(),         <span class="comment">// required text</span>
+  <span class="var">role</span>:      <span class="fn">text</span>(<span class="str">"role"</span>),                    <span class="comment">// optional text</span>
+  <span class="var">adapter</span>:   <span class="fn">text</span>(<span class="str">"adapter"</span>).<span class="fn">notNull</span>(),      <span class="comment">// "claude-code", "codex", etc.</span>
+  <span class="var">companyId</span>: <span class="fn">integer</span>(<span class="str">"company_id"</span>)          <span class="comment">// foreign key to companies</span>
+               .<span class="fn">references</span>(() => <span class="var">companies</span>.<span class="var">id</span>),
+});
+    </div>
+
+    <p>This is the same schema concept from the database tutorial — but written in TypeScript instead of SQL. Drizzle converts it to a <code>CREATE TABLE</code> statement behind the scenes.</p>
+
+    <button class="next-btn" onclick="goTo(4)">Next: The UI &rarr;</button>
+  </div>
+
+  <!-- LESSON 5: UI -->
+  <div class="lesson" id="lesson4">
+    <h2>The UI</h2>
+    <p class="subtitle">React, pages, components, and how the dashboard works.</p>
+
+    <p>The UI is a <strong style="color:var(--text-primary)">React</strong> app. React breaks everything into <strong style="color:var(--text-primary)">components</strong> — small, reusable pieces that snap together like LEGO blocks.</p>
+
+    <div class="analogy">
+      <strong>Analogy:</strong> A web page is like a house. React components are the bricks, windows, and doors. You don't build each house from scratch — you reuse the same window component in every room, the same door component for every entrance. Change the window component once, every room updates.
+    </div>
+
+    <p>The UI has two main types of files:</p>
+
+    <div class="compare-grid">
+      <div class="compare-card">
+        <h4>Pages <span class="tag tag-ui">70+ files</span></h4>
+        <p>Full screens. Each URL maps to a page.<br><br>
+        <code style="color:var(--accent-blue)">/dashboard</code> &rarr; Dashboard.tsx<br>
+        <code style="color:var(--accent-blue)">/agents</code> &rarr; Agents.tsx<br>
+        <code style="color:var(--accent-blue)">/agents/3</code> &rarr; AgentDetail.tsx<br>
+        <code style="color:var(--accent-blue)">/issues</code> &rarr; Issues.tsx<br>
+        <code style="color:var(--accent-blue)">/costs</code> &rarr; Costs.tsx</p>
+      </div>
+      <div class="compare-card">
+        <h4>Components <span class="tag tag-ui">200+ files</span></h4>
+        <p>Reusable pieces that pages are built from.<br><br>
+        <code style="color:var(--accent-green)">Sidebar.tsx</code> — navigation<br>
+        <code style="color:var(--accent-green)">IssueRow.tsx</code> — one task in a list<br>
+        <code style="color:var(--accent-green)">StatusBadge.tsx</code> — "in progress" pill<br>
+        <code style="color:var(--accent-green)">KanbanBoard.tsx</code> — drag-and-drop board<br>
+        <code style="color:var(--accent-green)">ChatComposer.tsx</code> — message input</p>
+      </div>
+    </div>
+
+    <p>Here's how a page is built from components — it's components all the way down:</p>
+
+    <div class="arch-box"><span class="layer">AgentDetail.tsx</span> <span class="note">(the full page)</span>
+<span class="arrow">  │</span>
+<span class="arrow">  ├──</span> <span class="component">Layout</span> <span class="note">(sidebar + content area)</span>
+<span class="arrow">  │     ├──</span> <span class="component">Sidebar</span>
+<span class="arrow">  │     │     ├──</span> <span class="component">SidebarNavItem</span> <span class="note">("Dashboard")</span>
+<span class="arrow">  │     │     ├──</span> <span class="component">SidebarNavItem</span> <span class="note">("Agents")</span>
+<span class="arrow">  │     │     └──</span> <span class="component">SidebarNavItem</span> <span class="note">("Issues")</span>
+<span class="arrow">  │     └──</span> <span class="component">main content</span>
+<span class="arrow">  │</span>
+<span class="arrow">  ├──</span> <span class="component">BreadcrumbBar</span> <span class="note">("Agents > Claude")</span>
+<span class="arrow">  ├──</span> <span class="component">AgentProperties</span> <span class="note">(role, adapter, budget)</span>
+<span class="arrow">  ├──</span> <span class="component">AgentActionButtons</span> <span class="note">(pause, resume, fire)</span>
+<span class="arrow">  └──</span> <span class="component">IssuesList</span> <span class="note">(tasks assigned to this agent)</span>
+<span class="arrow">        ├──</span> <span class="component">IssueRow</span>
+<span class="arrow">        │     ├──</span> <span class="component">StatusBadge</span> <span class="note">("in_progress")</span>
+<span class="arrow">        │     └──</span> <span class="component">PriorityIcon</span> <span class="note">(high/medium/low)</span>
+<span class="arrow">        ├──</span> <span class="component">IssueRow</span>
+<span class="arrow">        └──</span> <span class="component">IssueRow</span></div>
+
+    <p><strong style="color:var(--text-primary)">How does the UI get data?</strong> It calls the server's API. The UI never talks to the database directly.</p>
+
+    <div class="code-block">
+<span class="comment">// Simplified: how the Agents page fetches data</span>
+
+<span class="kw">function</span> <span class="fn">Agents</span>() {
+  <span class="kw">const</span> <span class="var">agents</span> = <span class="fn">useQuery</span>(<span class="str">"/api/agents"</span>);  <span class="comment">// fetch from server</span>
+
+  <span class="kw">return</span> (
+    &lt;<span class="fn">div</span>&gt;
+      {<span class="var">agents</span>.<span class="fn">map</span>(<span class="var">agent</span> =&gt; (
+        &lt;<span class="fn">AgentRow</span> <span class="var">key</span>={<span class="var">agent</span>.<span class="var">id</span>} <span class="var">agent</span>={<span class="var">agent</span>} /&gt;
+      ))}
+    &lt;/<span class="fn">div</span>&gt;
+  );
+}
+    </div>
+
+    <button class="next-btn" onclick="goTo(5)">Next: Adapters &rarr;</button>
+  </div>
+
+  <!-- LESSON 6: Adapters -->
+  <div class="lesson" id="lesson5">
+    <h2>Adapters</h2>
+    <p class="subtitle">How Paperclip talks to 11 different AI agents the same way.</p>
+
+    <p>Paperclip supports Claude Code, Codex, Cursor, Gemini, and more. But each one works differently — different APIs, different protocols, different ways to start and stop. The <strong style="color:var(--text-primary)">adapter pattern</strong> solves this.</p>
+
+    <div class="analogy">
+      <strong>Analogy:</strong> Think of a power outlet. Different countries have different plug shapes. An adapter lets you plug any device into any outlet. Paperclip's adapters let any AI agent plug into the same system — the server doesn't care what's on the other end.
+    </div>
+
+    <p>Every adapter implements the same interface — a contract that says "you must support these operations":</p>
+
+    <div class="code-block">
+<span class="comment">// What every adapter must be able to do (simplified):</span>
+
+<span class="kw">interface</span> <span class="type">AgentAdapter</span> {
+  <span class="fn">start</span>(<span class="var">task</span>: <span class="type">Task</span>, <span class="var">context</span>: <span class="type">RunContext</span>): <span class="type">Promise</span>&lt;<span class="type">RunHandle</span>&gt;;
+  <span class="fn">stop</span>(<span class="var">handle</span>: <span class="type">RunHandle</span>): <span class="type">Promise</span>&lt;<span class="type">void</span>&gt;;
+  <span class="fn">isAlive</span>(<span class="var">handle</span>: <span class="type">RunHandle</span>): <span class="type">Promise</span>&lt;<span class="type">boolean</span>&gt;;
+  <span class="fn">getOutput</span>(<span class="var">handle</span>: <span class="type">RunHandle</span>): <span class="type">Promise</span>&lt;<span class="type">RunOutput</span>&gt;;
+}
+    </div>
+
+    <p>Click an adapter to see how it works:</p>
+
+    <div class="btn-row">
+      <button class="btn selected" onclick="showAdapter('claude')" id="ab-claude">Claude Code</button>
+      <button class="btn" onclick="showAdapter('codex')" id="ab-codex">Codex</button>
+      <button class="btn" onclick="showAdapter('cursor')" id="ab-cursor">Cursor</button>
+      <button class="btn" onclick="showAdapter('openclaw')" id="ab-openclaw">OpenClaw</button>
+      <button class="btn" onclick="showAdapter('bash')" id="ab-bash">Bash/CLI</button>
+    </div>
+
+    <div class="detail-box" id="adapter-detail">
+      <div id="adapter-claude">
+        <div class="label">claude-local adapter</div>
+        <p style="color:var(--text-body); margin-bottom:8px"><strong style="color:var(--text-primary)">How it works:</strong> Spawns a Claude Code CLI process on the local machine. Passes the task as a prompt. Reads stdout for output. Monitors the process for completion.</p>
+        <p style="color:var(--text-muted)">Location: <code style="color:var(--accent-blue)">packages/adapters/claude-local/</code></p>
+        <p style="color:var(--text-muted)">This is what you're using right now — Claude Code running as a terminal process.</p>
+      </div>
+      <div id="adapter-codex" style="display:none">
+        <div class="label">codex-local adapter</div>
+        <p style="color:var(--text-body); margin-bottom:8px"><strong style="color:var(--text-primary)">How it works:</strong> Spawns an OpenAI Codex CLI process. Similar to Claude — local process, stdin/stdout communication.</p>
+        <p style="color:var(--text-muted)">Location: <code style="color:var(--accent-blue)">packages/adapters/codex-local/</code></p>
+      </div>
+      <div id="adapter-cursor" style="display:none">
+        <div class="label">cursor-local adapter</div>
+        <p style="color:var(--text-body); margin-bottom:8px"><strong style="color:var(--text-primary)">How it works:</strong> Launches Cursor in headless mode. Can run locally or in the cloud. Communicates via Cursor's API.</p>
+        <p style="color:var(--text-muted)">Location: <code style="color:var(--accent-blue)">packages/adapters/cursor-local/</code> and <code style="color:var(--accent-blue)">cursor-cloud/</code></p>
+      </div>
+      <div id="adapter-openclaw" style="display:none">
+        <div class="label">openclaw-gateway adapter</div>
+        <p style="color:var(--text-body); margin-bottom:8px"><strong style="color:var(--text-primary)">How it works:</strong> Sends HTTP requests to an OpenClaw instance running elsewhere. This is a remote agent — it doesn't run on your machine.</p>
+        <p style="color:var(--text-muted)">Location: <code style="color:var(--accent-blue)">packages/adapters/openclaw-gateway/</code></p>
+        <p style="color:var(--text-muted)">This is the "webhook bot" model — Paperclip sends a message, OpenClaw does the work, sends results back.</p>
+      </div>
+      <div id="adapter-bash" style="display:none">
+        <div class="label">bash/CLI adapter</div>
+        <p style="color:var(--text-body); margin-bottom:8px"><strong style="color:var(--text-primary)">How it works:</strong> Runs any shell command or script. The simplest adapter — just execute a command and capture output.</p>
+        <p style="color:var(--text-muted)">This is how you'd plug in any CLI tool — a Python script, a custom agent, anything that runs in a terminal.</p>
+      </div>
+    </div>
+
+    <p>The beauty: the heartbeat engine doesn't know or care which adapter it's using. It just calls <code style="color:var(--accent-blue)">adapter.start(task)</code> and the right thing happens. Add a new AI agent? Write one adapter file. Everything else just works.</p>
+
+    <button class="next-btn" onclick="goTo(6)">Next: The Heartbeat Engine &rarr;</button>
+  </div>
+
+  <!-- LESSON 7: Heartbeat -->
+  <div class="lesson" id="lesson6">
+    <h2>The Heartbeat Engine</h2>
+    <p class="subtitle">The most complex piece — 11,573 lines that make agents autonomous.</p>
+
+    <p>This is the part that makes Paperclip special. Without it, agents just sit there. The heartbeat engine <strong style="color:var(--text-primary)">wakes agents up on a schedule</strong>, checks if they have work, gives them a task, monitors execution, and handles everything that can go wrong.</p>
+
+    <div class="analogy">
+      <strong>Analogy:</strong> The heartbeat engine is like a factory floor manager. Every 30 seconds, they walk the floor: "Claude, you have a new task. Codex, are you still working? Scout, your budget is used up — stop. Pixel, your task is blocked — skip it." They never stop walking.
+    </div>
+
+    <p>Here's what happens on every heartbeat cycle:</p>
+
+    <div class="flow-step"><div class="flow-num">1</div><div class="flow-content"><h4>Wake Up</h4><p>The scheduler fires every 30 seconds (configurable). It checks the database for agents due for a heartbeat.</p></div></div>
+    <div class="flow-step"><div class="flow-num">2</div><div class="flow-content"><h4>Budget Check</h4><p>Before doing anything, check: has this agent exceeded their monthly budget? If yes, <strong style="color:var(--accent-yellow)">skip them</strong>. No work allowed.</p></div></div>
+    <div class="flow-step"><div class="flow-num">3</div><div class="flow-content"><h4>Task Checkout</h4><p>Find the highest-priority task assigned to this agent. <strong style="color:var(--text-primary)">Atomically</strong> check it out — meaning no other agent can grab it at the same time. This prevents double-work.</p></div></div>
+    <div class="flow-step"><div class="flow-num">4</div><div class="flow-content"><h4>Context Assembly</h4><p>Build the full context: task details, goal ancestry ("why are we doing this"), project info, workspace path, secrets, skills. Everything the agent needs.</p></div></div>
+    <div class="flow-step"><div class="flow-num">5</div><div class="flow-content"><h4>Adapter Invocation</h4><p>Call <code>adapter.start(task, context)</code>. This spawns the agent process (or sends the HTTP request). The engine gets back a run handle.</p></div></div>
+    <div class="flow-step"><div class="flow-num">6</div><div class="flow-content"><h4>Monitoring</h4><p>Track the run: Is it still alive? How long has it been running? How many tokens has it used? Is it stuck?</p></div></div>
+    <div class="flow-step"><div class="flow-num">7</div><div class="flow-content"><h4>Completion</h4><p>When the agent finishes: record costs, save output, update task status, log activity, release the checkout lock, and emit events for the dashboard.</p></div></div>
+    <div class="flow-step"><div class="flow-num">8</div><div class="flow-content"><h4>Error Recovery</h4><p>If a run crashes, times out, or orphans (server restart mid-run), detect it and clean up. Reschedule if appropriate.</p></div></div>
+
+    <p style="margin-top:24px">The reason this file is 11,573 lines: every one of those steps has edge cases. What if two heartbeats fire simultaneously? What if the agent crashes mid-task? What if the budget runs out mid-run? What if the server restarts while an agent is working? Each edge case is handled.</p>
+
+    <button class="next-btn" onclick="goTo(7)">Next: How It All Flows &rarr;</button>
+  </div>
+
+  <!-- LESSON 8: Full Flow -->
+  <div class="lesson" id="lesson7">
+    <h2>How It All Flows Together</h2>
+    <p class="subtitle">Following one task from creation to completion.</p>
+
+    <p>Let's trace a real scenario: <strong style="color:var(--text-primary)">you create a task and an agent completes it</strong>. Watch how every piece of the codebase participates:</p>
+
+    <div class="arch-box" style="line-height: 2.2;">
+<span class="highlight">You click "New Task" in the dashboard</span>
+<span class="arrow">  │</span>
+<span class="arrow">  ▼</span>
+<span class="component">UI</span>: <span class="note">NewIssueDialog.tsx renders a form. You type "Build landing page" and assign it to Claude.</span>
+<span class="arrow">  │</span>
+<span class="arrow">  │</span>  <span class="note">UI calls POST /api/issues with { title, assignee, ... }</span>
+<span class="arrow">  ▼</span>
+<span class="component">MIDDLEWARE</span>: <span class="note">auth.ts checks your session. You're a board member. Allowed.</span>
+<span class="arrow">  │</span>
+<span class="arrow">  ▼</span>
+<span class="component">ROUTE</span>: <span class="note">routes/issues.ts receives the request, validates the body.</span>
+<span class="arrow">  │</span>
+<span class="arrow">  ▼</span>
+<span class="component">SERVICE</span>: <span class="note">services/issues.ts creates the task in the database. Emits a "task assigned" event.</span>
+<span class="arrow">  │</span>
+<span class="arrow">  ▼</span>
+<span class="data">DATABASE</span>: <span class="note">INSERT INTO issues (title, assignee_id, status, ...) VALUES (...)</span>
+<span class="arrow">  │</span>
+<span class="arrow">  ▼</span>
+<span class="component">REALTIME</span>: <span class="note">live-events-ws.ts pushes the new task to all connected dashboards via WebSocket.</span>
+<span class="arrow">  │</span>
+<span class="arrow">  │</span>  <span class="note">... 30 seconds later ...</span>
+<span class="arrow">  ▼</span>
+<span class="highlight">HEARTBEAT</span>: <span class="note">heartbeat.ts wakes Claude's agent.</span>
+<span class="arrow">  │</span>
+<span class="arrow">  ├──</span> <span class="note">Checks budget: $127 of $500 used. OK.</span>
+<span class="arrow">  ├──</span> <span class="note">Finds "Build landing page" as highest priority. Checks it out (atomic lock).</span>
+<span class="arrow">  ├──</span> <span class="note">Builds context: task + goal + project + skills + secrets.</span>
+<span class="arrow">  ▼</span>
+<span class="component">ADAPTER</span>: <span class="note">claude-local adapter spawns a Claude Code process with the task prompt.</span>
+<span class="arrow">  │</span>
+<span class="arrow">  │</span>  <span class="note">... Claude works for 5 minutes ...</span>
+<span class="arrow">  ▼</span>
+<span class="highlight">COMPLETION</span>:
+<span class="arrow">  ├──</span> <span class="data">costs.ts</span>: <span class="note">records $3.42 in token costs</span>
+<span class="arrow">  ├──</span> <span class="data">issues.ts</span>: <span class="note">updates status to "done", releases checkout lock</span>
+<span class="arrow">  ├──</span> <span class="data">activity.ts</span>: <span class="note">logs "Claude completed 'Build landing page'"</span>
+<span class="arrow">  └──</span> <span class="component">REALTIME</span>: <span class="note">pushes update to your dashboard — you see it flip to "done"</span></div>
+
+    <p>That's the full round trip. Every folder in the codebase played a role:</p>
+
+    <div class="db-table">
+      <div class="table-header">Codebase Map &mdash; one task, every piece</div>
+      <table>
+        <tr><th>Piece</th><th>Folder</th><th>Role in this flow</th></tr>
+        <tr><td style="color:var(--accent-green)">UI</td><td>ui/src/</td><td>Rendered the form, sent the request, updated the screen</td></tr>
+        <tr><td style="color:var(--accent-yellow)">Middleware</td><td>server/src/middleware/</td><td>Verified you're allowed to create tasks</td></tr>
+        <tr><td style="color:var(--accent-blue)">Route</td><td>server/src/routes/</td><td>Received and validated the API request</td></tr>
+        <tr><td style="color:var(--accent-purple)">Service</td><td>server/src/services/</td><td>Created the task, ran the heartbeat, tracked costs</td></tr>
+        <tr><td style="color:var(--accent-indigo)">Database</td><td>packages/db/</td><td>Stored the task, the run log, the cost event</td></tr>
+        <tr><td style="color:var(--accent-pink)">Adapter</td><td>packages/adapters/</td><td>Translated "start this task" into a Claude Code process</td></tr>
+        <tr><td style="color:var(--accent-orange)">Realtime</td><td>server/src/realtime/</td><td>Pushed live updates to your browser</td></tr>
+      </table>
+    </div>
+
+    <div class="analogy">
+      <strong>What you learned:</strong><br><br>
+      <strong style="color:var(--text-primary)">Monorepo</strong> = all code in one repo, organized by folder<br>
+      <strong style="color:var(--accent-yellow)">Server</strong> = middleware &rarr; routes &rarr; services &rarr; database<br>
+      <strong style="color:var(--accent-green)">UI</strong> = pages built from reusable components, fetches data via API<br>
+      <strong style="color:var(--accent-indigo)">ORM</strong> = write database queries in TypeScript instead of SQL<br>
+      <strong style="color:var(--accent-pink)">Adapters</strong> = one interface, many implementations (Claude, Codex, Cursor...)<br>
+      <strong style="color:var(--accent-purple)">Heartbeat</strong> = the engine that makes agents autonomous<br>
+      <strong style="color:var(--accent-orange)">Realtime</strong> = WebSockets push updates to the dashboard instantly
+    </div>
+
+    <div class="next-course-banner">
+      <h3>Up Next</h3>
+      <p>Continue to Course 03: APIs & HTTP — Learn how the browser talks to the server.</p>
+      <a href="/lessons/apis.html">Start APIs & HTTP →</a>
+    </div>
+  </div>
+
+</div>
+
+</div>
+
+<script>
+let current = 0;
+const total = 8;
+
+function goTo(n) {
+  document.getElementById('lesson' + current).classList.remove('active');
+  document.getElementById('nav' + current).classList.remove('active');
+  current = n;
+  document.getElementById('lesson' + current).classList.add('active');
+  document.getElementById('nav' + current).classList.add('active');
+  document.getElementById('progress').textContent = (n + 1) + ' / ' + total;
+  window.scrollTo(0, 0);
+}
+
+// Lesson 2: Folder explorer
+function showFolder(name) {
+  const folders = ['server', 'ui', 'packages', 'cli', 'other'];
+  folders.forEach(f => {
+    document.getElementById('folder-content-' + f).style.display = f === name ? 'block' : 'none';
+    document.getElementById('fb-' + f).classList.toggle('selected', f === name);
+  });
+}
+
+// Lesson 3: Server layers
+function showLayer(name) {
+  const layers = ['middleware', 'routes', 'services'];
+  layers.forEach(l => {
+    document.getElementById('layer-' + l).style.display = l === name ? 'block' : 'none';
+    document.getElementById('lb-' + l).classList.toggle('selected', l === name);
+  });
+}
+
+// Lesson 6: Adapters
+function showAdapter(name) {
+  const adapters = ['claude', 'codex', 'cursor', 'openclaw', 'bash'];
+  adapters.forEach(a => {
+    document.getElementById('adapter-' + a).style.display = a === name ? 'block' : 'none';
+    document.getElementById('ab-' + a).classList.toggle('selected', a === name);
+  });
+}
+</script>
+<script src="/js/shared.js"></script>
+
+</body>
+</html>

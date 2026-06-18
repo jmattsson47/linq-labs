@@ -1,0 +1,2062 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How React Works — The Fundamentals</title>
+<link rel="stylesheet" href="/css/shared.css">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+/* -- Top Nav -- */
+.top-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-primary);
+  padding: 10px 16px;
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+@media (min-width: 1024px) {
+  .top-nav { left: 280px; }
+}
+.top-nav::-webkit-scrollbar { height: 4px; }
+.top-nav::-webkit-scrollbar-thumb { background: var(--border-nav-btn); border-radius: 2px; }
+
+.nav-btn {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-nav-btn);
+  color: var(--text-nav);
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  white-space: nowrap;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.nav-btn:hover { border-color: var(--text-faint); color: var(--text-body); }
+.nav-btn.active {
+  background: var(--accent-blue-bg);
+  border-color: var(--accent-blue-bg);
+  color: var(--text-primary);
+}
+
+/* -- Container -- */
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 80px 20px 60px;
+}
+
+/* -- Lessons -- */
+.lesson { display: none; }
+.lesson.active { display: block; }
+
+.lesson h1 {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+}
+.lesson .subtitle {
+  font-size: 15px;
+  color: var(--text-muted);
+  margin-bottom: 32px;
+}
+
+h2 {
+  font-size: 22px;
+  color: var(--text-primary);
+  margin: 36px 0 14px;
+}
+h3 {
+  font-size: 18px;
+  color: var(--text-secondary);
+  margin: 24px 0 10px;
+}
+
+p { margin-bottom: 16px; color: var(--text-body); }
+
+/* -- Cards -- */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-secondary);
+  border-radius: 10px;
+  padding: 24px;
+  margin: 20px 0;
+}
+.card-dark {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  padding: 24px;
+  margin: 20px 0;
+}
+
+/* -- Analogy boxes -- */
+.analogy {
+  background: var(--bg-analogy);
+  border: 1px solid var(--border-analogy);
+  border-radius: 10px;
+  padding: 20px 24px;
+  margin: 24px 0;
+}
+.analogy strong { color: var(--accent-indigo); }
+.analogy p { color: var(--text-dim); margin-bottom: 0; }
+.analogy .analogy-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--accent-indigo);
+  margin-bottom: 8px;
+}
+
+/* -- Code blocks -- */
+pre {
+  background: var(--bg-code);
+  border: 1px solid var(--border-secondary);
+  border-radius: 8px;
+  padding: 16px 20px;
+  overflow-x: auto;
+  margin: 16px 0;
+  font-family: 'SF Mono', Monaco, monospace;
+  font-size: 14px;
+  line-height: 1.6;
+}
+code {
+  font-family: 'SF Mono', Monaco, monospace;
+  font-size: 13px;
+}
+.kw { color: var(--accent-purple); }
+.fn { color: var(--accent-blue); }
+.str { color: var(--accent-green); }
+.typ { color: var(--accent-yellow); }
+.cmt { color: var(--text-faint); font-style: italic; }
+.tag { color: var(--accent-blue); }
+.attr { color: var(--accent-yellow); }
+.val { color: var(--accent-green); }
+.punct { color: var(--text-muted); }
+.comp { color: var(--accent-yellow); }
+
+/* inline code */
+p code, li code, td code {
+  background: var(--bg-analogy);
+  padding: 2px 7px;
+  border-radius: 4px;
+  color: var(--accent-indigo);
+  font-size: 13px;
+}
+
+/* -- Interactive buttons row -- */
+.btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0;
+}
+.ibtn {
+  background: var(--bg-btn);
+  border: 1px solid var(--border-btn);
+  color: var(--text-nav);
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.ibtn:hover { border-color: var(--accent-blue); color: var(--text-secondary); }
+.ibtn.selected {
+  background: var(--bg-btn-selected);
+  border-color: var(--border-btn-selected);
+  color: var(--text-primary);
+}
+
+/* -- Next button -- */
+.next-btn {
+  display: inline-block;
+  background: var(--accent-blue-bg);
+  color: var(--text-primary);
+  border: none;
+  padding: 14px 36px;
+  border-radius: 10px;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 40px;
+  transition: background 0.2s;
+  font-family: inherit;
+  font-weight: 600;
+}
+.next-btn:hover { background: #1d4ed8; }
+
+/* -- Split comparison -- */
+.split-view {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 20px 0;
+}
+.split-panel {
+  background: var(--bg-code);
+  border: 1px solid var(--border-secondary);
+  border-radius: 8px;
+  padding: 16px;
+  overflow-x: auto;
+}
+.split-panel h4 {
+  font-size: 13px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+}
+@media (max-width: 640px) {
+  .split-view { grid-template-columns: 1fr; }
+}
+
+/* -- Component tree -- */
+.tree-container {
+  background: var(--bg-card);
+  border: 1px solid var(--border-secondary);
+  border-radius: 10px;
+  padding: 24px;
+  margin: 20px 0;
+}
+.tree-node {
+  margin-left: 24px;
+  border-left: 2px solid var(--border-btn);
+  padding-left: 16px;
+  margin-top: 8px;
+}
+.tree-node:first-child { margin-top: 0; }
+.tree-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: var(--bg-btn);
+  border: 1px solid var(--border-btn);
+  border-radius: 8px;
+  font-family: 'SF Mono', Monaco, monospace;
+  font-size: 13px;
+  color: var(--accent-yellow);
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 4px;
+}
+.tree-label:hover { border-color: var(--accent-blue); }
+.tree-label .toggle-arrow {
+  font-size: 10px;
+  color: var(--text-faint);
+  transition: transform 0.2s;
+}
+.tree-label.expanded .toggle-arrow { transform: rotate(90deg); }
+.tree-children {
+  display: none;
+  margin-top: 4px;
+}
+.tree-children.visible { display: block; }
+.tree-root { margin-left: 0; border-left: none; padding-left: 0; }
+
+/* -- JSX playground -- */
+.jsx-playground {
+  background: var(--bg-card);
+  border: 1px solid var(--border-secondary);
+  border-radius: 10px;
+  padding: 24px;
+  margin: 20px 0;
+}
+.jsx-playground textarea {
+  width: 100%;
+  min-height: 120px;
+  background: var(--bg-code);
+  border: 1px solid var(--border-secondary);
+  border-radius: 8px;
+  padding: 16px;
+  color: var(--text-primary);
+  font-family: 'SF Mono', Monaco, monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  resize: vertical;
+  outline: none;
+}
+.jsx-playground textarea:focus { border-color: var(--accent-blue); }
+.jsx-output {
+  margin-top: 16px;
+  padding: 16px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+  min-height: 60px;
+}
+.jsx-output-label {
+  font-size: 12px;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+/* -- Props playground -- */
+.props-playground {
+  background: var(--bg-card);
+  border: 1px solid var(--border-secondary);
+  border-radius: 10px;
+  padding: 24px;
+  margin: 20px 0;
+}
+.prop-input-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+.prop-input-row label {
+  font-size: 14px;
+  color: var(--text-muted);
+  min-width: 60px;
+  font-family: 'SF Mono', Monaco, monospace;
+}
+.prop-input-row input, .prop-input-row select {
+  background: var(--bg-code);
+  border: 1px solid var(--border-secondary);
+  border-radius: 6px;
+  padding: 8px 12px;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-family: 'SF Mono', Monaco, monospace;
+  outline: none;
+  flex: 1;
+  min-width: 150px;
+}
+.prop-input-row input:focus, .prop-input-row select:focus { border-color: var(--accent-blue); }
+.prop-preview {
+  margin-top: 16px;
+  padding: 20px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+}
+
+/* -- State demo -- */
+.state-demo {
+  background: var(--bg-card);
+  border: 1px solid var(--border-secondary);
+  border-radius: 10px;
+  padding: 24px;
+  margin: 20px 0;
+}
+.state-demo-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+}
+.state-counter {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.state-counter .count-display {
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--accent-blue);
+  min-width: 80px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.state-btn {
+  background: var(--bg-btn);
+  border: 1px solid var(--border-btn);
+  color: var(--text-primary);
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.state-btn:hover { border-color: var(--accent-blue); background: var(--bg-btn-selected); }
+.state-log {
+  background: var(--bg-code);
+  border: 1px solid var(--border-secondary);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-top: 12px;
+  font-family: 'SF Mono', Monaco, monospace;
+  font-size: 12px;
+  color: var(--text-muted);
+  max-height: 120px;
+  overflow-y: auto;
+  line-height: 1.8;
+}
+.state-log .render-entry { color: var(--accent-green); }
+
+/* -- Toggle demo -- */
+.toggle-box {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 24px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  margin: 8px 0;
+}
+.toggle-indicator {
+  width: 48px;
+  height: 28px;
+  border-radius: 14px;
+  background: var(--border-btn);
+  position: relative;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+.toggle-indicator.on { background: var(--accent-green); }
+.toggle-indicator .toggle-knob {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--text-primary);
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  transition: left 0.3s;
+}
+.toggle-indicator.on .toggle-knob { left: 23px; }
+
+/* -- Form input demo -- */
+.form-demo {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  margin: 12px 0;
+}
+.form-demo input {
+  background: var(--bg-code);
+  border: 1px solid var(--border-secondary);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: var(--text-primary);
+  font-size: 16px;
+  outline: none;
+  width: 250px;
+  font-family: inherit;
+}
+.form-demo input:focus { border-color: var(--accent-blue); }
+.form-preview {
+  padding: 10px 16px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+  font-size: 16px;
+  color: var(--text-primary);
+  min-width: 200px;
+}
+
+/* -- Dependency array demo -- */
+.dep-demo {
+  background: var(--bg-card);
+  border: 1px solid var(--border-secondary);
+  border-radius: 10px;
+  padding: 24px;
+  margin: 20px 0;
+}
+.dep-log {
+  background: var(--bg-code);
+  border: 1px solid var(--border-secondary);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-top: 12px;
+  font-family: 'SF Mono', Monaco, monospace;
+  font-size: 12px;
+  max-height: 160px;
+  overflow-y: auto;
+  line-height: 1.8;
+}
+.dep-log .effect-run { color: var(--accent-purple); }
+.dep-log .fetch-run { color: var(--accent-blue); }
+.dep-log .cleanup-run { color: var(--accent-orange); }
+
+/* -- Rerender tree -- */
+.rerender-tree {
+  background: var(--bg-card);
+  border: 1px solid var(--border-secondary);
+  border-radius: 10px;
+  padding: 24px;
+  margin: 20px 0;
+}
+.rt-node {
+  display: inline-block;
+  padding: 8px 16px;
+  background: var(--bg-btn);
+  border: 2px solid var(--border-btn);
+  border-radius: 8px;
+  font-family: 'SF Mono', Monaco, monospace;
+  font-size: 13px;
+  color: var(--text-nav);
+  margin: 4px;
+  transition: all 0.4s;
+}
+.rt-node.rerendered {
+  border-color: var(--accent-green);
+  color: var(--accent-green);
+  background: rgba(52, 211, 153, 0.08);
+  box-shadow: 0 0 12px rgba(52, 211, 153, 0.2);
+}
+.rt-node.state-owner {
+  border-color: var(--accent-blue);
+  color: var(--accent-blue);
+}
+.rt-level {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+.rt-connector {
+  text-align: center;
+  color: var(--border-btn);
+  font-size: 18px;
+  margin: 4px 0;
+}
+
+/* -- File structure list -- */
+.file-list {
+  list-style: none;
+  padding-left: 0;
+  margin: 16px 0;
+}
+.file-list li {
+  padding: 8px 16px;
+  font-family: 'SF Mono', Monaco, monospace;
+  font-size: 13px;
+  color: var(--text-nav);
+  border-left: 2px solid var(--border-btn);
+  margin-left: 8px;
+  margin-bottom: 2px;
+}
+.file-list li .file-desc {
+  color: var(--text-faint);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  margin-left: 12px;
+  font-size: 12px;
+}
+
+/* -- Fade-in -- */
+.fade-in { animation: fadeIn 0.4s ease; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes flashGreen {
+  0% { background: rgba(52, 211, 153, 0.2); }
+  100% { background: transparent; }
+}
+
+/* -- Lists -- */
+ul, ol { padding-left: 24px; margin-bottom: 16px; }
+li { margin-bottom: 8px; color: var(--text-body); }
+
+/* -- Scrollbar -- */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background: var(--border-nav-btn); border-radius: 3px; }
+
+/* -- Breadcrumb -- */
+.breadcrumb { margin-top: 64px; padding-top: 8px; }
+
+/* -- Responsive -- */
+@media (max-width: 640px) {
+  .top-nav { padding: 8px 10px; gap: 4px; }
+  .nav-btn { padding: 5px 10px; font-size: 12px; }
+  .container { padding: 70px 14px 40px; }
+  .lesson h1 { font-size: 24px; }
+  .split-view { grid-template-columns: 1fr; }
+  .state-counter { flex-direction: column; align-items: flex-start; }
+  .tree-node { margin-left: 16px; padding-left: 10px; }
+}
+
+/* -- Agent card preview -- */
+.agent-card-preview {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.agent-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.agent-info h4 {
+  color: var(--text-primary);
+  font-size: 16px;
+  margin-bottom: 2px;
+}
+.agent-info p {
+  color: var(--text-muted);
+  font-size: 13px;
+  margin: 0;
+}
+.agent-info .agent-status {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-top: 6px;
+}
+
+/* -- Virtual DOM comparison -- */
+.vdom-compare {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 12px;
+  align-items: center;
+  margin: 20px 0;
+}
+.vdom-panel {
+  background: var(--bg-code);
+  border: 1px solid var(--border-secondary);
+  border-radius: 8px;
+  padding: 16px;
+  font-family: 'SF Mono', Monaco, monospace;
+  font-size: 13px;
+  line-height: 1.8;
+}
+.vdom-arrow {
+  font-size: 24px;
+  color: var(--accent-blue);
+  text-align: center;
+}
+.vdom-diff {
+  background: rgba(52, 211, 153, 0.08);
+  border-left: 3px solid var(--accent-green);
+  padding: 2px 8px;
+  margin: 2px -8px;
+}
+@media (max-width: 640px) {
+  .vdom-compare { grid-template-columns: 1fr; }
+  .vdom-arrow { transform: rotate(90deg); }
+}
+
+/* -- Key demo -- */
+.key-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 12px 0;
+}
+.key-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+  transition: all 0.4s;
+}
+.key-item .key-badge {
+  font-family: 'SF Mono', Monaco, monospace;
+  font-size: 11px;
+  color: var(--accent-purple);
+  background: rgba(192, 132, 252, 0.1);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+.key-item .key-name {
+  color: var(--text-primary);
+  font-size: 14px;
+}
+.key-item.shuffled {
+  animation: shuffleIn 0.4s ease;
+}
+@keyframes shuffleIn {
+  from { opacity: 0.5; transform: translateX(-10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* -- Paperclip route table -- */
+.route-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+}
+.route-table th {
+  text-align: left;
+  padding: 10px 16px;
+  background: var(--bg-table-header);
+  color: var(--text-table-header);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.route-table td {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border-table-row);
+  font-size: 14px;
+  color: var(--text-body);
+}
+.route-table tr:hover td { background: var(--bg-table-hover); }
+</style>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <a href="/index.html" class="sidebar-logo">The Fundamentals</a>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="sidebar-section-title">Courses</div>
+    <a href="/lessons/databases.html" class="sidebar-link" data-course="databases">
+      <span class="sidebar-num">01</span> How Databases Work
+    </a>
+    <a href="/lessons/codebase.html" class="sidebar-link" data-course="codebase">
+      <span class="sidebar-num">02</span> The Codebase
+    </a>
+    <a href="/lessons/apis.html" class="sidebar-link" data-course="apis">
+      <span class="sidebar-num">03</span> APIs &amp; HTTP
+    </a>
+    <a href="/lessons/build.html" class="sidebar-link" data-course="build">
+      <span class="sidebar-num">04</span> Build a Mini App
+    </a>
+    <a href="/lessons/deployment.html" class="sidebar-link" data-course="deployment">
+      <span class="sidebar-num">05</span> How Deployment Works
+    </a>
+    <a href="/lessons/git.html" class="sidebar-link" data-course="git">
+      <span class="sidebar-num">06</span> How Git Works
+    </a>
+    <a href="/lessons/authentication.html" class="sidebar-link" data-course="authentication">
+      <span class="sidebar-num">07</span> How Auth Works
+    </a>
+    <a href="/lessons/typescript.html" class="sidebar-link" data-course="typescript">
+      <span class="sidebar-num">08</span> How TypeScript Works
+    </a>
+    <a href="/lessons/react.html" class="sidebar-link" data-course="react" aria-current="page">
+      <span class="sidebar-num">09</span> How React Works
+    </a>
+    <a href="/lessons/testing.html" class="sidebar-link" data-course="testing">
+      <span class="sidebar-num">10</span> How Testing Works
+    </a>
+    <a href="/lessons/ai-agents.html" class="sidebar-link" data-course="ai-agents">
+      <span class="sidebar-num">11</span> How AI Agents Work
+    </a>
+    <a href="/lessons/shipping.html" class="sidebar-link" data-course="shipping">
+      <span class="sidebar-num">12</span> Shipping
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <button class="theme-toggle" id="theme-toggle">
+      <span class="theme-icon" id="theme-icon">&#9728;&#65039;</span>
+      <span class="theme-label" id="theme-label">Light Mode</span>
+    </button>
+  </div>
+</aside>
+<button class="sidebar-toggle" id="sidebar-toggle">&#9776;</button>
+
+<div class="content-wrapper">
+
+<div class="breadcrumb"><a href="/index.html">Home</a><span class="sep">&rsaquo;</span><span>How React Works</span></div>
+
+<!-- Top Nav -->
+<nav class="top-nav" id="topNav">
+  <button class="nav-btn active" onclick="goToLesson(0)">1. Why React Exists</button>
+  <button class="nav-btn" onclick="goToLesson(1)">2. Components</button>
+  <button class="nav-btn" onclick="goToLesson(2)">3. JSX</button>
+  <button class="nav-btn" onclick="goToLesson(3)">4. Props</button>
+  <button class="nav-btn" onclick="goToLesson(4)">5. State</button>
+  <button class="nav-btn" onclick="goToLesson(5)">6. Effects</button>
+  <button class="nav-btn" onclick="goToLesson(6)">7. Lifecycle</button>
+  <button class="nav-btn" onclick="goToLesson(7)">8. In Paperclip</button>
+</nav>
+
+<div class="container">
+
+<!-- ============================================================
+     LESSON 1: WHY REACT EXISTS
+     ============================================================ -->
+<div class="lesson active" id="lesson0">
+  <h1>Why React Exists</h1>
+  <p class="subtitle">Lesson 1 of 8 &mdash; The problem React solves</p>
+
+  <h2>The Problem: Updating the DOM by Hand</h2>
+  <p>Before React, building interactive web pages meant manually finding elements in the HTML and updating them one by one. Every time your data changed, you had to figure out <em>which</em> parts of the page needed updating and write the code to do it.</p>
+
+  <p>This gets messy fast. Here's a simple example &mdash; updating a user's name on the page:</p>
+
+  <div class="split-view">
+    <div class="split-panel">
+      <h4>Imperative (vanilla JS)</h4>
+<pre class="code-block" style="margin:0;border:none;background:transparent;padding:0;"><code><span class="cmt">// Find the element</span>
+<span class="kw">const</span> el = document.<span class="fn">getElementById</span>(<span class="str">'name'</span>);
+
+<span class="cmt">// Manually update it</span>
+el.<span class="fn">innerHTML</span> = <span class="str">'Claude'</span>;
+
+<span class="cmt">// Data changes? Find it again...</span>
+el.<span class="fn">innerHTML</span> = <span class="str">'New name'</span>;
+
+<span class="cmt">// More data changes? Again...</span>
+el.<span class="fn">innerHTML</span> = <span class="str">'Another name'</span>;
+
+<span class="cmt">// Now imagine 50 elements...</span></code></pre>
+    </div>
+    <div class="split-panel">
+      <h4>Declarative (React)</h4>
+<pre class="code-block" style="margin:0;border:none;background:transparent;padding:0;"><code><span class="kw">function</span> <span class="comp">Profile</span>({ <span class="attr">name</span> }) {
+  <span class="cmt">// Just describe WHAT it looks like</span>
+  <span class="kw">return</span> <span class="tag">&lt;h1&gt;</span>{name}<span class="tag">&lt;/h1&gt;</span>;
+}
+
+<span class="cmt">// When name changes,</span>
+<span class="cmt">// React updates the page</span>
+<span class="cmt">// automatically.</span>
+
+<span class="cmt">// You never touch the DOM.</span></code></pre>
+    </div>
+  </div>
+
+  <h2>Try It: Imperative vs Declarative</h2>
+  <p>Click the buttons below to change the agent's name. Watch how the two approaches differ:</p>
+
+  <div class="card">
+    <div class="btn-row">
+      <button class="ibtn selected" onclick="switchApproach('imperative', this)">Imperative (vanilla JS)</button>
+      <button class="ibtn" onclick="switchApproach('declarative', this)">Declarative (React)</button>
+    </div>
+
+    <div id="approachDemo">
+      <div id="imperative-demo">
+        <p style="font-size:14px; color:var(--text-muted); margin-bottom:12px;">You have to find and update each element manually:</p>
+        <div style="padding:16px; background:var(--bg-secondary); border:1px solid var(--border-primary); border-radius:8px; margin-bottom:12px;">
+          <p style="margin:0; font-size:18px; color:var(--text-primary);" id="impName">Agent: Claude</p>
+          <p style="margin:0; font-size:14px; color:var(--text-muted);" id="impRole">Role: CTO</p>
+        </div>
+        <div class="btn-row">
+          <button class="ibtn" onclick="imperativeUpdate('Sasha', 'Designer')">Set to Sasha / Designer</button>
+          <button class="ibtn" onclick="imperativeUpdate('Max', 'Engineer')">Set to Max / Engineer</button>
+          <button class="ibtn" onclick="imperativeUpdate('Claude', 'CTO')">Reset</button>
+        </div>
+        <div class="state-log" id="impLog">
+          <div style="color:var(--text-faint);">// Click a button to see the imperative steps...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="analogy">
+    <div class="analogy-label">Analogy</div>
+    <p><strong>Imperative is like telling a painter exactly which strokes to make</strong> &mdash; "Put blue here, then red there, then move that line 2 inches left." If anything changes, you have to give all new instructions. <strong>Declarative is like describing what you want the painting to look like</strong> &mdash; "I want a sunset over the ocean" &mdash; and the painter figures out the strokes. React is the painter.</p>
+  </div>
+
+  <h2>React's Big Idea</h2>
+  <p>React introduced a powerful concept: <strong>describe WHAT your UI should look like for any given data, and React figures out HOW to update the page.</strong></p>
+
+  <div class="card">
+    <ul>
+      <li><strong style="color:var(--accent-blue);">You</strong> define the UI as a function of your data</li>
+      <li><strong style="color:var(--accent-green);">React</strong> compares what's on screen to what should be on screen</li>
+      <li><strong style="color:var(--accent-purple);">React</strong> makes the minimum changes needed to update the DOM</li>
+    </ul>
+    <p style="margin-top:12px; margin-bottom:0; color:var(--text-muted); font-size:14px;">This is why React is called a "declarative" UI library. You declare the result. React handles the process.</p>
+  </div>
+
+  <h2>Quick Facts</h2>
+  <div class="card">
+    <ul>
+      <li>React was created by <strong>Facebook (Meta)</strong> in 2013</li>
+      <li>It's the most popular UI library in the world</li>
+      <li>React only handles the <strong>view layer</strong> &mdash; what the user sees and interacts with</li>
+      <li>It works by building a "virtual" copy of the page and comparing it to the real page (more on this in Lesson 7)</li>
+    </ul>
+  </div>
+
+  <button class="next-btn" onclick="goToLesson(1)">Next: Components &rarr;</button>
+</div>
+
+<!-- ============================================================
+     LESSON 2: COMPONENTS
+     ============================================================ -->
+<div class="lesson" id="lesson1">
+  <h1>Components</h1>
+  <p class="subtitle">Lesson 2 of 8 &mdash; The building blocks of React</p>
+
+  <h2>Everything is a Component</h2>
+  <p>In React, everything you see on a page is built from <strong>components</strong>. A component is just a function that returns UI. That's it.</p>
+
+<pre class="code-block"><code><span class="kw">function</span> <span class="comp">Welcome</span>() {
+  <span class="kw">return</span> <span class="tag">&lt;h1&gt;</span>Hello, world!<span class="tag">&lt;/h1&gt;</span>;
+}</code></pre>
+
+  <p>This function returns a piece of HTML (well, JSX &mdash; we'll cover that in the next lesson). React calls this function and puts the result on the page.</p>
+
+  <h2>Components Compose</h2>
+  <p>The real power of components is that they <strong>nest inside each other</strong>. A page is a component. It contains other components. Those contain other components. It's components all the way down.</p>
+
+<pre class="code-block"><code><span class="kw">function</span> <span class="comp">Header</span>() {
+  <span class="kw">return</span> <span class="tag">&lt;header&gt;</span><span class="tag">&lt;h1&gt;</span>Paperclip<span class="tag">&lt;/h1&gt;</span><span class="tag">&lt;/header&gt;</span>;
+}
+
+<span class="kw">function</span> <span class="comp">AgentCard</span>({ <span class="attr">name</span> }) {
+  <span class="kw">return</span> <span class="tag">&lt;div&gt;</span>Agent: {name}<span class="tag">&lt;/div&gt;</span>;
+}
+
+<span class="kw">function</span> <span class="comp">AgentList</span>() {
+  <span class="kw">return</span> (
+    <span class="tag">&lt;section&gt;</span>
+      <span class="tag">&lt;<span class="comp">AgentCard</span></span> <span class="attr">name</span>=<span class="str">"Claude"</span> <span class="tag">/&gt;</span>
+      <span class="tag">&lt;<span class="comp">AgentCard</span></span> <span class="attr">name</span>=<span class="str">"Sasha"</span> <span class="tag">/&gt;</span>
+    <span class="tag">&lt;/section&gt;</span>
+  );
+}
+
+<span class="kw">function</span> <span class="comp">App</span>() {
+  <span class="kw">return</span> (
+    <span class="tag">&lt;div&gt;</span>
+      <span class="tag">&lt;<span class="comp">Header</span> /&gt;</span>
+      <span class="tag">&lt;<span class="comp">AgentList</span> /&gt;</span>
+    <span class="tag">&lt;/div&gt;</span>
+  );
+}</code></pre>
+
+  <h2>Interactive: Explore a Component Tree</h2>
+  <p>This is how Paperclip's AgentDetail page might be composed. Click any component to expand or collapse its children. (Remember from <a href="/lessons/codebase.html">Course 2 &mdash; The Codebase</a>, Paperclip's UI lives in the <code>client/</code> folder.)</p>
+
+  <div class="tree-container" id="componentTree">
+    <div class="tree-root">
+      <span class="tree-label expanded" onclick="toggleTree(this)"><span class="toggle-arrow">&#9654;</span> &lt;App /&gt;</span>
+      <div class="tree-children visible">
+        <div class="tree-node">
+          <span class="tree-label expanded" onclick="toggleTree(this)"><span class="toggle-arrow">&#9654;</span> &lt;Layout /&gt;</span>
+          <div class="tree-children visible">
+            <div class="tree-node">
+              <span class="tree-label" onclick="toggleTree(this)"><span class="toggle-arrow">&#9654;</span> &lt;Sidebar /&gt;</span>
+              <div class="tree-children">
+                <div class="tree-node"><span class="tree-label" onclick="toggleTree(this)"><span class="toggle-arrow">&#9654;</span> &lt;NavLink /&gt;</span><div class="tree-children"><div class="tree-node"><span class="tree-label">&lt;Icon /&gt;</span></div></div></div>
+                <div class="tree-node"><span class="tree-label" onclick="toggleTree(this)"><span class="toggle-arrow">&#9654;</span> &lt;NavLink /&gt;</span><div class="tree-children"><div class="tree-node"><span class="tree-label">&lt;Icon /&gt;</span></div></div></div>
+                <div class="tree-node"><span class="tree-label" onclick="toggleTree(this)"><span class="toggle-arrow">&#9654;</span> &lt;NavLink /&gt;</span><div class="tree-children"><div class="tree-node"><span class="tree-label">&lt;Icon /&gt;</span></div></div></div>
+              </div>
+            </div>
+            <div class="tree-node">
+              <span class="tree-label expanded" onclick="toggleTree(this)"><span class="toggle-arrow">&#9654;</span> &lt;AgentDetail /&gt;</span>
+              <div class="tree-children visible">
+                <div class="tree-node"><span class="tree-label">&lt;AgentAvatar /&gt;</span></div>
+                <div class="tree-node">
+                  <span class="tree-label" onclick="toggleTree(this)"><span class="toggle-arrow">&#9654;</span> &lt;AgentInfo /&gt;</span>
+                  <div class="tree-children">
+                    <div class="tree-node"><span class="tree-label">&lt;RoleBadge /&gt;</span></div>
+                    <div class="tree-node"><span class="tree-label">&lt;StatusDot /&gt;</span></div>
+                  </div>
+                </div>
+                <div class="tree-node">
+                  <span class="tree-label" onclick="toggleTree(this)"><span class="toggle-arrow">&#9654;</span> &lt;TaskList /&gt;</span>
+                  <div class="tree-children">
+                    <div class="tree-node"><span class="tree-label">&lt;TaskItem /&gt;</span></div>
+                    <div class="tree-node"><span class="tree-label">&lt;TaskItem /&gt;</span></div>
+                    <div class="tree-node"><span class="tree-label">&lt;TaskItem /&gt;</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="analogy">
+    <div class="analogy-label">Analogy</div>
+    <p><strong>Components are like LEGO bricks.</strong> Each brick is a small, reusable piece. You snap them together to build something bigger. An <code>&lt;AgentCard /&gt;</code> brick can be used on the list page, the detail page, or anywhere else you need it.</p>
+  </div>
+
+  <h2>Rules of Components</h2>
+  <div class="card">
+    <ul>
+      <li><strong style="color:var(--accent-blue);">Start with a capital letter</strong> &mdash; <code>AgentCard</code>, not <code>agentCard</code>. This is how React distinguishes components from regular HTML tags.</li>
+      <li><strong style="color:var(--accent-green);">Return one root element</strong> &mdash; a component must return a single parent element (or use a fragment <code>&lt;&gt;...&lt;/&gt;</code>).</li>
+      <li><strong style="color:var(--accent-purple);">Pure function</strong> &mdash; given the same inputs, a component should always return the same output.</li>
+    </ul>
+  </div>
+
+  <button class="next-btn" onclick="goToLesson(2)">Next: JSX &rarr;</button>
+</div>
+
+<!-- ============================================================
+     LESSON 3: JSX
+     ============================================================ -->
+<div class="lesson" id="lesson2">
+  <h1>JSX &mdash; HTML Inside JavaScript</h1>
+  <p class="subtitle">Lesson 3 of 8 &mdash; The syntax that powers React</p>
+
+  <h2>What is JSX?</h2>
+  <p>JSX looks like HTML, but it lives inside JavaScript. It might feel weird at first, but it's incredibly powerful. It lets you mix your logic and your UI in the same place.</p>
+
+<pre class="code-block"><code><span class="kw">const</span> element = <span class="tag">&lt;h1&gt;</span>Hello, world!<span class="tag">&lt;/h1&gt;</span>;</code></pre>
+
+  <p>This isn't a string. It isn't HTML. It's <strong>JSX</strong> &mdash; a syntax extension that gets compiled to regular JavaScript.</p>
+
+  <h2>What JSX Compiles To</h2>
+  <p>Under the hood, JSX is just syntactic sugar for function calls. Your build tool (like Vite or webpack) transforms it:</p>
+
+  <div class="split-view">
+    <div class="split-panel">
+      <h4>What you write (JSX)</h4>
+<pre style="margin:0;border:none;background:transparent;padding:0;"><code><span class="tag">&lt;div</span> <span class="attr">className</span>=<span class="str">"card"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;h2&gt;</span>{agent.name}<span class="tag">&lt;/h2&gt;</span>
+  <span class="tag">&lt;p&gt;</span>{agent.role}<span class="tag">&lt;/p&gt;</span>
+<span class="tag">&lt;/div&gt;</span></code></pre>
+    </div>
+    <div class="split-panel">
+      <h4>What the browser sees</h4>
+<pre style="margin:0;border:none;background:transparent;padding:0;"><code>React.<span class="fn">createElement</span>(
+  <span class="str">'div'</span>,
+  { <span class="attr">className</span>: <span class="str">'card'</span> },
+  React.<span class="fn">createElement</span>(
+    <span class="str">'h2'</span>, <span class="kw">null</span>, agent.name
+  ),
+  React.<span class="fn">createElement</span>(
+    <span class="str">'p'</span>, <span class="kw">null</span>, agent.role
+  )
+)</code></pre>
+    </div>
+  </div>
+
+  <p>You never have to write <code>React.createElement</code> yourself. JSX does it for you. But it's useful to know what's happening behind the curtain.</p>
+
+  <h2>Dynamic Values with {Curly Braces}</h2>
+  <p>The superpower of JSX is the curly braces <code>{}</code>. Any JavaScript expression inside them gets evaluated:</p>
+
+<pre class="code-block"><code><span class="kw">function</span> <span class="comp">AgentCard</span>({ <span class="attr">name</span>, <span class="attr">tasks</span> }) {
+  <span class="kw">return</span> (
+    <span class="tag">&lt;div&gt;</span>
+      <span class="tag">&lt;h2&gt;</span>{name}<span class="tag">&lt;/h2&gt;</span>
+      <span class="tag">&lt;p&gt;</span>Tasks: {tasks.<span class="fn">length</span>}<span class="tag">&lt;/p&gt;</span>
+      <span class="tag">&lt;p&gt;</span>{tasks.length &gt; 5 ? <span class="str">'Busy!'</span> : <span class="str">'Available'</span>}<span class="tag">&lt;/p&gt;</span>
+    <span class="tag">&lt;/div&gt;</span>
+  );
+}</code></pre>
+
+  <h2>Conditional Rendering</h2>
+  <p>You can show or hide content based on conditions:</p>
+
+<pre class="code-block"><code><span class="kw">function</span> <span class="comp">Status</span>({ <span class="attr">isActive</span> }) {
+  <span class="kw">return</span> (
+    <span class="tag">&lt;div&gt;</span>
+      {isActive ? <span class="tag">&lt;span&gt;</span>Online<span class="tag">&lt;/span&gt;</span> : <span class="tag">&lt;span&gt;</span>Offline<span class="tag">&lt;/span&gt;</span>}
+      {isActive &amp;&amp; <span class="tag">&lt;span&gt;</span>Ready for tasks<span class="tag">&lt;/span&gt;</span>}
+    <span class="tag">&lt;/div&gt;</span>
+  );
+}</code></pre>
+
+  <h2>Lists with .map()</h2>
+  <p>To render a list of items, use <code>.map()</code> to transform data into JSX:</p>
+
+<pre class="code-block"><code><span class="kw">function</span> <span class="comp">AgentList</span>({ <span class="attr">agents</span> }) {
+  <span class="kw">return</span> (
+    <span class="tag">&lt;ul&gt;</span>
+      {agents.<span class="fn">map</span>(agent =&gt; (
+        <span class="tag">&lt;li</span> <span class="attr">key</span>={agent.id}<span class="tag">&gt;</span>{agent.name}<span class="tag">&lt;/li&gt;</span>
+      ))}
+    <span class="tag">&lt;/ul&gt;</span>
+  );
+}</code></pre>
+
+  <h2>Interactive: JSX Playground</h2>
+  <p>Edit the JSX below and see what the rendered output looks like:</p>
+
+  <div class="jsx-playground">
+    <textarea id="jsxInput" spellcheck="false">&lt;div&gt;
+  &lt;h2&gt;Agent: Claude&lt;/h2&gt;
+  &lt;p&gt;Role: CTO&lt;/p&gt;
+  &lt;p&gt;Status: Active&lt;/p&gt;
+&lt;/div&gt;</textarea>
+    <div class="jsx-output">
+      <div class="jsx-output-label">Rendered Output</div>
+      <div id="jsxOutput"></div>
+    </div>
+  </div>
+
+  <h2>JSX Gotchas</h2>
+  <div class="card">
+    <ul>
+      <li><code>class</code> becomes <code>className</code> (because <code>class</code> is a reserved word in JS)</li>
+      <li><code>for</code> becomes <code>htmlFor</code> (same reason)</li>
+      <li>Style is an object: <code>style=&#123;&#123; color: 'red' &#125;&#125;</code></li>
+      <li>All tags must be closed: <code>&lt;img /&gt;</code>, not <code>&lt;img&gt;</code></li>
+    </ul>
+  </div>
+
+  <button class="next-btn" onclick="goToLesson(3)">Next: Props &rarr;</button>
+</div>
+
+<!-- ============================================================
+     LESSON 4: PROPS
+     ============================================================ -->
+<div class="lesson" id="lesson3">
+  <h1>Props &mdash; Passing Data Down</h1>
+  <p class="subtitle">Lesson 4 of 8 &mdash; How components talk to each other</p>
+
+  <h2>What are Props?</h2>
+  <p>Props (short for "properties") are how a parent component sends data to a child component. They work exactly like function arguments.</p>
+
+<pre class="code-block"><code><span class="cmt">// Parent passes data via attributes</span>
+<span class="tag">&lt;<span class="comp">AgentCard</span></span> <span class="attr">name</span>=<span class="str">"Claude"</span> <span class="attr">role</span>=<span class="str">"CTO"</span> <span class="attr">status</span>=<span class="str">"active"</span> <span class="tag">/&gt;</span>
+
+<span class="cmt">// Child receives them as an object</span>
+<span class="kw">function</span> <span class="comp">AgentCard</span>({ <span class="attr">name</span>, <span class="attr">role</span>, <span class="attr">status</span> }) {
+  <span class="kw">return</span> (
+    <span class="tag">&lt;div</span> <span class="attr">className</span>=<span class="str">"card"</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;h3&gt;</span>{name}<span class="tag">&lt;/h3&gt;</span>
+      <span class="tag">&lt;p&gt;</span>{role}<span class="tag">&lt;/p&gt;</span>
+      <span class="tag">&lt;span&gt;</span>{status}<span class="tag">&lt;/span&gt;</span>
+    <span class="tag">&lt;/div&gt;</span>
+  );
+}</code></pre>
+
+  <h2>Interactive: Change the Props</h2>
+  <p>Edit the prop values below and watch the component update in real time:</p>
+
+  <div class="props-playground">
+    <div class="prop-input-row">
+      <label>name:</label>
+      <input type="text" id="propName" value="Claude" oninput="updatePropsPreview()">
+    </div>
+    <div class="prop-input-row">
+      <label>role:</label>
+      <input type="text" id="propRole" value="CTO" oninput="updatePropsPreview()">
+    </div>
+    <div class="prop-input-row">
+      <label>status:</label>
+      <select id="propStatus" onchange="updatePropsPreview()">
+        <option value="active">active</option>
+        <option value="idle">idle</option>
+        <option value="offline">offline</option>
+      </select>
+    </div>
+
+    <p style="font-size:13px; color:var(--text-faint); margin:12px 0 4px;">Code being rendered:</p>
+    <div style="background:var(--bg-code); border:1px solid var(--border-secondary); border-radius:8px; padding:12px 16px; font-family:'SF Mono', Monaco, monospace; font-size:13px; margin-bottom:12px;">
+      <span class="tag">&lt;<span class="comp">AgentCard</span></span> <span class="attr">name</span>=<span class="str">"<span id="propCodeName">Claude</span>"</span> <span class="attr">role</span>=<span class="str">"<span id="propCodeRole">CTO</span>"</span> <span class="attr">status</span>=<span class="str">"<span id="propCodeStatus">active</span>"</span> <span class="tag">/&gt;</span>
+    </div>
+
+    <div class="prop-preview" id="propsPreview">
+      <div class="agent-card-preview">
+        <div class="agent-avatar" id="propAvatar" style="background:var(--accent-blue-bg); color:var(--text-primary);">C</div>
+        <div class="agent-info">
+          <h4 id="propDisplayName">Claude</h4>
+          <p id="propDisplayRole">CTO</p>
+          <span class="agent-status" id="propDisplayStatus" style="background:rgba(52,211,153,0.15); color:var(--accent-green);">active</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="analogy">
+    <div class="analogy-label">Analogy</div>
+    <p><strong>Props are like a mail slot.</strong> The parent component puts data in through the slot, and the child component reads what comes through. The child can't reach back through the slot to change what the parent sent &mdash; props are <strong>read-only</strong>. Data flows in one direction: parent to child.</p>
+  </div>
+
+  <h2>Props Are Read-Only</h2>
+  <p>A component must never modify its own props. This is a fundamental rule in React:</p>
+
+<pre class="code-block"><code><span class="cmt">// WRONG - never do this!</span>
+<span class="kw">function</span> <span class="comp">AgentCard</span>(props) {
+  props.name = <span class="str">"Hacked!"</span>; <span class="cmt">// React will break</span>
+  <span class="kw">return</span> <span class="tag">&lt;h3&gt;</span>{props.name}<span class="tag">&lt;/h3&gt;</span>;
+}
+
+<span class="cmt">// RIGHT - just read them</span>
+<span class="kw">function</span> <span class="comp">AgentCard</span>({ <span class="attr">name</span> }) {
+  <span class="kw">return</span> <span class="tag">&lt;h3&gt;</span>{name}<span class="tag">&lt;/h3&gt;</span>;
+}</code></pre>
+
+  <p>If a component needs to change data, it uses <strong>state</strong> &mdash; which is the next lesson.</p>
+
+  <h2>Props Can Be Anything</h2>
+  <div class="card">
+    <ul>
+      <li><strong style="color:var(--accent-green);">Strings:</strong> <code>name="Claude"</code></li>
+      <li><strong style="color:var(--accent-blue);">Numbers:</strong> <code>count={42}</code></li>
+      <li><strong style="color:var(--accent-purple);">Booleans:</strong> <code>isActive={true}</code> or just <code>isActive</code></li>
+      <li><strong style="color:var(--accent-yellow);">Objects:</strong> <code>agent={{ name: "Claude", role: "CTO" }}</code></li>
+      <li><strong style="color:var(--accent-orange);">Functions:</strong> <code>onClick={() => alert("hi")}</code></li>
+      <li><strong style="color:var(--accent-pink);">Components:</strong> <code>icon={&lt;StarIcon /&gt;}</code></li>
+    </ul>
+  </div>
+
+  <button class="next-btn" onclick="goToLesson(4)">Next: State &rarr;</button>
+</div>
+
+<!-- ============================================================
+     LESSON 5: STATE
+     ============================================================ -->
+<div class="lesson" id="lesson4">
+  <h1>State &mdash; Data That Changes</h1>
+  <p class="subtitle">Lesson 5 of 8 &mdash; Making components interactive</p>
+
+  <h2>What is State?</h2>
+  <p>Props come from the parent. But what about data that the component itself owns and changes? That's <strong>state</strong>. State is data that changes over time, and when it changes, React automatically re-renders the component.</p>
+
+<pre class="code-block"><code><span class="kw">import</span> { <span class="fn">useState</span> } <span class="kw">from</span> <span class="str">'react'</span>;
+
+<span class="kw">function</span> <span class="comp">Counter</span>() {
+  <span class="kw">const</span> [count, setCount] = <span class="fn">useState</span>(0);
+  <span class="cmt">//     ^         ^              ^</span>
+  <span class="cmt">//     |         |              initial value</span>
+  <span class="cmt">//     |         function to update it</span>
+  <span class="cmt">//     current value</span>
+
+  <span class="kw">return</span> (
+    <span class="tag">&lt;div&gt;</span>
+      <span class="tag">&lt;p&gt;</span>Count: {count}<span class="tag">&lt;/p&gt;</span>
+      <span class="tag">&lt;button</span> <span class="attr">onClick</span>={() =&gt; <span class="fn">setCount</span>(count + 1)}<span class="tag">&gt;</span>
+        Add 1
+      <span class="tag">&lt;/button&gt;</span>
+    <span class="tag">&lt;/div&gt;</span>
+  );
+}</code></pre>
+
+  <h2>Interactive: Counter</h2>
+  <p>Click the buttons to change state. Watch the render log to see React re-render:</p>
+
+  <div class="state-demo">
+    <div class="state-demo-title">Counter Component</div>
+    <div class="state-counter">
+      <button class="state-btn" onclick="counterAction('decrement')">-</button>
+      <div class="count-display" id="counterValue">0</div>
+      <button class="state-btn" onclick="counterAction('increment')">+</button>
+      <button class="state-btn" onclick="counterAction('reset')" style="font-size:13px;">Reset</button>
+    </div>
+    <div style="font-size:13px; color:var(--text-faint); margin-bottom:4px;">Render log:</div>
+    <div class="state-log" id="counterLog">
+      <div class="render-entry">Render #1: count = 0</div>
+    </div>
+  </div>
+
+  <h2>Interactive: Toggle</h2>
+  <p>A boolean state that flips between true and false:</p>
+
+  <div class="state-demo">
+    <div class="state-demo-title">Toggle Component</div>
+    <div class="toggle-box">
+      <span style="color:var(--text-muted); font-size:14px;">Dark Mode:</span>
+      <div class="toggle-indicator" id="toggleIndicator" onclick="toggleAction()">
+        <div class="toggle-knob"></div>
+      </div>
+      <span style="font-family:'SF Mono',Monaco,monospace; font-size:13px;" id="toggleValue">false</span>
+    </div>
+    <div style="font-size:13px; color:var(--text-faint); margin-top:12px; margin-bottom:4px;">State:</div>
+    <div style="font-family:'SF Mono',Monaco,monospace; font-size:14px; color:var(--accent-purple);" id="toggleState">const [isOn, setIsOn] = useState(false)</div>
+  </div>
+
+  <h2>Interactive: Form Input</h2>
+  <p>State keeps the input and the preview in sync &mdash; type to see it live:</p>
+
+  <div class="state-demo">
+    <div class="state-demo-title">Controlled Input</div>
+    <div class="form-demo">
+      <input type="text" id="formInput" placeholder="Type a name..." oninput="formAction()">
+      <div class="form-preview">Hello, <span id="formPreview" style="color:var(--accent-blue); font-weight:600;">...</span>!</div>
+    </div>
+    <div style="font-size:13px; color:var(--text-faint); margin-top:12px; margin-bottom:4px;">State:</div>
+    <div style="font-family:'SF Mono',Monaco,monospace; font-size:14px; color:var(--accent-purple);" id="formState">const [name, setName] = useState("")</div>
+  </div>
+
+  <h2>The Re-render Cycle</h2>
+  <div class="card">
+    <ol>
+      <li><strong style="color:var(--accent-blue);">Event happens</strong> &mdash; user clicks, types, etc.</li>
+      <li><strong style="color:var(--accent-purple);">setState is called</strong> &mdash; <code>setCount(count + 1)</code></li>
+      <li><strong style="color:var(--accent-green);">React re-renders</strong> &mdash; calls your component function again</li>
+      <li><strong style="color:var(--accent-yellow);">New UI appears</strong> &mdash; React updates only what changed in the DOM</li>
+    </ol>
+  </div>
+
+  <div class="analogy">
+    <div class="analogy-label">Analogy</div>
+    <p><strong>State is like a whiteboard.</strong> You can erase it and write something new. Everyone looking at the whiteboard immediately sees the updated content. When you call <code>setState</code>, you're erasing and rewriting the whiteboard &mdash; and React makes sure everyone (every part of the UI) sees the new value.</p>
+  </div>
+
+  <button class="next-btn" onclick="goToLesson(5)">Next: Effects &amp; Data Fetching &rarr;</button>
+</div>
+
+<!-- ============================================================
+     LESSON 6: EFFECTS & DATA FETCHING
+     ============================================================ -->
+<div class="lesson" id="lesson5">
+  <h1>Effects &amp; Data Fetching</h1>
+  <p class="subtitle">Lesson 6 of 8 &mdash; Side effects and talking to the outside world</p>
+
+  <h2>What is a Side Effect?</h2>
+  <p>Components are supposed to be pure &mdash; given the same props and state, return the same UI. But sometimes you need to reach outside the component: fetch data from an API, start a timer, or update the document title. These are <strong>side effects</strong>.</p>
+
+  <p>React gives you the <code>useEffect</code> hook for this:</p>
+
+<pre class="code-block"><code><span class="kw">import</span> { <span class="fn">useState</span>, <span class="fn">useEffect</span> } <span class="kw">from</span> <span class="str">'react'</span>;
+
+<span class="kw">function</span> <span class="comp">AgentList</span>() {
+  <span class="kw">const</span> [agents, setAgents] = <span class="fn">useState</span>([]);
+
+  <span class="fn">useEffect</span>(() =&gt; {
+    <span class="cmt">// This runs after the component renders</span>
+    <span class="fn">fetch</span>(<span class="str">'/api/agents'</span>)
+      .<span class="fn">then</span>(res =&gt; res.<span class="fn">json</span>())
+      .<span class="fn">then</span>(data =&gt; <span class="fn">setAgents</span>(data));
+  }, []); <span class="cmt">// empty array = run once on mount</span>
+
+  <span class="kw">return</span> (
+    <span class="tag">&lt;ul&gt;</span>
+      {agents.<span class="fn">map</span>(a =&gt; <span class="tag">&lt;li</span> <span class="attr">key</span>={a.id}<span class="tag">&gt;</span>{a.name}<span class="tag">&lt;/li&gt;</span>)}
+    <span class="tag">&lt;/ul&gt;</span>
+  );
+}</code></pre>
+
+  <p>Remember <code>fetch</code> from <a href="/lessons/apis.html">Course 3 &mdash; APIs &amp; HTTP</a>? <code>useEffect</code> is where you put it in React.</p>
+
+  <h2>The Dependency Array</h2>
+  <p>The second argument to <code>useEffect</code> controls <em>when</em> the effect runs:</p>
+
+  <div class="card">
+    <ul>
+      <li><code>useEffect(fn)</code> &mdash; runs after <strong>every</strong> render (rarely what you want)</li>
+      <li><code>useEffect(fn, [])</code> &mdash; runs <strong>once</strong> on mount (like "page load")</li>
+      <li><code>useEffect(fn, [value])</code> &mdash; runs when <code>value</code> <strong>changes</strong></li>
+    </ul>
+  </div>
+
+  <h2>Interactive: Dependency Array</h2>
+  <p>Click the buttons to see how different dependency arrays behave. Watch the effect log:</p>
+
+  <div class="dep-demo">
+    <div class="btn-row">
+      <button class="ibtn selected" onclick="selectDepMode('none', this)">No array</button>
+      <button class="ibtn" onclick="selectDepMode('empty', this)">Empty []</button>
+      <button class="ibtn" onclick="selectDepMode('value', this)">[count]</button>
+    </div>
+    <div style="margin:12px 0; font-family:'SF Mono',Monaco,monospace; font-size:13px; color:var(--text-muted);" id="depCode">useEffect(() =&gt; { console.log("effect!") })</div>
+    <div class="btn-row">
+      <button class="ibtn" onclick="depAction('render')">Trigger Re-render</button>
+      <button class="ibtn" onclick="depAction('count')">Change count</button>
+      <button class="ibtn" onclick="depAction('other')">Change other state</button>
+      <button class="ibtn" onclick="depAction('clear')">Clear log</button>
+    </div>
+    <div class="dep-log" id="depLog">
+      <div class="effect-run">Component mounted.</div>
+      <div class="effect-run">Effect ran! (initial render)</div>
+    </div>
+  </div>
+
+  <h2>Cleanup Functions</h2>
+  <p>Effects can return a cleanup function that runs when the component unmounts or before the effect re-runs:</p>
+
+<pre class="code-block"><code><span class="fn">useEffect</span>(() =&gt; {
+  <span class="kw">const</span> timer = <span class="fn">setInterval</span>(() =&gt; {
+    console.<span class="fn">log</span>(<span class="str">'tick'</span>);
+  }, 1000);
+
+  <span class="cmt">// Cleanup: runs when component unmounts</span>
+  <span class="kw">return</span> () =&gt; <span class="fn">clearInterval</span>(timer);
+}, []);</code></pre>
+
+  <h2>Fetching Data Pattern</h2>
+  <p>Here's the complete pattern for fetching and displaying data &mdash; one of the most common things you'll do in React:</p>
+
+<pre class="code-block"><code><span class="kw">function</span> <span class="comp">AgentDetail</span>({ <span class="attr">agentId</span> }) {
+  <span class="kw">const</span> [agent, setAgent] = <span class="fn">useState</span>(<span class="kw">null</span>);
+  <span class="kw">const</span> [loading, setLoading] = <span class="fn">useState</span>(<span class="kw">true</span>);
+  <span class="kw">const</span> [error, setError] = <span class="fn">useState</span>(<span class="kw">null</span>);
+
+  <span class="fn">useEffect</span>(() =&gt; {
+    <span class="fn">setLoading</span>(<span class="kw">true</span>);
+    <span class="fn">fetch</span>(<span class="str">`/api/agents/${agentId}`</span>)
+      .<span class="fn">then</span>(res =&gt; res.<span class="fn">json</span>())
+      .<span class="fn">then</span>(data =&gt; {
+        <span class="fn">setAgent</span>(data);
+        <span class="fn">setLoading</span>(<span class="kw">false</span>);
+      })
+      .<span class="fn">catch</span>(err =&gt; {
+        <span class="fn">setError</span>(err.message);
+        <span class="fn">setLoading</span>(<span class="kw">false</span>);
+      });
+  }, [agentId]); <span class="cmt">// re-fetch when agentId changes</span>
+
+  <span class="kw">if</span> (loading) <span class="kw">return</span> <span class="tag">&lt;p&gt;</span>Loading...<span class="tag">&lt;/p&gt;</span>;
+  <span class="kw">if</span> (error) <span class="kw">return</span> <span class="tag">&lt;p&gt;</span>Error: {error}<span class="tag">&lt;/p&gt;</span>;
+
+  <span class="kw">return</span> <span class="tag">&lt;h1&gt;</span>{agent.name}<span class="tag">&lt;/h1&gt;</span>;
+}</code></pre>
+
+  <button class="next-btn" onclick="goToLesson(6)">Next: The React Lifecycle &rarr;</button>
+</div>
+
+<!-- ============================================================
+     LESSON 7: THE REACT LIFECYCLE
+     ============================================================ -->
+<div class="lesson" id="lesson6">
+  <h1>The React Lifecycle</h1>
+  <p class="subtitle">Lesson 7 of 8 &mdash; How React decides what to update</p>
+
+  <h2>Mount, Update, Unmount</h2>
+  <p>Every component goes through three phases:</p>
+
+  <div class="card">
+    <ul>
+      <li><strong style="color:var(--accent-green);">Mount</strong> &mdash; the component appears on screen for the first time. React creates the DOM nodes and runs initial effects.</li>
+      <li><strong style="color:var(--accent-blue);">Update</strong> &mdash; the component re-renders because its props or state changed. React compares old and new, and updates only what changed.</li>
+      <li><strong style="color:var(--accent-pink);">Unmount</strong> &mdash; the component is removed from the screen. React runs cleanup functions and removes DOM nodes.</li>
+    </ul>
+  </div>
+
+  <h2>The Virtual DOM</h2>
+  <p>React doesn't update the real DOM directly. Instead, it works with a lightweight copy called the <strong>Virtual DOM</strong>:</p>
+
+  <div class="card">
+    <ol>
+      <li>When state changes, React builds a <strong>new Virtual DOM tree</strong></li>
+      <li>React <strong>compares</strong> the new tree to the old tree (called "diffing")</li>
+      <li>React figures out the <strong>minimum set of changes</strong> needed</li>
+      <li>React applies <strong>only those changes</strong> to the real DOM</li>
+    </ol>
+  </div>
+
+  <p>This is why React is fast. Instead of replacing everything, it surgically updates only the parts that changed.</p>
+
+  <div class="vdom-compare">
+    <div class="vdom-panel">
+      <div style="color:var(--text-faint); font-size:11px; margin-bottom:8px;">OLD VIRTUAL DOM</div>
+      <div>&lt;div&gt;</div>
+      <div>&nbsp;&nbsp;&lt;h1&gt;Claude&lt;/h1&gt;</div>
+      <div>&nbsp;&nbsp;&lt;p&gt;Tasks: <span style="color:var(--accent-yellow);">3</span>&lt;/p&gt;</div>
+      <div>&nbsp;&nbsp;&lt;span&gt;active&lt;/span&gt;</div>
+      <div>&lt;/div&gt;</div>
+    </div>
+    <div class="vdom-arrow">&#8594;</div>
+    <div class="vdom-panel">
+      <div style="color:var(--text-faint); font-size:11px; margin-bottom:8px;">NEW VIRTUAL DOM</div>
+      <div>&lt;div&gt;</div>
+      <div>&nbsp;&nbsp;&lt;h1&gt;Claude&lt;/h1&gt;</div>
+      <div class="vdom-diff">&nbsp;&nbsp;&lt;p&gt;Tasks: <span style="color:var(--accent-green);">4</span>&lt;/p&gt;</div>
+      <div>&nbsp;&nbsp;&lt;span&gt;active&lt;/span&gt;</div>
+      <div>&lt;/div&gt;</div>
+    </div>
+  </div>
+  <p style="font-size:13px; color:var(--text-faint); text-align:center;">React sees only one thing changed (3 to 4) and updates just that text node.</p>
+
+  <h2>Interactive: Watch Re-renders</h2>
+  <p>Click a component that owns state. Watch which components re-render (highlighted in green). Only the component and its children re-render &mdash; siblings are unaffected.</p>
+
+  <div class="rerender-tree">
+    <div class="btn-row" style="margin-bottom:16px;">
+      <button class="ibtn" onclick="triggerRerender('app')">Change App state</button>
+      <button class="ibtn" onclick="triggerRerender('header')">Change Header state</button>
+      <button class="ibtn" onclick="triggerRerender('agentlist')">Change AgentList state</button>
+      <button class="ibtn" onclick="triggerRerender('reset')">Reset</button>
+    </div>
+    <div style="text-align:center;">
+      <div class="rt-level"><div class="rt-node" id="rt-app">&lt;App /&gt;</div></div>
+      <div class="rt-connector">|</div>
+      <div class="rt-level">
+        <div class="rt-node" id="rt-header">&lt;Header /&gt;</div>
+        <div class="rt-node" id="rt-main">&lt;Main /&gt;</div>
+        <div class="rt-node" id="rt-footer">&lt;Footer /&gt;</div>
+      </div>
+      <div class="rt-connector">|</div>
+      <div class="rt-level">
+        <div class="rt-node" id="rt-logo">&lt;Logo /&gt;</div>
+        <div class="rt-node" id="rt-nav">&lt;Nav /&gt;</div>
+        <div class="rt-node" id="rt-agentlist">&lt;AgentList /&gt;</div>
+        <div class="rt-node" id="rt-sidebar">&lt;Sidebar /&gt;</div>
+      </div>
+      <div class="rt-connector">|</div>
+      <div class="rt-level">
+        <div class="rt-node" id="rt-card1">&lt;AgentCard /&gt;</div>
+        <div class="rt-node" id="rt-card2">&lt;AgentCard /&gt;</div>
+        <div class="rt-node" id="rt-card3">&lt;AgentCard /&gt;</div>
+      </div>
+    </div>
+  </div>
+
+  <h2>Why Keys Matter in Lists</h2>
+  <p>When rendering lists, React needs a way to track which items are which. That's what the <code>key</code> prop is for:</p>
+
+<pre class="code-block"><code><span class="cmt">// BAD - using index as key</span>
+{agents.<span class="fn">map</span>((agent, index) =&gt; (
+  <span class="tag">&lt;<span class="comp">AgentCard</span></span> <span class="attr">key</span>={index} <span class="attr">agent</span>={agent} <span class="tag">/&gt;</span>
+))}
+
+<span class="cmt">// GOOD - using unique ID as key</span>
+{agents.<span class="fn">map</span>(agent =&gt; (
+  <span class="tag">&lt;<span class="comp">AgentCard</span></span> <span class="attr">key</span>={agent.id} <span class="attr">agent</span>={agent} <span class="tag">/&gt;</span>
+))}</code></pre>
+
+  <h2>Interactive: Keys in Action</h2>
+  <p>Watch what happens when we shuffle a list. With proper keys, React moves items. Without keys, it rebuilds from scratch:</p>
+
+  <div class="card">
+    <div class="btn-row">
+      <button class="ibtn" onclick="shuffleKeys()">Shuffle List</button>
+      <button class="ibtn" onclick="resetKeys()">Reset</button>
+    </div>
+    <div class="key-list" id="keyList">
+      <div class="key-item" data-id="1"><span class="key-badge">key="1"</span><span class="key-name">Claude &mdash; CTO</span></div>
+      <div class="key-item" data-id="2"><span class="key-badge">key="2"</span><span class="key-name">Sasha &mdash; Designer</span></div>
+      <div class="key-item" data-id="3"><span class="key-badge">key="3"</span><span class="key-name">Max &mdash; Engineer</span></div>
+      <div class="key-item" data-id="4"><span class="key-badge">key="4"</span><span class="key-name">Riley &mdash; PM</span></div>
+    </div>
+    <p style="font-size:13px; color:var(--text-faint); margin:0;">With proper keys, React knows each item by its ID and just moves them in the DOM instead of re-creating them.</p>
+  </div>
+
+  <button class="next-btn" onclick="goToLesson(7)">Next: React in Paperclip &rarr;</button>
+</div>
+
+<!-- ============================================================
+     LESSON 8: REACT IN PAPERCLIP
+     ============================================================ -->
+<div class="lesson" id="lesson7">
+  <h1>React in Paperclip</h1>
+  <p class="subtitle">Lesson 8 of 8 &mdash; Seeing it all come together</p>
+
+  <p>Now that you understand React's building blocks, let's see how they come together in Paperclip's real codebase. (Remember the <a href="/lessons/codebase.html">Course 2 &mdash; The Codebase</a> tour? This is the <code>client/</code> folder.)</p>
+
+  <h2>Routing: App.tsx</h2>
+  <p>Paperclip's main <code>App.tsx</code> maps URLs to page components. When the URL changes, React renders the matching page:</p>
+
+<pre class="code-block"><code><span class="cmt">// App.tsx - simplified</span>
+<span class="kw">import</span> { <span class="fn">BrowserRouter</span>, <span class="fn">Routes</span>, <span class="fn">Route</span> } <span class="kw">from</span> <span class="str">'react-router-dom'</span>;
+
+<span class="kw">function</span> <span class="comp">App</span>() {
+  <span class="kw">return</span> (
+    <span class="tag">&lt;<span class="comp">BrowserRouter</span>&gt;</span>
+      <span class="tag">&lt;<span class="comp">Layout</span>&gt;</span>
+        <span class="tag">&lt;<span class="comp">Routes</span>&gt;</span>
+          <span class="tag">&lt;<span class="comp">Route</span></span> <span class="attr">path</span>=<span class="str">"/"</span> <span class="attr">element</span>={<span class="tag">&lt;<span class="comp">Dashboard</span> /&gt;</span>} <span class="tag">/&gt;</span>
+          <span class="tag">&lt;<span class="comp">Route</span></span> <span class="attr">path</span>=<span class="str">"/agents"</span> <span class="attr">element</span>={<span class="tag">&lt;<span class="comp">AgentList</span> /&gt;</span>} <span class="tag">/&gt;</span>
+          <span class="tag">&lt;<span class="comp">Route</span></span> <span class="attr">path</span>=<span class="str">"/agents/:id"</span> <span class="attr">element</span>={<span class="tag">&lt;<span class="comp">AgentDetail</span> /&gt;</span>} <span class="tag">/&gt;</span>
+          <span class="tag">&lt;<span class="comp">Route</span></span> <span class="attr">path</span>=<span class="str">"/tasks"</span> <span class="attr">element</span>={<span class="tag">&lt;<span class="comp">TaskBoard</span> /&gt;</span>} <span class="tag">/&gt;</span>
+        <span class="tag">&lt;/<span class="comp">Routes</span>&gt;</span>
+      <span class="tag">&lt;/<span class="comp">Layout</span>&gt;</span>
+    <span class="tag">&lt;/<span class="comp">BrowserRouter</span>&gt;</span>
+  );
+}</code></pre>
+
+  <div class="card">
+    <p style="color:var(--text-primary); font-weight:600; margin-bottom:12px;">Route Table:</p>
+    <table class="route-table">
+      <thead>
+        <tr><th>URL</th><th>Component</th><th>What it shows</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>/</code></td><td><code>&lt;Dashboard /&gt;</code></td><td>Overview with stats</td></tr>
+        <tr><td><code>/agents</code></td><td><code>&lt;AgentList /&gt;</code></td><td>All agents in a grid</td></tr>
+        <tr><td><code>/agents/3</code></td><td><code>&lt;AgentDetail /&gt;</code></td><td>One agent's full profile</td></tr>
+        <tr><td><code>/tasks</code></td><td><code>&lt;TaskBoard /&gt;</code></td><td>Kanban board of tasks</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Context: Sharing Data Across Components</h2>
+  <p>Some data needs to be available everywhere &mdash; like the current company info. React Context lets you share data without passing props through every level:</p>
+
+<pre class="code-block"><code><span class="cmt">// CompanyContext.tsx</span>
+<span class="kw">const</span> CompanyContext = <span class="fn">createContext</span>(<span class="kw">null</span>);
+
+<span class="kw">function</span> <span class="comp">CompanyProvider</span>({ <span class="attr">children</span> }) {
+  <span class="kw">const</span> [company, setCompany] = <span class="fn">useState</span>(<span class="kw">null</span>);
+
+  <span class="fn">useEffect</span>(() =&gt; {
+    <span class="fn">fetch</span>(<span class="str">'/api/company'</span>)
+      .<span class="fn">then</span>(res =&gt; res.<span class="fn">json</span>())
+      .<span class="fn">then</span>(setCompany);
+  }, []);
+
+  <span class="kw">return</span> (
+    <span class="tag">&lt;CompanyContext.Provider</span> <span class="attr">value</span>={company}<span class="tag">&gt;</span>
+      {children}
+    <span class="tag">&lt;/CompanyContext.Provider&gt;</span>
+  );
+}
+
+<span class="cmt">// Any component, anywhere in the tree:</span>
+<span class="kw">function</span> <span class="comp">Header</span>() {
+  <span class="kw">const</span> company = <span class="fn">useContext</span>(CompanyContext);
+  <span class="kw">return</span> <span class="tag">&lt;h1&gt;</span>{company?.name}<span class="tag">&lt;/h1&gt;</span>;
+}</code></pre>
+
+  <h2>Custom Hooks: useQuery</h2>
+  <p>Paperclip uses custom hooks to encapsulate common patterns. The <code>useQuery</code> pattern wraps fetching, loading, and error states into one reusable function:</p>
+
+<pre class="code-block"><code><span class="cmt">// useQuery.ts - simplified</span>
+<span class="kw">function</span> <span class="fn">useQuery</span>(<span class="attr">url</span>) {
+  <span class="kw">const</span> [data, setData] = <span class="fn">useState</span>(<span class="kw">null</span>);
+  <span class="kw">const</span> [loading, setLoading] = <span class="fn">useState</span>(<span class="kw">true</span>);
+  <span class="kw">const</span> [error, setError] = <span class="fn">useState</span>(<span class="kw">null</span>);
+
+  <span class="fn">useEffect</span>(() =&gt; {
+    <span class="fn">setLoading</span>(<span class="kw">true</span>);
+    <span class="fn">fetch</span>(url)
+      .<span class="fn">then</span>(res =&gt; res.<span class="fn">json</span>())
+      .<span class="fn">then</span>(d =&gt; { <span class="fn">setData</span>(d); <span class="fn">setLoading</span>(<span class="kw">false</span>); })
+      .<span class="fn">catch</span>(e =&gt; { <span class="fn">setError</span>(e); <span class="fn">setLoading</span>(<span class="kw">false</span>); });
+  }, [url]);
+
+  <span class="kw">return</span> { data, loading, error };
+}
+
+<span class="cmt">// Usage in any component:</span>
+<span class="kw">function</span> <span class="comp">AgentList</span>() {
+  <span class="kw">const</span> { data: agents, loading, error } = <span class="fn">useQuery</span>(<span class="str">'/api/agents'</span>);
+
+  <span class="kw">if</span> (loading) <span class="kw">return</span> <span class="tag">&lt;<span class="comp">Spinner</span> /&gt;</span>;
+  <span class="kw">if</span> (error) <span class="kw">return</span> <span class="tag">&lt;<span class="comp">ErrorMessage</span></span> <span class="attr">error</span>={error} <span class="tag">/&gt;</span>;
+
+  <span class="kw">return</span> agents.<span class="fn">map</span>(a =&gt; <span class="tag">&lt;<span class="comp">AgentCard</span></span> <span class="attr">key</span>={a.id} <span class="attr">agent</span>={a} <span class="tag">/&gt;</span>);
+}</code></pre>
+
+  <h2>Putting It All Together</h2>
+  <p>Here's a bird's-eye view of how all the React concepts connect in Paperclip:</p>
+
+  <div class="card">
+    <ul>
+      <li><strong style="color:var(--accent-blue);">Components</strong> &mdash; every page and UI element is a component (<code>AgentCard</code>, <code>TaskBoard</code>, <code>Layout</code>)</li>
+      <li><strong style="color:var(--accent-green);">Props</strong> &mdash; parent components pass data down (<code>&lt;AgentCard agent={agent} /&gt;</code>)</li>
+      <li><strong style="color:var(--accent-purple);">State</strong> &mdash; components manage their own data (<code>useState</code> for form inputs, toggles, filters)</li>
+      <li><strong style="color:var(--accent-yellow);">Effects</strong> &mdash; data fetching on mount and when IDs change (<code>useEffect</code> with <code>useQuery</code>)</li>
+      <li><strong style="color:var(--accent-orange);">Context</strong> &mdash; shared data like company info available everywhere (<code>CompanyContext</code>)</li>
+      <li><strong style="color:var(--accent-pink);">Routing</strong> &mdash; URL-to-page mapping in <code>App.tsx</code> (<code>react-router-dom</code>)</li>
+    </ul>
+  </div>
+
+  <h2>The File Structure</h2>
+  <div class="card">
+    <ul class="file-list">
+      <li>client/src/App.tsx <span class="file-desc">Root component with routes</span></li>
+      <li>client/src/components/ <span class="file-desc">Reusable UI components</span></li>
+      <li>client/src/pages/ <span class="file-desc">Page-level components (Dashboard, AgentList, etc.)</span></li>
+      <li>client/src/hooks/ <span class="file-desc">Custom hooks (useQuery, useAuth, etc.)</span></li>
+      <li>client/src/context/ <span class="file-desc">React Context providers</span></li>
+      <li>client/src/lib/ <span class="file-desc">Utility functions, API helpers</span></li>
+    </ul>
+  </div>
+
+  <h2>What You Now Know</h2>
+  <div class="card">
+    <ul>
+      <li>React solves the problem of keeping the UI in sync with data</li>
+      <li>Components are functions that return UI &mdash; they compose like building blocks</li>
+      <li>JSX is HTML-in-JavaScript that compiles to React.createElement calls</li>
+      <li>Props pass data down from parent to child (one-way, read-only)</li>
+      <li>State is data that changes over time and triggers re-renders</li>
+      <li>Effects handle side effects like fetching data and timers</li>
+      <li>The Virtual DOM makes updates efficient by diffing and patching</li>
+      <li>Real apps combine all of these &mdash; routing, context, hooks, and components</li>
+    </ul>
+  </div>
+
+  <div class="next-course-banner">
+    <h3>Up Next</h3>
+    <p>Continue to Course 10: How Testing Works &mdash; Unit tests, integration tests, and why they matter.</p>
+    <a href="/lessons/testing.html">Start How Testing Works &rarr;</a>
+  </div>
+</div>
+
+</div><!-- /container -->
+
+</div><!-- end content-wrapper -->
+
+<script>
+// ============================================================
+// Lesson Navigation
+// ============================================================
+function goToLesson(n) {
+  const lessons = document.querySelectorAll('.lesson');
+  const buttons = document.querySelectorAll('.nav-btn');
+  lessons.forEach((l, i) => {
+    l.classList.toggle('active', i === n);
+  });
+  buttons.forEach((b, i) => {
+    b.classList.toggle('active', i === n);
+  });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ============================================================
+// Lesson 1: Imperative vs Declarative Demo
+// ============================================================
+let impLogCount = 0;
+
+function switchApproach(mode, btn) {
+  btn.parentElement.querySelectorAll('.ibtn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+
+  const demo = document.getElementById('approachDemo');
+  if (mode === 'imperative') {
+    demo.innerHTML = `
+      <div id="imperative-demo">
+        <p style="font-size:14px; color:var(--text-muted); margin-bottom:12px;">You have to find and update each element manually:</p>
+        <div style="padding:16px; background:var(--bg-secondary); border:1px solid var(--border-primary); border-radius:8px; margin-bottom:12px;">
+          <p style="margin:0; font-size:18px; color:var(--text-primary);" id="impName">Agent: Claude</p>
+          <p style="margin:0; font-size:14px; color:var(--text-muted);" id="impRole">Role: CTO</p>
+        </div>
+        <div class="btn-row">
+          <button class="ibtn" onclick="imperativeUpdate('Sasha', 'Designer')">Set to Sasha / Designer</button>
+          <button class="ibtn" onclick="imperativeUpdate('Max', 'Engineer')">Set to Max / Engineer</button>
+          <button class="ibtn" onclick="imperativeUpdate('Claude', 'CTO')">Reset</button>
+        </div>
+        <div class="state-log" id="impLog">
+          <div style="color:var(--text-faint);">// Click a button to see the imperative steps...</div>
+        </div>
+      </div>`;
+    impLogCount = 0;
+  } else {
+    demo.innerHTML = `
+      <div>
+        <p style="font-size:14px; color:var(--text-muted); margin-bottom:12px;">You just describe the UI &mdash; React handles the updates:</p>
+        <div style="padding:16px; background:var(--bg-secondary); border:1px solid var(--border-primary); border-radius:8px; margin-bottom:12px;">
+          <p style="margin:0; font-size:18px; color:var(--text-primary);" id="declName">Agent: Claude</p>
+          <p style="margin:0; font-size:14px; color:var(--text-muted);" id="declRole">Role: CTO</p>
+        </div>
+        <div class="btn-row">
+          <button class="ibtn" onclick="declarativeUpdate('Sasha', 'Designer')">Set to Sasha / Designer</button>
+          <button class="ibtn" onclick="declarativeUpdate('Max', 'Engineer')">Set to Max / Engineer</button>
+          <button class="ibtn" onclick="declarativeUpdate('Claude', 'CTO')">Reset</button>
+        </div>
+        <div class="state-log" id="declLog">
+          <div style="color:var(--text-faint);">// Click a button to see the declarative approach...</div>
+        </div>
+      </div>`;
+  }
+}
+
+function imperativeUpdate(name, role) {
+  const nameEl = document.getElementById('impName');
+  const roleEl = document.getElementById('impRole');
+  const log = document.getElementById('impLog');
+  if (!nameEl || !roleEl || !log) return;
+
+  impLogCount++;
+  nameEl.textContent = 'Agent: ' + name;
+  roleEl.textContent = 'Role: ' + role;
+
+  log.innerHTML += `<div style="color:var(--accent-yellow);">Step ${impLogCount}a: document.getElementById('name')</div>`;
+  log.innerHTML += `<div style="color:var(--accent-yellow);">Step ${impLogCount}b: el.innerHTML = 'Agent: ${name}'</div>`;
+  log.innerHTML += `<div style="color:var(--accent-yellow);">Step ${impLogCount}c: document.getElementById('role')</div>`;
+  log.innerHTML += `<div style="color:var(--accent-yellow);">Step ${impLogCount}d: el.innerHTML = 'Role: ${role}'</div>`;
+  log.innerHTML += `<div style="color:var(--text-faint);">// 4 manual DOM operations needed</div>`;
+  log.scrollTop = log.scrollHeight;
+}
+
+function declarativeUpdate(name, role) {
+  const nameEl = document.getElementById('declName');
+  const roleEl = document.getElementById('declRole');
+  const log = document.getElementById('declLog');
+  if (!nameEl || !roleEl || !log) return;
+
+  nameEl.textContent = 'Agent: ' + name;
+  roleEl.textContent = 'Role: ' + role;
+
+  log.innerHTML += `<div style="color:var(--accent-green);">setState({ name: "${name}", role: "${role}" })</div>`;
+  log.innerHTML += `<div class="render-entry">React re-renders &rarr; UI updated automatically</div>`;
+  log.scrollTop = log.scrollHeight;
+}
+
+// ============================================================
+// Lesson 2: Component Tree
+// ============================================================
+function toggleTree(label) {
+  const children = label.parentElement.querySelector('.tree-children');
+  if (!children) return;
+  const isExpanded = children.classList.contains('visible');
+  children.classList.toggle('visible');
+  label.classList.toggle('expanded');
+}
+
+// ============================================================
+// Lesson 3: JSX Playground
+// ============================================================
+function updateJSXOutput() {
+  const input = document.getElementById('jsxInput');
+  const output = document.getElementById('jsxOutput');
+  if (!input || !output) return;
+
+  try {
+    // Simple HTML rendering - the textarea contains HTML-like JSX
+    output.innerHTML = input.value;
+    output.style.color = '';
+  } catch (e) {
+    output.textContent = 'Error: ' + e.message;
+    output.style.color = 'var(--accent-pink)';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  const jsxInput = document.getElementById('jsxInput');
+  if (jsxInput) {
+    jsxInput.addEventListener('input', updateJSXOutput);
+    updateJSXOutput();
+  }
+});
+
+// ============================================================
+// Lesson 4: Props Playground
+// ============================================================
+function updatePropsPreview() {
+  const name = document.getElementById('propName').value || '...';
+  const role = document.getElementById('propRole').value || '...';
+  const status = document.getElementById('propStatus').value;
+
+  // Update code display
+  document.getElementById('propCodeName').textContent = name;
+  document.getElementById('propCodeRole').textContent = role;
+  document.getElementById('propCodeStatus').textContent = status;
+
+  // Update preview
+  document.getElementById('propDisplayName').textContent = name;
+  document.getElementById('propDisplayRole').textContent = role;
+  document.getElementById('propAvatar').textContent = name.charAt(0).toUpperCase();
+
+  const statusEl = document.getElementById('propDisplayStatus');
+  statusEl.textContent = status;
+
+  if (status === 'active') {
+    statusEl.style.background = 'rgba(52,211,153,0.15)';
+    statusEl.style.color = 'var(--accent-green)';
+  } else if (status === 'idle') {
+    statusEl.style.background = 'rgba(251,191,36,0.15)';
+    statusEl.style.color = 'var(--accent-yellow)';
+  } else {
+    statusEl.style.background = 'rgba(248,113,113,0.15)';
+    statusEl.style.color = 'var(--accent-pink)';
+  }
+}
+
+// ============================================================
+// Lesson 5: Counter
+// ============================================================
+let counterCount = 0;
+let counterRenders = 1;
+
+function counterAction(action) {
+  if (action === 'increment') counterCount++;
+  else if (action === 'decrement') counterCount--;
+  else if (action === 'reset') counterCount = 0;
+
+  counterRenders++;
+  document.getElementById('counterValue').textContent = counterCount;
+
+  const log = document.getElementById('counterLog');
+  log.innerHTML += '<div class="render-entry">Render #' + counterRenders + ': count = ' + counterCount + '</div>';
+  log.scrollTop = log.scrollHeight;
+}
+
+// ============================================================
+// Lesson 5: Toggle
+// ============================================================
+let toggleOn = false;
+
+function toggleAction() {
+  toggleOn = !toggleOn;
+  const indicator = document.getElementById('toggleIndicator');
+  const value = document.getElementById('toggleValue');
+  const state = document.getElementById('toggleState');
+
+  indicator.classList.toggle('on', toggleOn);
+  value.textContent = toggleOn.toString();
+  value.style.color = toggleOn ? 'var(--accent-green)' : 'var(--text-muted)';
+  state.innerHTML = 'const [isOn, setIsOn] = useState(<span style="color:' + (toggleOn ? 'var(--accent-green)' : 'var(--accent-pink)') + '">' + toggleOn + '</span>)';
+}
+
+// ============================================================
+// Lesson 5: Form Input
+// ============================================================
+function formAction() {
+  const input = document.getElementById('formInput');
+  const preview = document.getElementById('formPreview');
+  const state = document.getElementById('formState');
+  const val = input.value || '...';
+
+  preview.textContent = val;
+  state.innerHTML = 'const [name, setName] = useState(<span style="color:var(--accent-green)">"' + input.value + '"</span>)';
+}
+
+// ============================================================
+// Lesson 6: Dependency Array Demo
+// ============================================================
+let depMode = 'none';
+let depCount = 0;
+let depOther = 0;
+let depRenderCount = 0;
+
+function selectDepMode(mode, btn) {
+  btn.parentElement.querySelectorAll('.ibtn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  depMode = mode;
+
+  const codeEl = document.getElementById('depCode');
+  if (mode === 'none') {
+    codeEl.textContent = 'useEffect(() => { console.log("effect!") })';
+  } else if (mode === 'empty') {
+    codeEl.textContent = 'useEffect(() => { console.log("effect!") }, [])';
+  } else {
+    codeEl.textContent = 'useEffect(() => { console.log("effect!") }, [count])';
+  }
+
+  // Reset log
+  depCount = 0;
+  depOther = 0;
+  depRenderCount = 0;
+  const log = document.getElementById('depLog');
+  log.innerHTML = '<div class="effect-run">Component mounted.</div><div class="effect-run">Effect ran! (initial render)</div>';
+}
+
+function depAction(action) {
+  const log = document.getElementById('depLog');
+
+  if (action === 'clear') {
+    log.innerHTML = '';
+    depRenderCount = 0;
+    return;
+  }
+
+  depRenderCount++;
+  let effectRan = false;
+
+  if (action === 'count') {
+    depCount++;
+    log.innerHTML += '<div style="color:var(--text-muted);">count changed: ' + (depCount - 1) + ' &rarr; ' + depCount + '</div>';
+  } else if (action === 'other') {
+    depOther++;
+    log.innerHTML += '<div style="color:var(--text-muted);">otherState changed: ' + (depOther - 1) + ' &rarr; ' + depOther + '</div>';
+  }
+
+  log.innerHTML += '<div style="color:var(--text-dim);">Re-render #' + depRenderCount + '</div>';
+
+  if (depMode === 'none') {
+    effectRan = true;
+  } else if (depMode === 'empty') {
+    effectRan = false;
+  } else if (depMode === 'value') {
+    effectRan = (action === 'count');
+  }
+
+  if (effectRan) {
+    log.innerHTML += '<div class="effect-run">Effect ran!</div>';
+  } else {
+    log.innerHTML += '<div style="color:var(--text-faint);">Effect skipped (deps unchanged)</div>';
+  }
+
+  log.scrollTop = log.scrollHeight;
+}
+
+// ============================================================
+// Lesson 7: Rerender Tree
+// ============================================================
+function triggerRerender(target) {
+  // Reset all nodes
+  const allNodes = document.querySelectorAll('.rt-node');
+  allNodes.forEach(n => {
+    n.classList.remove('rerendered', 'state-owner');
+  });
+
+  if (target === 'reset') return;
+
+  const rerenderMap = {
+    app: ['rt-app', 'rt-header', 'rt-main', 'rt-footer', 'rt-logo', 'rt-nav', 'rt-agentlist', 'rt-sidebar', 'rt-card1', 'rt-card2', 'rt-card3'],
+    header: ['rt-header', 'rt-logo', 'rt-nav'],
+    agentlist: ['rt-agentlist', 'rt-card1', 'rt-card2', 'rt-card3']
+  };
+
+  const stateOwnerMap = {
+    app: 'rt-app',
+    header: 'rt-header',
+    agentlist: 'rt-agentlist'
+  };
+
+  // Mark state owner
+  const ownerEl = document.getElementById(stateOwnerMap[target]);
+  if (ownerEl) ownerEl.classList.add('state-owner');
+
+  // Animate re-renders with delay
+  const toRerender = rerenderMap[target] || [];
+  toRerender.forEach((id, i) => {
+    setTimeout(() => {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('rerendered');
+    }, i * 80);
+  });
+}
+
+// ============================================================
+// Lesson 7: Keys Demo
+// ============================================================
+const keyData = [
+  { id: '1', name: 'Claude', role: 'CTO' },
+  { id: '2', name: 'Sasha', role: 'Designer' },
+  { id: '3', name: 'Max', role: 'Engineer' },
+  { id: '4', name: 'Riley', role: 'PM' }
+];
+
+let currentKeyOrder = [...keyData];
+
+function shuffleKeys() {
+  // Fisher-Yates shuffle
+  const arr = [...currentKeyOrder];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  currentKeyOrder = arr;
+  renderKeyList();
+}
+
+function resetKeys() {
+  currentKeyOrder = [...keyData];
+  renderKeyList();
+}
+
+function renderKeyList() {
+  const container = document.getElementById('keyList');
+  container.innerHTML = '';
+  currentKeyOrder.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'key-item shuffled';
+    div.setAttribute('data-id', item.id);
+    div.innerHTML = '<span class="key-badge">key="' + item.id + '"</span><span class="key-name">' + item.name + ' &mdash; ' + item.role + '</span>';
+    container.appendChild(div);
+  });
+}
+</script>
+<script src="/js/shared.js"></script>
+</body>
+</html>

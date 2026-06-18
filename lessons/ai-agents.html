@@ -1,0 +1,1542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How AI Agents Work — The Fundamentals</title>
+<link rel="stylesheet" href="/css/shared.css">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+/* -- Top Nav -- */
+.top-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-primary);
+  padding: 10px 16px;
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+@media (min-width: 1024px) {
+  .top-nav { left: 280px; }
+}
+.top-nav::-webkit-scrollbar { height: 4px; }
+.top-nav::-webkit-scrollbar-thumb { background: var(--border-nav-btn); border-radius: 2px; }
+
+.nav-btn {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-nav-btn);
+  color: var(--text-muted);
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  white-space: nowrap;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.nav-btn:hover { border-color: var(--text-faint); color: var(--text-body); }
+.nav-btn.active {
+  background: var(--accent-blue-bg);
+  border-color: var(--accent-blue-bg);
+  color: var(--text-primary);
+}
+
+/* -- Container -- */
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 80px 20px 60px;
+}
+
+/* -- Lessons -- */
+.lesson { display: none; }
+.lesson.active { display: block; }
+
+.lesson h1 {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+}
+.lesson .subtitle {
+  font-size: 15px;
+  color: var(--text-muted);
+  margin-bottom: 32px;
+}
+
+h2 {
+  font-size: 22px;
+  color: var(--text-primary);
+  margin: 36px 0 14px;
+}
+h3 {
+  font-size: 18px;
+  color: var(--text-primary);
+  margin: 24px 0 10px;
+}
+
+p { margin-bottom: 16px; color: var(--text-body); }
+
+/* -- Cards -- */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-secondary);
+  border-radius: 10px;
+  padding: 24px;
+  margin: 20px 0;
+}
+
+/* -- Analogy boxes -- */
+.analogy {
+  background: var(--bg-analogy);
+  border: 1px solid var(--border-analogy);
+  border-radius: 10px;
+  padding: 20px 24px;
+  margin: 24px 0;
+}
+.analogy strong { color: var(--accent-indigo); }
+.analogy p { color: var(--text-body); margin-bottom: 0; }
+.analogy .analogy-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--accent-indigo);
+  margin-bottom: 8px;
+}
+
+/* -- Code blocks -- */
+pre {
+  background: var(--bg-code);
+  border: 1px solid var(--border-secondary);
+  border-radius: 8px;
+  padding: 16px 20px;
+  overflow-x: auto;
+  margin: 16px 0;
+  font-family: 'SF Mono', Monaco, monospace;
+  font-size: 14px;
+  line-height: 1.6;
+}
+code {
+  font-family: 'SF Mono', Monaco, monospace;
+  font-size: 13px;
+}
+.kw { color: var(--accent-purple); }
+.fn { color: var(--accent-blue); }
+.str { color: var(--accent-green); }
+.typ { color: var(--accent-yellow); }
+.cmt { color: var(--text-faint); font-style: italic; }
+
+/* inline code */
+p code, li code {
+  background: var(--bg-analogy);
+  padding: 2px 7px;
+  border-radius: 4px;
+  color: var(--accent-indigo);
+  font-size: 13px;
+}
+
+/* -- Interactive buttons row -- */
+.btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0;
+}
+.ibtn {
+  background: var(--bg-btn);
+  border: 1px solid var(--border-btn);
+  color: var(--text-nav);
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.ibtn:hover { border-color: var(--accent-blue); color: var(--text-secondary); }
+.ibtn.selected {
+  background: var(--bg-btn-selected);
+  border-color: var(--border-btn-selected);
+  color: var(--text-primary);
+}
+
+/* -- Next button -- */
+.next-btn {
+  display: inline-block;
+  background: var(--accent-blue-bg);
+  color: var(--text-primary);
+  border: none;
+  padding: 14px 36px;
+  border-radius: 10px;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 40px;
+  transition: background 0.2s;
+  font-family: inherit;
+  font-weight: 600;
+}
+.next-btn:hover { background: #1d4ed8; }
+
+/* -- Token stream -- */
+.token-stream {
+  background: var(--bg-code);
+  border: 1px solid var(--border-secondary);
+  border-radius: 10px;
+  padding: 24px;
+  margin: 20px 0;
+  min-height: 80px;
+  font-family: 'SF Mono', Monaco, monospace;
+  font-size: 16px;
+  line-height: 1.8;
+  color: var(--text-primary);
+}
+.token-stream .cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1.2em;
+  background: var(--accent-blue);
+  animation: blink 1s step-end infinite;
+  vertical-align: text-bottom;
+  margin-left: 2px;
+}
+@keyframes blink {
+  50% { opacity: 0; }
+}
+.token-stream .token-word {
+  display: inline;
+  transition: color 0.3s;
+}
+.token-stream .token-new {
+  color: var(--accent-green);
+}
+
+/* -- Prompt builder -- */
+.prompt-builder {
+  background: var(--bg-card);
+  border: 1px solid var(--border-secondary);
+  border-radius: 10px;
+  padding: 20px;
+  margin: 20px 0;
+}
+.prompt-section {
+  background: var(--bg-code);
+  border: 1px solid var(--border-secondary);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin: 8px 0;
+  font-family: 'SF Mono', Monaco, monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  opacity: 0.3;
+  transition: all 0.4s ease;
+  max-height: 0;
+  overflow: hidden;
+  padding: 0 16px;
+  margin: 0;
+  border: none;
+}
+.prompt-section.visible {
+  opacity: 1;
+  max-height: 300px;
+  padding: 12px 16px;
+  margin: 8px 0;
+  border: 1px solid var(--border-secondary);
+}
+.prompt-section .label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--accent-purple);
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+.token-counter {
+  text-align: right;
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 8px;
+  font-family: 'SF Mono', Monaco, monospace;
+}
+.token-counter span { color: var(--accent-yellow); font-weight: 600; }
+
+/* -- Tool loop diagram -- */
+.tool-loop {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 20px 0;
+}
+.loop-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px 20px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  margin: 4px 0;
+  opacity: 0.3;
+  transition: all 0.4s ease;
+  transform: translateY(8px);
+}
+.loop-step.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.loop-step.active-step {
+  border-color: var(--accent-blue);
+  background: var(--bg-card);
+}
+.loop-step-num {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--bg-btn);
+  border: 2px solid var(--border-btn);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent-blue);
+  flex-shrink: 0;
+}
+.loop-step.active-step .loop-step-num {
+  background: var(--bg-btn-selected);
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 10px rgba(59,130,246,0.3);
+}
+.loop-step-content { flex: 1; }
+.loop-step-content strong { color: var(--text-primary); font-size: 15px; }
+.loop-step-content p { color: var(--text-muted); font-size: 13px; margin: 4px 0 0; }
+.loop-connector {
+  width: 2px;
+  height: 16px;
+  background: var(--border-primary);
+  margin-left: 31px;
+}
+.loop-connector.visible { background: var(--accent-blue); }
+
+/* -- Agent trace -- */
+.agent-trace {
+  background: var(--bg-card);
+  border: 1px solid var(--border-secondary);
+  border-radius: 10px;
+  padding: 20px;
+  margin: 20px 0;
+  max-height: 500px;
+  overflow-y: auto;
+}
+.trace-entry {
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin: 6px 0;
+  font-family: 'SF Mono', Monaco, monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: all 0.4s ease;
+}
+.trace-entry.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.trace-think {
+  background: var(--bg-analogy);
+  border: 1px solid var(--border-analogy);
+  color: var(--accent-indigo);
+}
+.trace-tool {
+  background: var(--bg-btn);
+  border: 1px solid var(--border-btn);
+  color: var(--accent-blue);
+}
+.trace-result {
+  background: var(--bg-code);
+  border: 1px solid var(--border-secondary);
+  color: var(--accent-green);
+}
+.trace-error {
+  background: #1a0a0a;
+  border: 1px solid #4a1a1a;
+  color: #f87171;
+}
+.trace-done {
+  background: #0a1a0a;
+  border: 1px solid #1a4a1a;
+  color: var(--accent-green);
+  font-weight: 600;
+}
+.trace-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+  opacity: 0.7;
+}
+
+/* -- Adapter grid -- */
+.adapter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  margin: 20px 0;
+}
+.adapter-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.adapter-card:hover { border-color: var(--accent-blue); }
+.adapter-card.selected { border-color: var(--accent-blue); background: var(--bg-card); box-shadow: 0 0 16px rgba(59,130,246,0.1); }
+.adapter-card h4 { color: var(--text-primary); margin-bottom: 4px; font-size: 16px; }
+.adapter-card .adapter-type { color: var(--accent-purple); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+.adapter-card p { color: var(--text-muted); font-size: 13px; margin: 0; }
+.adapter-detail {
+  background: var(--bg-code);
+  border: 1px solid var(--border-secondary);
+  border-radius: 10px;
+  padding: 20px;
+  margin-top: 16px;
+  display: none;
+  font-size: 14px;
+}
+.adapter-detail.visible { display: block; }
+
+/* -- Cost calculator -- */
+.cost-calc {
+  background: var(--bg-card);
+  border: 1px solid var(--border-secondary);
+  border-radius: 10px;
+  padding: 24px;
+  margin: 20px 0;
+}
+.cost-calc label {
+  display: block;
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.cost-calc input[type="range"] {
+  width: 100%;
+  margin: 4px 0 16px;
+  accent-color: var(--accent-blue);
+}
+.cost-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-primary);
+  font-size: 14px;
+}
+.cost-row:last-child { border-bottom: none; }
+.cost-row .cost-label { color: var(--text-muted); }
+.cost-row .cost-value { color: var(--text-primary); font-weight: 600; font-family: 'SF Mono', Monaco, monospace; }
+.cost-total {
+  margin-top: 16px;
+  padding: 16px;
+  background: var(--bg-btn-selected);
+  border-radius: 8px;
+  text-align: center;
+}
+.cost-total .amount { font-size: 28px; font-weight: 700; color: var(--accent-yellow); font-family: 'SF Mono', Monaco, monospace; }
+.cost-total .label { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+/* -- Lists -- */
+ul, ol { padding-left: 24px; margin-bottom: 16px; }
+li { margin-bottom: 8px; color: var(--text-body); }
+
+/* -- Scrollbar -- */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background: var(--border-nav-btn); border-radius: 3px; }
+
+/* -- Fade-in animation -- */
+.fade-in {
+  animation: fadeIn 0.4s ease;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* -- Responsive -- */
+@media (max-width: 640px) {
+  .top-nav { padding: 8px 10px; gap: 4px; }
+  .nav-btn { padding: 5px 10px; font-size: 12px; }
+  .container { padding: 70px 14px 40px; }
+  .lesson h1 { font-size: 24px; }
+  .adapter-grid { grid-template-columns: 1fr; }
+}
+
+.breadcrumb { margin-top: 64px; padding-top: 8px; }
+
+.next-course-banner { background: var(--bg-secondary); border: 1px solid var(--border-primary); border-radius: 10px; padding: 24px; margin-top: 32px; text-align: center; }
+.next-course-banner h3 { color: var(--text-primary); margin: 0 0 8px; font-size: 18px; }
+.next-course-banner p { color: var(--text-muted); font-size: 15px; margin: 0 0 16px; }
+.next-course-banner a { display: inline-block; background: var(--accent-blue-bg); color: var(--text-primary); padding: 10px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px; transition: background 0.2s; }
+.next-course-banner a:hover { background: #3b82f6; }
+</style>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <a href="/index.html" class="sidebar-logo">The Fundamentals</a>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="sidebar-section-title">Courses</div>
+    <a href="/lessons/databases.html" class="sidebar-link" data-course="databases">
+      <span class="sidebar-num">01</span> How Databases Work
+    </a>
+    <a href="/lessons/codebase.html" class="sidebar-link" data-course="codebase">
+      <span class="sidebar-num">02</span> The Codebase
+    </a>
+    <a href="/lessons/apis.html" class="sidebar-link" data-course="apis">
+      <span class="sidebar-num">03</span> APIs &amp; HTTP
+    </a>
+    <a href="/lessons/build.html" class="sidebar-link" data-course="build">
+      <span class="sidebar-num">04</span> Build a Mini App
+    </a>
+    <a href="/lessons/deployment.html" class="sidebar-link" data-course="deployment">
+      <span class="sidebar-num">05</span> How Deployment Works
+    </a>
+    <a href="/lessons/git.html" class="sidebar-link" data-course="git">
+      <span class="sidebar-num">06</span> How Git Works
+    </a>
+    <a href="/lessons/authentication.html" class="sidebar-link" data-course="authentication">
+      <span class="sidebar-num">07</span> How Auth Works
+    </a>
+    <a href="/lessons/typescript.html" class="sidebar-link" data-course="typescript">
+      <span class="sidebar-num">08</span> TypeScript
+    </a>
+    <a href="/lessons/react.html" class="sidebar-link" data-course="react">
+      <span class="sidebar-num">09</span> React
+    </a>
+    <a href="/lessons/testing.html" class="sidebar-link" data-course="testing">
+      <span class="sidebar-num">10</span> Testing
+    </a>
+    <a href="/lessons/ai-agents.html" class="sidebar-link" data-course="ai-agents" aria-current="page">
+      <span class="sidebar-num">11</span> How AI Agents Work
+    </a>
+    <a href="/lessons/shipping.html" class="sidebar-link" data-course="shipping">
+      <span class="sidebar-num">12</span> How to Ship
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <button class="theme-toggle" id="theme-toggle">
+      <span class="theme-icon" id="theme-icon">☀️</span>
+      <span class="theme-label" id="theme-label">Light Mode</span>
+    </button>
+  </div>
+</aside>
+<button class="sidebar-toggle" id="sidebar-toggle">☰</button>
+
+<div class="content-wrapper">
+
+<div class="breadcrumb"><a href="/index.html">Home</a><span class="sep">›</span><span>How AI Agents Work</span></div>
+
+<!-- Top Nav -->
+<nav class="top-nav" id="topNav">
+  <button class="nav-btn active" onclick="goToLesson(0)">1. What is an LLM?</button>
+  <button class="nav-btn" onclick="goToLesson(1)">2. Prompts</button>
+  <button class="nav-btn" onclick="goToLesson(2)">3. Tool Use</button>
+  <button class="nav-btn" onclick="goToLesson(3)">4. Agent Loop</button>
+  <button class="nav-btn" onclick="goToLesson(4)">5. Claude Code</button>
+  <button class="nav-btn" onclick="goToLesson(5)">6. Adapters</button>
+  <button class="nav-btn" onclick="goToLesson(6)">7. Costs</button>
+  <button class="nav-btn" onclick="goToLesson(7)">8. The Future</button>
+</nav>
+
+<div class="container">
+
+<!-- ============================================================ -->
+<!-- LESSON 1: WHAT IS AN LLM? -->
+<!-- ============================================================ -->
+<div class="lesson active" id="lesson0">
+  <h1>What is an LLM?</h1>
+  <p class="subtitle">Lesson 1 of 8 &mdash; The engine behind AI agents</p>
+
+  <h2>Large Language Model</h2>
+  <p>LLM stands for <strong style="color:var(--text-primary)">Large Language Model</strong>. It's a model trained on enormous amounts of text &mdash; books, websites, code, conversations &mdash; that learned to predict what comes next.</p>
+
+  <p>That's the core idea. Given some text, the model predicts the <strong style="color:var(--accent-blue)">next most likely word</strong> (technically, the next "token"). Then it predicts the next one after that. And the next one. Until it's generated a complete response.</p>
+
+  <div class="analogy">
+    <div class="analogy-label">Analogy</div>
+    <p><strong>Autocomplete on your phone.</strong> When you type "I'll be there in", your phone suggests "5 minutes" or "a bit." An LLM is the same idea, but trained on billions of pages and capable of generating entire essays, code, and conversations &mdash; not just two-word suggestions.</p>
+  </div>
+
+  <h2>Watch it generate</h2>
+  <p>Click "Generate" to see how an LLM produces a response &mdash; one token at a time.</p>
+
+  <div class="card">
+    <p style="margin-bottom:8px; color:var(--text-muted); font-size:13px;">PROMPT</p>
+    <p style="color:var(--text-primary); margin-bottom:16px; font-family:'SF Mono', Monaco, monospace; font-size:14px;">Explain what a database is in one sentence.</p>
+    <p style="margin-bottom:8px; color:var(--text-muted); font-size:13px;">RESPONSE</p>
+    <div class="token-stream" id="tokenStream">
+      <span class="cursor" id="streamCursor"></span>
+    </div>
+    <div class="btn-row" style="margin-top:16px;">
+      <button class="ibtn" id="generateBtn" onclick="runTokenStream()">Generate</button>
+      <button class="ibtn" onclick="resetTokenStream()">Reset</button>
+    </div>
+  </div>
+
+  <h2>What are tokens?</h2>
+  <p>LLMs don't read words &mdash; they read <strong style="color:var(--accent-yellow)">tokens</strong>. A token is a chunk of text, usually about 3/4 of a word. The word "fundamentals" might be split into <code>fund</code> <code>ament</code> <code>als</code> &mdash; three tokens.</p>
+
+  <p>Why does this matter? Because everything in the LLM world is measured in tokens: how much it can read (context window), how much it can write, and how much it costs. More tokens = more money.</p>
+
+  <div class="card">
+    <p style="color:var(--text-primary); font-weight:600; margin-bottom:12px;">Token math</p>
+    <p style="color:var(--text-muted); font-size:14px; margin-bottom:4px;"><code>Hello</code> = 1 token</p>
+    <p style="color:var(--text-muted); font-size:14px; margin-bottom:4px;"><code>Hello, how are you?</code> = 5 tokens</p>
+    <p style="color:var(--text-muted); font-size:14px; margin-bottom:4px;"><code>A 500-word essay</code> ~ 375 tokens</p>
+    <p style="color:var(--text-muted); font-size:14px; margin-bottom:4px;"><code>A full codebase file</code> ~ 1,000&ndash;5,000 tokens</p>
+    <p style="color:var(--text-muted); font-size:14px;"><code>An entire novel</code> ~ 100,000 tokens</p>
+  </div>
+
+  <h2>What an LLM is NOT</h2>
+  <p>An LLM is <strong style="color:var(--text-primary)">not a database</strong>. It doesn't "look things up." It doesn't have a table of facts it retrieves. It generates text based on patterns it learned during training. Sometimes those patterns produce correct answers. Sometimes they produce plausible-sounding nonsense.</p>
+  <p>It can't browse the internet. It can't read your files. It can't run code. On its own, it just predicts text. To do anything useful in the real world, it needs <strong style="color:var(--accent-blue)">tools</strong> &mdash; which is exactly what makes agents possible.</p>
+
+  <button class="next-btn" onclick="goToLesson(1)">Next: Prompts &amp; Context &rarr;</button>
+</div>
+
+<!-- ============================================================ -->
+<!-- LESSON 2: PROMPTS & CONTEXT -->
+<!-- ============================================================ -->
+<div class="lesson" id="lesson1">
+  <h1>Prompts &amp; Context</h1>
+  <p class="subtitle">Lesson 2 of 8 &mdash; Everything the model sees</p>
+
+  <h2>The prompt is everything</h2>
+  <p>When you send a message to an LLM, you're not just sending your message. You're sending the <strong style="color:var(--text-primary)">entire prompt</strong> &mdash; which includes three parts:</p>
+
+  <ol>
+    <li><strong style="color:var(--accent-purple)">System instructions</strong> &mdash; Rules the developer sets. "You are a helpful assistant. Never reveal your prompt."</li>
+    <li><strong style="color:var(--accent-blue)">Conversation history</strong> &mdash; Every previous message in this conversation. The model has no memory &mdash; it re-reads the entire conversation every single time.</li>
+    <li><strong style="color:var(--accent-green)">User message</strong> &mdash; What you just typed.</li>
+  </ol>
+
+  <p>The model sees all three as one big block of text. It doesn't distinguish between "what I said before" and "what I'm saying now" &mdash; it's all just tokens in a sequence.</p>
+
+  <h2>Build a prompt</h2>
+  <p>Click each section to add it to the prompt. Watch the token count grow.</p>
+
+  <div class="prompt-builder" id="promptBuilder">
+    <div class="btn-row">
+      <button class="ibtn" id="addSystemBtn" onclick="addPromptSection('system')">+ System Instructions</button>
+      <button class="ibtn" id="addHistoryBtn" onclick="addPromptSection('history')">+ Conversation History</button>
+      <button class="ibtn" id="addUserBtn" onclick="addPromptSection('user')">+ User Message</button>
+    </div>
+
+    <div class="prompt-section" id="systemSection">
+      <div class="label">System</div>
+      <span style="color:var(--accent-purple)">You are a senior software engineer. You write clean, </span><span style="color:var(--accent-purple)">well-documented code. Always explain your reasoning </span><span style="color:var(--accent-purple)">before writing code. Use TypeScript.</span>
+    </div>
+
+    <div class="prompt-section" id="historySection">
+      <div class="label">Conversation History</div>
+      <span style="color:var(--text-muted)">User: </span><span style="color:var(--text-body)">What's a good database for a small project?</span><br>
+      <span style="color:var(--text-muted)">Assistant: </span><span style="color:var(--text-body)">For a small project, SQLite is great. It's a file-based database with zero setup...</span><br>
+      <span style="color:var(--text-muted)">User: </span><span style="color:var(--text-body)">Can you show me how to set it up?</span><br>
+      <span style="color:var(--text-muted)">Assistant: </span><span style="color:var(--text-body)">Sure! First install the package: npm install better-sqlite3...</span>
+    </div>
+
+    <div class="prompt-section" id="userSection">
+      <div class="label">User Message</div>
+      <span style="color:var(--accent-green)">Now add a users table with id, name, and email columns.</span>
+    </div>
+
+    <div class="token-counter">
+      Tokens: <span id="tokenCount">0</span> / 200,000 context window
+    </div>
+  </div>
+
+  <h2>The context window</h2>
+
+  <div class="analogy">
+    <div class="analogy-label">Analogy</div>
+    <p><strong>A desk.</strong> The context window is like a desk. You can only fit so many papers on it at once. System instructions, conversation history, file contents, tool results &mdash; all of it takes up space. When the desk is full, something has to fall off. That's why long conversations can "forget" earlier context &mdash; the oldest messages get pushed out.</p>
+  </div>
+
+  <p>Context windows have grown rapidly:</p>
+  <div class="card">
+    <p style="color:var(--text-muted); font-size:14px; margin-bottom:4px;"><strong style="color:var(--text-primary)">GPT-3 (2020):</strong> 4,096 tokens (~3 pages)</p>
+    <p style="color:var(--text-muted); font-size:14px; margin-bottom:4px;"><strong style="color:var(--text-primary)">GPT-4 (2023):</strong> 128,000 tokens (~96 pages)</p>
+    <p style="color:var(--text-muted); font-size:14px; margin-bottom:4px;"><strong style="color:var(--text-primary)">Claude (2025):</strong> 200,000 tokens (~150 pages)</p>
+    <p style="color:var(--text-muted); font-size:14px;"><strong style="color:var(--text-primary)">Claude with extended thinking:</strong> 1,000,000 tokens (~750 pages)</p>
+  </div>
+
+  <p>Bigger windows mean agents can read more files, hold longer conversations, and handle more complex tasks without losing track of what they're doing.</p>
+
+  <button class="next-btn" onclick="goToLesson(2)">Next: Tool Use &rarr;</button>
+</div>
+
+<!-- ============================================================ -->
+<!-- LESSON 3: TOOL USE -->
+<!-- ============================================================ -->
+<div class="lesson" id="lesson2">
+  <h1>Tool Use</h1>
+  <p class="subtitle">Lesson 3 of 8 &mdash; The breakthrough that makes agents possible</p>
+
+  <h2>The problem</h2>
+  <p>An LLM by itself can only generate text. It can't read a file. It can't search the web. It can't run code. It can't do anything in the real world.</p>
+
+  <p>But what if the model could <strong style="color:var(--text-primary)">ask</strong> to use tools?</p>
+
+  <h2>How tool use works</h2>
+  <p>Instead of just generating text, the model can generate a <strong style="color:var(--accent-blue)">structured tool call</strong> &mdash; a request to run a specific tool with specific arguments. The system running the model (the "host") then executes the tool and feeds the result back.</p>
+
+  <p>Click through each step to see the loop:</p>
+
+  <div class="tool-loop" id="toolLoop">
+    <div class="loop-step" id="toolStep0">
+      <div class="loop-step-num">1</div>
+      <div class="loop-step-content">
+        <strong>User sends a message</strong>
+        <p>"What files are in the src directory?"</p>
+      </div>
+    </div>
+    <div class="loop-connector" id="toolConn0"></div>
+    <div class="loop-step" id="toolStep1">
+      <div class="loop-step-num">2</div>
+      <div class="loop-step-content">
+        <strong>Model generates a tool call</strong>
+        <p style="font-family:'SF Mono', Monaco, monospace; color:var(--accent-blue);">{ tool: "Bash", args: { command: "ls src/" } }</p>
+      </div>
+    </div>
+    <div class="loop-connector" id="toolConn1"></div>
+    <div class="loop-step" id="toolStep2">
+      <div class="loop-step-num">3</div>
+      <div class="loop-step-content">
+        <strong>System executes the tool</strong>
+        <p>The host runs <code>ls src/</code> on the actual computer and captures the output.</p>
+      </div>
+    </div>
+    <div class="loop-connector" id="toolConn2"></div>
+    <div class="loop-step" id="toolStep3">
+      <div class="loop-step-num">4</div>
+      <div class="loop-step-content">
+        <strong>Result goes back to the model</strong>
+        <p style="font-family:'SF Mono', Monaco, monospace; color:var(--accent-green);">index.ts &nbsp; utils.ts &nbsp; components/ &nbsp; lib/</p>
+      </div>
+    </div>
+    <div class="loop-connector" id="toolConn3"></div>
+    <div class="loop-step" id="toolStep4">
+      <div class="loop-step-num">5</div>
+      <div class="loop-step-content">
+        <strong>Model generates a response</strong>
+        <p>"The src directory contains index.ts, utils.ts, a components folder, and a lib folder."</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="ibtn" id="toolStepBtn" onclick="advanceToolLoop()">Step through the loop</button>
+    <button class="ibtn" onclick="resetToolLoop()">Reset</button>
+  </div>
+
+  <h2>This is exactly what Claude Code does</h2>
+  <p>When you use Claude Code and it reads a file, it's not "looking at" the file. It's generating a tool call like <code>{ tool: "Read", file: "src/index.ts" }</code>. The Claude Code system executes that tool, reads the actual file from your disk, and sends the contents back to the model as text.</p>
+
+  <p>The model never touches your computer directly. It just asks, and the system acts on its behalf.</p>
+
+  <div class="card">
+    <p style="color:var(--text-primary); font-weight:600; margin-bottom:12px;">Available tool types</p>
+    <p style="color:var(--text-body); font-size:14px; margin-bottom:8px;"><strong style="color:var(--accent-blue)">Read</strong> &mdash; Read a file from disk</p>
+    <p style="color:var(--text-body); font-size:14px; margin-bottom:8px;"><strong style="color:var(--accent-green)">Edit</strong> &mdash; Modify a file's contents</p>
+    <p style="color:var(--text-body); font-size:14px; margin-bottom:8px;"><strong style="color:var(--accent-purple)">Bash</strong> &mdash; Run a shell command</p>
+    <p style="color:var(--text-body); font-size:14px; margin-bottom:8px;"><strong style="color:var(--accent-yellow)">Grep</strong> &mdash; Search file contents</p>
+    <p style="color:var(--text-body); font-size:14px; margin-bottom:8px;"><strong style="color:var(--accent-orange)">Glob</strong> &mdash; Find files by name pattern</p>
+    <p style="color:var(--text-body); font-size:14px;"><strong style="color:var(--accent-pink)">WebFetch</strong> &mdash; Read a URL</p>
+  </div>
+
+  <button class="next-btn" onclick="goToLesson(3)">Next: The Agent Loop &rarr;</button>
+</div>
+
+<!-- ============================================================ -->
+<!-- LESSON 4: THE AGENT LOOP -->
+<!-- ============================================================ -->
+<div class="lesson" id="lesson3">
+  <h1>The Agent Loop</h1>
+  <p class="subtitle">Lesson 4 of 8 &mdash; LLM + tools + a loop</p>
+
+  <h2>What makes an agent</h2>
+  <p>An AI agent is three things combined:</p>
+  <ol>
+    <li><strong style="color:var(--accent-blue)">An LLM</strong> &mdash; the brain that decides what to do</li>
+    <li><strong style="color:var(--accent-green)">Tools</strong> &mdash; capabilities it can invoke (read files, run code, search)</li>
+    <li><strong style="color:var(--accent-purple)">A loop</strong> &mdash; it keeps going until the task is done</li>
+  </ol>
+
+  <p>The loop is what separates an agent from a chatbot. A chatbot gives one response. An agent works until it's finished &mdash; reading files, trying things, fixing errors, iterating.</p>
+
+  <h2>The core loop</h2>
+  <pre class="code-block"><span class="kw">while</span> (task is not complete) {
+  <span class="cmt">// 1. Think about what to do next</span>
+  <span class="typ">response</span> = <span class="fn">llm.generate</span>(prompt + context)
+
+  <span class="kw">if</span> (response is a <span class="typ">tool_call</span>) {
+    <span class="cmt">// 2. Execute the tool</span>
+    <span class="typ">result</span> = <span class="fn">execute</span>(response.tool, response.args)
+    <span class="cmt">// 3. Add result to context</span>
+    context.<span class="fn">append</span>(result)
+    <span class="cmt">// 4. Loop back to step 1</span>
+  } <span class="kw">else</span> {
+    <span class="cmt">// Done — the model gave a final text response</span>
+    <span class="kw">return</span> response
+  }
+}</pre>
+
+  <div class="analogy">
+    <div class="analogy-label">Analogy</div>
+    <p><strong>A new employee.</strong> Imagine hiring someone smart who has never seen your codebase. You give them instructions (the prompt), they have skills (tools), and they work: read the code, make changes, run tests, fix errors, repeat. They don't ask you at every step &mdash; they figure it out. That's an agent.</p>
+  </div>
+
+  <h2>Trace an agent completing a task</h2>
+  <p>Click "Next Step" to watch an agent fix a failing test. This is what's actually happening behind the scenes when you ask Claude Code to do something.</p>
+
+  <div class="agent-trace" id="agentTrace">
+    <div class="trace-entry trace-think" id="trace0">
+      <div class="trace-label">thinking</div>
+      The user wants me to fix the failing test in utils.test.ts. Let me start by reading the test file to understand what's failing.
+    </div>
+    <div class="trace-entry trace-tool" id="trace1">
+      <div class="trace-label">tool call</div>
+      Read({ file: "src/utils.test.ts" })
+    </div>
+    <div class="trace-entry trace-result" id="trace2">
+      <div class="trace-label">result</div>
+      test("formatDate returns readable date") ... Expected "June 15, 2025" but received "2025-06-15"
+    </div>
+    <div class="trace-entry trace-think" id="trace3">
+      <div class="trace-label">thinking</div>
+      The formatDate function is returning ISO format instead of a readable format. Let me read the source file.
+    </div>
+    <div class="trace-entry trace-tool" id="trace4">
+      <div class="trace-label">tool call</div>
+      Read({ file: "src/utils.ts" })
+    </div>
+    <div class="trace-entry trace-result" id="trace5">
+      <div class="trace-label">result</div>
+      function formatDate(d: Date) { return d.toISOString().split('T')[0]; }
+    </div>
+    <div class="trace-entry trace-think" id="trace6">
+      <div class="trace-label">thinking</div>
+      Found it. It's using toISOString() which gives "2025-06-15". The test expects "June 15, 2025", so I need to use toLocaleDateString() instead.
+    </div>
+    <div class="trace-entry trace-tool" id="trace7">
+      <div class="trace-label">tool call</div>
+      Edit({ file: "src/utils.ts", old: "d.toISOString().split('T')[0]", new: "d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })" })
+    </div>
+    <div class="trace-entry trace-result" id="trace8">
+      <div class="trace-label">result</div>
+      File edited successfully.
+    </div>
+    <div class="trace-entry trace-tool" id="trace9">
+      <div class="trace-label">tool call</div>
+      Bash({ command: "npm test" })
+    </div>
+    <div class="trace-entry trace-error" id="trace10">
+      <div class="trace-label">error</div>
+      FAIL: 1 test failed. formatCurrency &mdash; TypeError: amount.toFixed is not a function
+    </div>
+    <div class="trace-entry trace-think" id="trace11">
+      <div class="trace-label">thinking</div>
+      The date test probably passes now, but there's another failing test. Let me look at formatCurrency &mdash; the amount parameter might need to be converted to a number.
+    </div>
+    <div class="trace-entry trace-tool" id="trace12">
+      <div class="trace-label">tool call</div>
+      Edit({ file: "src/utils.ts", old: "function formatCurrency(amount)", new: "function formatCurrency(amount: number)" })
+    </div>
+    <div class="trace-entry trace-result" id="trace13">
+      <div class="trace-label">result</div>
+      File edited successfully.
+    </div>
+    <div class="trace-entry trace-tool" id="trace14">
+      <div class="trace-label">tool call</div>
+      Bash({ command: "npm test" })
+    </div>
+    <div class="trace-entry trace-done" id="trace15">
+      <div class="trace-label">result</div>
+      PASS: All 4 tests passed.
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="ibtn" id="traceStepBtn" onclick="advanceTrace()">Next Step</button>
+    <button class="ibtn" onclick="resetTrace()">Reset</button>
+  </div>
+
+  <p style="margin-top:24px;">Count the tool calls: <strong style="color:var(--text-primary)">6 tool uses</strong> across the loop. Read, read, edit, run, edit, run. The agent kept going until all tests passed &mdash; exactly like a human developer would.</p>
+
+  <button class="next-btn" onclick="goToLesson(4)">Next: How Claude Code Works &rarr;</button>
+</div>
+
+<!-- ============================================================ -->
+<!-- LESSON 5: HOW CLAUDE CODE WORKS -->
+<!-- ============================================================ -->
+<div class="lesson" id="lesson4">
+  <h1>How Claude Code Works</h1>
+  <p class="subtitle">Lesson 5 of 8 &mdash; The agent you've been talking to</p>
+
+  <h2>The tools Claude Code uses</h2>
+  <p>Claude Code is an agent built on Claude. You give it a task, and it uses a specific set of tools to complete it. Here are the main ones:</p>
+
+  <div class="card">
+    <p style="color:var(--accent-blue); font-weight:600; margin-bottom:16px; font-size:16px;">Claude Code's Toolbox</p>
+
+    <div style="display:flex; gap:12px; align-items:flex-start; margin-bottom:16px; flex-wrap:wrap;">
+      <div style="background:var(--bg-btn); border:1px solid var(--border-btn); border-radius:8px; padding:12px 16px; flex:1; min-width:200px;">
+        <p style="color:var(--accent-blue); font-weight:600; margin-bottom:4px; font-size:14px;">Read</p>
+        <p style="color:var(--text-muted); font-size:13px; margin:0;">Opens and reads any file on your computer. The model sees the file contents as text in its context.</p>
+      </div>
+      <div style="background:var(--bg-btn); border:1px solid var(--border-btn); border-radius:8px; padding:12px 16px; flex:1; min-width:200px;">
+        <p style="color:var(--accent-green); font-weight:600; margin-bottom:4px; font-size:14px;">Edit</p>
+        <p style="color:var(--text-muted); font-size:13px; margin:0;">Modifies a file by replacing specific text. Surgical edits, not full rewrites.</p>
+      </div>
+    </div>
+    <div style="display:flex; gap:12px; align-items:flex-start; margin-bottom:16px; flex-wrap:wrap;">
+      <div style="background:var(--bg-btn); border:1px solid var(--border-btn); border-radius:8px; padding:12px 16px; flex:1; min-width:200px;">
+        <p style="color:var(--accent-purple); font-weight:600; margin-bottom:4px; font-size:14px;">Bash</p>
+        <p style="color:var(--text-muted); font-size:13px; margin:0;">Runs any shell command: npm test, git status, curl, whatever. Sees the stdout output.</p>
+      </div>
+      <div style="background:var(--bg-btn); border:1px solid var(--border-btn); border-radius:8px; padding:12px 16px; flex:1; min-width:200px;">
+        <p style="color:var(--accent-yellow); font-weight:600; margin-bottom:4px; font-size:14px;">Grep / Glob</p>
+        <p style="color:var(--text-muted); font-size:13px; margin:0;">Search across your codebase. Grep searches file contents; Glob finds files by name pattern.</p>
+      </div>
+    </div>
+    <div style="display:flex; gap:12px; align-items:flex-start; flex-wrap:wrap;">
+      <div style="background:var(--bg-btn); border:1px solid var(--border-btn); border-radius:8px; padding:12px 16px; flex:1; min-width:200px;">
+        <p style="color:var(--accent-orange); font-weight:600; margin-bottom:4px; font-size:14px;">Write</p>
+        <p style="color:var(--text-muted); font-size:13px; margin:0;">Creates a new file or completely overwrites an existing one.</p>
+      </div>
+      <div style="background:var(--bg-btn); border:1px solid var(--border-btn); border-radius:8px; padding:12px 16px; flex:1; min-width:200px;">
+        <p style="color:var(--accent-pink); font-weight:600; margin-bottom:4px; font-size:14px;">WebFetch</p>
+        <p style="color:var(--text-muted); font-size:13px; margin:0;">Fetches the contents of a URL. Useful for reading documentation or APIs.</p>
+      </div>
+    </div>
+  </div>
+
+  <h2>A real task, step by step</h2>
+  <p>Say you ask Claude Code: <strong style="color:var(--text-primary)">"Add a loading spinner to the dashboard page."</strong></p>
+  <p>Here's the actual flow of tool calls:</p>
+
+  <pre class="code-block"><span class="cmt">// Step 1: Find the dashboard file</span>
+<span class="fn">Glob</span>({ pattern: <span class="str">"**/dashboard*"</span> })
+<span class="cmt">// Result: src/pages/Dashboard.tsx</span>
+
+<span class="cmt">// Step 2: Read it</span>
+<span class="fn">Read</span>({ file: <span class="str">"src/pages/Dashboard.tsx"</span> })
+<span class="cmt">// Result: [file contents — 142 lines of React]</span>
+
+<span class="cmt">// Step 3: Check if a Spinner component exists</span>
+<span class="fn">Grep</span>({ pattern: <span class="str">"Spinner|Loading"</span>, glob: <span class="str">"**/*.tsx"</span> })
+<span class="cmt">// Result: src/components/Spinner.tsx</span>
+
+<span class="cmt">// Step 4: Read the Spinner component</span>
+<span class="fn">Read</span>({ file: <span class="str">"src/components/Spinner.tsx"</span> })
+<span class="cmt">// Result: [Spinner component source code]</span>
+
+<span class="cmt">// Step 5: Edit Dashboard to add the spinner</span>
+<span class="fn">Edit</span>({ file: <span class="str">"src/pages/Dashboard.tsx"</span>,
+  old: <span class="str">"return &lt;div&gt;{data.map(..."</span>,
+  new: <span class="str">"if (loading) return &lt;Spinner /&gt;;\n  return &lt;div&gt;{data.map(..."</span>
+})
+
+<span class="cmt">// Step 6: Add the import</span>
+<span class="fn">Edit</span>({ file: <span class="str">"src/pages/Dashboard.tsx"</span>,
+  old: <span class="str">"import { useEffect }"</span>,
+  new: <span class="str">"import { useEffect }\nimport { Spinner } from '../components/Spinner'"</span>
+})
+
+<span class="cmt">// Step 7: Verify it compiles</span>
+<span class="fn">Bash</span>({ command: <span class="str">"npx tsc --noEmit"</span> })
+<span class="cmt">// Result: No errors</span></pre>
+
+  <p><strong style="color:var(--text-primary)">7 tool calls</strong>. Find, read, search, read, edit, edit, verify. The agent didn't ask you anything &mdash; it figured out the approach by reading your code.</p>
+
+  <h2>You're experiencing this right now</h2>
+  <p>This very tutorial was written by an agent using these exact tools. It read your existing course files (Read), understood the patterns (context), and generated this HTML (Write). The same loop, the same tools, the same process.</p>
+
+  <button class="next-btn" onclick="goToLesson(5)">Next: Adapters &amp; Orchestration &rarr;</button>
+</div>
+
+<!-- ============================================================ -->
+<!-- LESSON 6: ADAPTERS & ORCHESTRATION -->
+<!-- ============================================================ -->
+<div class="lesson" id="lesson5">
+  <h1>Adapters &amp; Orchestration</h1>
+  <p class="subtitle">Lesson 6 of 8 &mdash; One interface, many agents</p>
+
+  <h2>Different agents, different strengths</h2>
+  <p>Not all agents are the same. Claude Code is great at reading and editing code. Codex is great at long-running background tasks. Cursor is great at interactive editing. Each has different tools, different costs, different context windows.</p>
+
+  <p>Click on each agent to see how it works under the hood:</p>
+
+  <div class="adapter-grid" id="adapterGrid">
+    <div class="adapter-card" onclick="selectAdapter(0)" id="adapter0">
+      <h4>Claude Code</h4>
+      <div class="adapter-type">claude-code adapter</div>
+      <p>Terminal-based agent. Reads, edits, and runs commands. Best for complex multi-file tasks.</p>
+    </div>
+    <div class="adapter-card" onclick="selectAdapter(1)" id="adapter1">
+      <h4>Codex</h4>
+      <div class="adapter-type">codex adapter</div>
+      <p>Background worker. Runs in a sandbox. Great for autonomous, long-running tasks.</p>
+    </div>
+    <div class="adapter-card" onclick="selectAdapter(2)" id="adapter2">
+      <h4>Cursor</h4>
+      <div class="adapter-type">cursor adapter</div>
+      <p>IDE-integrated agent. Shows inline diffs. Best for interactive, visible editing.</p>
+    </div>
+  </div>
+
+  <div class="adapter-detail" id="adapterDetail"></div>
+
+  <h2>The adapter pattern</h2>
+  <p>Remember <a href="/lessons/codebase.html" style="color:var(--accent-blue);">Course 2: The Codebase</a>? Paperclip uses the <strong style="color:var(--text-primary)">adapter pattern</strong> &mdash; one interface, many implementations.</p>
+
+  <pre class="code-block"><span class="cmt">// One interface all agents implement</span>
+<span class="kw">interface</span> <span class="typ">AgentAdapter</span> {
+  <span class="fn">executeTask</span>(task: <span class="typ">Task</span>): <span class="typ">Promise</span>&lt;<span class="typ">Result</span>&gt;
+  <span class="fn">getStatus</span>(): <span class="typ">AgentStatus</span>
+  <span class="fn">estimateCost</span>(task: <span class="typ">Task</span>): <span class="typ">number</span>
+}
+
+<span class="cmt">// Each agent implements it differently</span>
+<span class="kw">class</span> <span class="typ">ClaudeCodeAdapter</span> <span class="kw">implements</span> <span class="typ">AgentAdapter</span> {
+  <span class="kw">async</span> <span class="fn">executeTask</span>(task) {
+    <span class="cmt">// Spawns Claude Code CLI process</span>
+    <span class="cmt">// Streams tool calls in real-time</span>
+    <span class="cmt">// Returns when task is complete</span>
+  }
+}
+
+<span class="kw">class</span> <span class="typ">CodexAdapter</span> <span class="kw">implements</span> <span class="typ">AgentAdapter</span> {
+  <span class="kw">async</span> <span class="fn">executeTask</span>(task) {
+    <span class="cmt">// Submits task to Codex API</span>
+    <span class="cmt">// Polls for completion</span>
+    <span class="cmt">// Returns result when done</span>
+  }
+}</pre>
+
+  <p>This means Paperclip can swap agents without changing any business logic. Need a cheaper agent for simple tasks? Use Codex. Need the best for architecture decisions? Use Claude. The adapter handles the difference.</p>
+
+  <h2>The heartbeat system</h2>
+  <p>Agents don't run constantly &mdash; that would be expensive. Paperclip uses a <strong style="color:var(--accent-yellow)">heartbeat engine</strong> that wakes agents up on a schedule:</p>
+
+  <pre class="code-block"><span class="cmt">// The heartbeat decides when each agent should wake up</span>
+<span class="fn">heartbeat.schedule</span>({
+  agent: <span class="str">"claude-cto"</span>,
+  interval: <span class="str">"6h"</span>,          <span class="cmt">// Check in every 6 hours</span>
+  trigger: <span class="str">"pr-review"</span>,     <span class="cmt">// Also wake on new PRs</span>
+  budget: <span class="typ">50</span>,              <span class="cmt">// Max $50 per wake cycle</span>
+})
+
+<span class="fn">heartbeat.schedule</span>({
+  agent: <span class="str">"codex-engineer"</span>,
+  interval: <span class="str">"1h"</span>,          <span class="cmt">// More frequent checks</span>
+  trigger: <span class="str">"task-assigned"</span>, <span class="cmt">// Wake when given a task</span>
+  budget: <span class="typ">10</span>,              <span class="cmt">// Smaller budget per cycle</span>
+})</pre>
+
+  <p>The heartbeat is like an alarm clock for agents. Wake up, check for work, do the work, go back to sleep. This connects directly to what you learned about the heartbeat engine in the codebase course.</p>
+
+  <button class="next-btn" onclick="goToLesson(6)">Next: Costs &amp; Limits &rarr;</button>
+</div>
+
+<!-- ============================================================ -->
+<!-- LESSON 7: COSTS & LIMITS -->
+<!-- ============================================================ -->
+<div class="lesson" id="lesson6">
+  <h1>Costs &amp; Limits</h1>
+  <p class="subtitle">Lesson 7 of 8 &mdash; Tokens cost money</p>
+
+  <h2>How pricing works</h2>
+  <p>Every API call to an LLM costs money, measured in tokens. There are two types:</p>
+
+  <ul>
+    <li><strong style="color:var(--accent-blue)">Input tokens</strong> &mdash; everything the model reads: your prompt, system instructions, file contents, tool results. Cheaper.</li>
+    <li><strong style="color:var(--accent-green)">Output tokens</strong> &mdash; everything the model generates: its response, tool calls, code. More expensive (usually 3&ndash;5x the input price).</li>
+  </ul>
+
+  <div class="card">
+    <p style="color:var(--text-primary); font-weight:600; margin-bottom:12px;">Typical pricing (per 1M tokens)</p>
+    <div style="display:grid; grid-template-columns:1fr auto auto; gap:8px 16px; font-size:14px;">
+      <div style="color:var(--text-muted); font-weight:600;">Model</div>
+      <div style="color:var(--accent-blue); font-weight:600;">Input</div>
+      <div style="color:var(--accent-green); font-weight:600;">Output</div>
+
+      <div style="color:var(--text-body);">Claude Sonnet</div>
+      <div style="color:var(--text-body); font-family:'SF Mono',monospace;">$3.00</div>
+      <div style="color:var(--text-body); font-family:'SF Mono',monospace;">$15.00</div>
+
+      <div style="color:var(--text-body);">Claude Opus</div>
+      <div style="color:var(--text-body); font-family:'SF Mono',monospace;">$15.00</div>
+      <div style="color:var(--text-body); font-family:'SF Mono',monospace;">$75.00</div>
+
+      <div style="color:var(--text-body);">GPT-4o</div>
+      <div style="color:var(--text-body); font-family:'SF Mono',monospace;">$2.50</div>
+      <div style="color:var(--text-body); font-family:'SF Mono',monospace;">$10.00</div>
+    </div>
+  </div>
+
+  <h2>Cost calculator</h2>
+  <p>Adjust the sliders to see how a typical agent task would cost:</p>
+
+  <div class="cost-calc" id="costCalc">
+    <label>Input tokens: <strong id="inputTokenLabel" style="color:var(--accent-blue);">50,000</strong></label>
+    <input type="range" id="inputTokens" min="1000" max="500000" value="50000" step="1000" oninput="updateCostCalc()">
+
+    <label>Output tokens: <strong id="outputTokenLabel" style="color:var(--accent-green);">5,000</strong></label>
+    <input type="range" id="outputTokens" min="100" max="100000" value="5000" step="100" oninput="updateCostCalc()">
+
+    <label>Number of turns (tool calls): <strong id="turnsLabel" style="color:var(--accent-yellow);">8</strong></label>
+    <input type="range" id="turns" min="1" max="50" value="8" step="1" oninput="updateCostCalc()">
+
+    <div style="margin-top:20px;">
+      <div class="cost-row">
+        <span class="cost-label">Input cost</span>
+        <span class="cost-value" id="inputCost">$0.15</span>
+      </div>
+      <div class="cost-row">
+        <span class="cost-label">Output cost</span>
+        <span class="cost-value" id="outputCost">$0.08</span>
+      </div>
+      <div class="cost-row">
+        <span class="cost-label">Total turns</span>
+        <span class="cost-value" id="totalTurns">8</span>
+      </div>
+    </div>
+
+    <div class="cost-total">
+      <div class="amount" id="totalCost">$0.23</div>
+      <div class="label">Estimated cost for this task</div>
+    </div>
+  </div>
+
+  <h2>Why budget controls matter</h2>
+  <p>When an agent runs autonomously, it can use a lot of tokens. An agent in a loop that keeps reading files and trying things might burn through $20 before you notice. Multiply that by multiple agents running simultaneously, and costs escalate fast.</p>
+
+  <p>That's why Paperclip tracks every dollar:</p>
+
+  <pre class="code-block"><span class="cmt">// Budget enforcement in the agent runner</span>
+<span class="kw">if</span> (task.totalCost > agent.budgetLimit) {
+  <span class="fn">agent.pause</span>()
+  <span class="fn">notify</span>(<span class="str">"Agent hit budget limit: $"</span> + task.totalCost)
+  <span class="kw">return</span> { status: <span class="str">"paused"</span>, reason: <span class="str">"budget_exceeded"</span> }
+}</pre>
+
+  <h2>Other limits</h2>
+  <div class="card">
+    <p style="color:var(--text-body); font-size:14px; margin-bottom:12px;"><strong style="color:var(--text-primary)">Context window limit</strong> &mdash; The model can only see so many tokens at once. If you hit the limit, the oldest messages fall off. The agent loses track of what happened earlier.</p>
+    <p style="color:var(--text-body); font-size:14px; margin-bottom:12px;"><strong style="color:var(--text-primary)">Rate limits</strong> &mdash; APIs limit how many requests you can make per minute. Hit the limit and your agent has to wait. This is why Paperclip queues tasks instead of firing them all at once.</p>
+    <p style="color:var(--text-body); font-size:14px;"><strong style="color:var(--text-primary)">Output length limit</strong> &mdash; Models can only generate so many tokens in a single response. For very long code files, the model may need multiple turns to write everything.</p>
+  </div>
+
+  <button class="next-btn" onclick="goToLesson(7)">Next: The Future &rarr;</button>
+</div>
+
+<!-- ============================================================ -->
+<!-- LESSON 8: THE FUTURE -->
+<!-- ============================================================ -->
+<div class="lesson" id="lesson7">
+  <h1>The Future</h1>
+  <p class="subtitle">Lesson 8 of 8 &mdash; Where agents are heading</p>
+
+  <h2>Multi-agent collaboration</h2>
+  <p>Right now, most AI agents work alone. One agent, one task. But the future is <strong style="color:var(--text-primary)">teams of agents</strong> working together &mdash; just like teams of people.</p>
+
+  <p>This is exactly what Paperclip enables:</p>
+
+  <div class="card">
+    <p style="color:var(--accent-blue); font-weight:600; margin-bottom:16px;">A multi-agent workflow</p>
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <span style="background:var(--bg-btn-selected); color:var(--accent-blue); padding:4px 12px; border-radius:6px; font-size:13px; font-weight:600; min-width:100px; text-align:center;">CTO Agent</span>
+        <span style="color:var(--text-muted); font-size:14px;">Reviews the task, breaks it into subtasks, assigns to the right agents</span>
+      </div>
+      <div style="color:var(--text-faint); margin-left:50px;">|</div>
+      <div style="display:flex; align-items:center; gap:12px; margin-left:32px;">
+        <span style="background:#1e3a1e; color:var(--accent-green); padding:4px 12px; border-radius:6px; font-size:13px; font-weight:600; min-width:100px; text-align:center;">Engineer</span>
+        <span style="color:var(--text-muted); font-size:14px;">Writes the code, implements the feature</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px; margin-left:32px;">
+        <span style="background:#3a1e3a; color:var(--accent-purple); padding:4px 12px; border-radius:6px; font-size:13px; font-weight:600; min-width:100px; text-align:center;">Reviewer</span>
+        <span style="color:var(--text-muted); font-size:14px;">Reviews the code, suggests improvements</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px; margin-left:32px;">
+        <span style="background:#3a3a1e; color:var(--accent-yellow); padding:4px 12px; border-radius:6px; font-size:13px; font-weight:600; min-width:100px; text-align:center;">Tester</span>
+        <span style="color:var(--text-muted); font-size:14px;">Writes and runs tests, reports back</span>
+      </div>
+      <div style="color:var(--text-faint); margin-left:50px;">|</div>
+      <div style="display:flex; align-items:center; gap:12px;">
+        <span style="background:var(--bg-btn-selected); color:var(--accent-blue); padding:4px 12px; border-radius:6px; font-size:13px; font-weight:600; min-width:100px; text-align:center;">CTO Agent</span>
+        <span style="color:var(--text-muted); font-size:14px;">Reviews all results, approves or requests changes</span>
+      </div>
+    </div>
+  </div>
+
+  <h2>Autonomous companies</h2>
+  <p>Take the multi-agent idea further: what if every role in a company was an agent? Marketing, engineering, design, support, finance. Each agent specializes, communicates through structured interfaces, and works around the clock.</p>
+
+  <p>This isn't science fiction &mdash; it's the direction Paperclip is heading. A company where agents do the work and humans set the direction.</p>
+
+  <h2>Agents hiring agents</h2>
+  <p>Here's where it gets really interesting: agents that can spin up <em>other</em> agents. A CTO agent realizes it needs a specialist for a particular task, provisions a new agent with the right tools and context, assigns the work, monitors progress, and shuts it down when done.</p>
+
+  <pre class="code-block"><span class="cmt">// An agent creating another agent</span>
+<span class="kw">const</span> <span class="typ">specialist</span> = <span class="kw">await</span> <span class="fn">agents.create</span>({
+  role: <span class="str">"database-migration-specialist"</span>,
+  tools: [<span class="str">"Read"</span>, <span class="str">"Edit"</span>, <span class="str">"Bash"</span>],
+  context: <span class="str">"Migrate the users table to add a 'preferences' column"</span>,
+  budget: <span class="typ">5.00</span>,
+  timeout: <span class="str">"30m"</span>,
+})
+
+<span class="kw">const</span> <span class="typ">result</span> = <span class="kw">await</span> specialist.<span class="fn">run</span>()
+<span class="cmt">// { status: "complete", files_changed: 3, tests_passing: true }</span></pre>
+
+  <h2>The human's role shifts</h2>
+  <p>Your job isn't going away &mdash; it's transforming. Instead of writing every line of code, you'll be:</p>
+
+  <ul>
+    <li><strong style="color:var(--text-primary)">Setting direction</strong> &mdash; What should the product do? What matters to users?</li>
+    <li><strong style="color:var(--text-primary)">Reviewing agent work</strong> &mdash; Is this code correct? Is this the right approach?</li>
+    <li><strong style="color:var(--text-primary)">Managing agent teams</strong> &mdash; Which agent for which task? How to budget effectively?</li>
+    <li><strong style="color:var(--text-primary)">Handling edge cases</strong> &mdash; The ambiguous decisions that require human judgment.</li>
+  </ul>
+
+  <div class="analogy">
+    <div class="analogy-label">Analogy</div>
+    <p><strong>From individual contributor to manager.</strong> It's like getting promoted. You stop doing all the work yourself and start directing a team. The work still gets done &mdash; faster, even &mdash; but your role is fundamentally different. You're the one who understands the big picture.</p>
+  </div>
+
+  <h2>What you've learned</h2>
+  <p>Let's connect everything back:</p>
+
+  <div class="card">
+    <ol style="padding-left:20px;">
+      <li style="margin-bottom:8px;"><strong style="color:var(--text-primary);">LLMs</strong> predict the next token, generating text from patterns they learned</li>
+      <li style="margin-bottom:8px;"><strong style="color:var(--text-primary);">Prompts</strong> are everything the model sees: system instructions + history + your message</li>
+      <li style="margin-bottom:8px;"><strong style="color:var(--text-primary);">Tool use</strong> lets the model act in the real world by requesting tool calls</li>
+      <li style="margin-bottom:8px;"><strong style="color:var(--text-primary);">The agent loop</strong> is LLM + tools + a loop that keeps going until the task is done</li>
+      <li style="margin-bottom:8px;"><strong style="color:var(--text-primary);">Claude Code</strong> is an agent with Read, Edit, Bash, Grep, and Glob tools</li>
+      <li style="margin-bottom:8px;"><strong style="color:var(--text-primary);">Adapters</strong> let you swap agents behind a common interface</li>
+      <li style="margin-bottom:8px;"><strong style="color:var(--text-primary);">Costs</strong> are measured in tokens, and budget controls prevent runaway spending</li>
+      <li><strong style="color:var(--text-primary);">The future</strong> is multi-agent teams, autonomous companies, and humans as directors</li>
+    </ol>
+  </div>
+
+  <p>You now understand what's happening every time you talk to Claude Code. It's not magic. It's a loop: think, act, observe, repeat.</p>
+
+  <div class="next-course-banner">
+    <h3>Up Next</h3>
+    <p>Continue to Course 12: How to Ship a Product — The complete lifecycle from idea to launch.</p>
+    <a href="/lessons/shipping.html">Start How to Ship a Product →</a>
+  </div>
+</div>
+
+</div><!-- /container -->
+</div><!-- /content-wrapper -->
+
+<script>
+// ============================================================
+// Navigation
+// ============================================================
+function goToLesson(n) {
+  const lessons = document.querySelectorAll('.lesson');
+  const buttons = document.querySelectorAll('.nav-btn');
+  lessons.forEach((l, i) => {
+    l.classList.toggle('active', i === n);
+  });
+  buttons.forEach((b, i) => {
+    b.classList.toggle('active', i === n);
+  });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ============================================================
+// Lesson 1: Token Stream Animation
+// ============================================================
+const streamTokens = [
+  "A", " database", " is", " an", " organized", " collection",
+  " of", " structured", " data", " stored", " electronically",
+  " that", " allows", " you", " to", " efficiently",
+  " store,", " retrieve,", " and", " manipulate", " information",
+  " using", " queries."
+];
+let streamIndex = 0;
+let streamInterval = null;
+let isStreaming = false;
+
+function runTokenStream() {
+  if (isStreaming) return;
+  isStreaming = true;
+  const btn = document.getElementById('generateBtn');
+  btn.classList.add('selected');
+  btn.textContent = 'Generating...';
+
+  const stream = document.getElementById('tokenStream');
+  const cursor = document.getElementById('streamCursor');
+
+  streamInterval = setInterval(() => {
+    if (streamIndex >= streamTokens.length) {
+      clearInterval(streamInterval);
+      cursor.style.display = 'none';
+      btn.textContent = 'Done';
+      btn.classList.remove('selected');
+      isStreaming = false;
+      return;
+    }
+
+    const span = document.createElement('span');
+    span.className = 'token-word token-new';
+    span.textContent = streamTokens[streamIndex];
+    stream.insertBefore(span, cursor);
+
+    // Remove highlight after brief flash
+    setTimeout(() => { span.classList.remove('token-new'); }, 400);
+
+    streamIndex++;
+  }, 120);
+}
+
+function resetTokenStream() {
+  if (streamInterval) clearInterval(streamInterval);
+  isStreaming = false;
+  streamIndex = 0;
+  const stream = document.getElementById('tokenStream');
+  stream.innerHTML = '<span class="cursor" id="streamCursor"></span>';
+  const btn = document.getElementById('generateBtn');
+  btn.textContent = 'Generate';
+  btn.classList.remove('selected');
+}
+
+// ============================================================
+// Lesson 2: Prompt Builder
+// ============================================================
+const promptTokenCounts = {
+  system: 0,
+  history: 0,
+  user: 0,
+};
+const promptTokenValues = {
+  system: 42,
+  history: 128,
+  user: 14,
+};
+const promptSectionsAdded = { system: false, history: false, user: false };
+
+function addPromptSection(section) {
+  if (promptSectionsAdded[section]) return;
+  promptSectionsAdded[section] = true;
+
+  const el = document.getElementById(section + 'Section');
+  el.classList.add('visible');
+
+  const btn = document.getElementById('add' + section.charAt(0).toUpperCase() + section.slice(1) + 'Btn');
+  btn.classList.add('selected');
+
+  promptTokenCounts[section] = promptTokenValues[section];
+  const total = promptTokenCounts.system + promptTokenCounts.history + promptTokenCounts.user;
+  document.getElementById('tokenCount').textContent = total.toLocaleString();
+}
+
+// ============================================================
+// Lesson 3: Tool Loop Stepper
+// ============================================================
+let toolLoopStep = -1;
+const totalToolSteps = 5;
+
+function advanceToolLoop() {
+  toolLoopStep++;
+  if (toolLoopStep >= totalToolSteps) {
+    document.getElementById('toolStepBtn').textContent = 'Complete!';
+    document.getElementById('toolStepBtn').classList.add('selected');
+    return;
+  }
+
+  const step = document.getElementById('toolStep' + toolLoopStep);
+  step.classList.add('visible');
+
+  // Highlight current step
+  for (let i = 0; i < totalToolSteps; i++) {
+    const s = document.getElementById('toolStep' + i);
+    if (s) s.classList.toggle('active-step', i === toolLoopStep);
+  }
+
+  // Show connector
+  if (toolLoopStep > 0) {
+    const conn = document.getElementById('toolConn' + (toolLoopStep - 1));
+    if (conn) conn.classList.add('visible');
+  }
+
+  if (toolLoopStep === totalToolSteps - 1) {
+    document.getElementById('toolStepBtn').textContent = 'Complete!';
+    document.getElementById('toolStepBtn').classList.add('selected');
+  }
+}
+
+function resetToolLoop() {
+  toolLoopStep = -1;
+  for (let i = 0; i < totalToolSteps; i++) {
+    const step = document.getElementById('toolStep' + i);
+    if (step) {
+      step.classList.remove('visible', 'active-step');
+    }
+    const conn = document.getElementById('toolConn' + i);
+    if (conn) conn.classList.remove('visible');
+  }
+  const btn = document.getElementById('toolStepBtn');
+  btn.textContent = 'Step through the loop';
+  btn.classList.remove('selected');
+}
+
+// ============================================================
+// Lesson 4: Agent Trace Stepper
+// ============================================================
+let traceStep = -1;
+const totalTraceSteps = 16;
+
+function advanceTrace() {
+  traceStep++;
+  if (traceStep >= totalTraceSteps) {
+    document.getElementById('traceStepBtn').textContent = 'Task complete!';
+    document.getElementById('traceStepBtn').classList.add('selected');
+    return;
+  }
+
+  const entry = document.getElementById('trace' + traceStep);
+  if (entry) {
+    entry.classList.add('visible');
+    entry.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  if (traceStep === totalTraceSteps - 1) {
+    document.getElementById('traceStepBtn').textContent = 'Task complete!';
+    document.getElementById('traceStepBtn').classList.add('selected');
+  }
+}
+
+function resetTrace() {
+  traceStep = -1;
+  for (let i = 0; i < totalTraceSteps; i++) {
+    const entry = document.getElementById('trace' + i);
+    if (entry) entry.classList.remove('visible');
+  }
+  const btn = document.getElementById('traceStepBtn');
+  btn.textContent = 'Next Step';
+  btn.classList.remove('selected');
+}
+
+// ============================================================
+// Lesson 6: Adapter Selector
+// ============================================================
+const adapterDetails = [
+  {
+    html: `<p style="color:var(--text-primary); font-weight:600; margin-bottom:8px;">Claude Code (claude-code adapter)</p>
+<p style="color:var(--text-body); font-size:14px; margin-bottom:8px;"><strong style="color:var(--accent-blue)">How it works:</strong> Spawns a CLI process on your machine. Has full access to your filesystem and terminal. Streams tool calls in real time so you can watch it work.</p>
+<p style="color:var(--text-body); font-size:14px; margin-bottom:8px;"><strong style="color:var(--accent-green)">Tools:</strong> Read, Edit, Write, Bash, Grep, Glob, WebFetch</p>
+<p style="color:var(--text-body); font-size:14px; margin-bottom:8px;"><strong style="color:var(--accent-yellow)">Context window:</strong> 200K tokens (up to 1M with extended thinking)</p>
+<p style="color:var(--text-body); font-size:14px;"><strong style="color:var(--accent-purple)">Best for:</strong> Complex, multi-file refactors. Architecture changes. Debugging. Anything that requires understanding the full codebase.</p>`
+  },
+  {
+    html: `<p style="color:var(--text-primary); font-weight:600; margin-bottom:8px;">Codex (codex adapter)</p>
+<p style="color:var(--text-body); font-size:14px; margin-bottom:8px;"><strong style="color:var(--accent-blue)">How it works:</strong> Runs in a sandboxed cloud environment. You submit a task via API and it works in the background. No direct filesystem access — it works on a cloned repo.</p>
+<p style="color:var(--text-body); font-size:14px; margin-bottom:8px;"><strong style="color:var(--accent-green)">Tools:</strong> File read/write, shell commands (sandboxed), web requests</p>
+<p style="color:var(--text-body); font-size:14px; margin-bottom:8px;"><strong style="color:var(--accent-yellow)">Context window:</strong> 192K tokens</p>
+<p style="color:var(--text-body); font-size:14px;"><strong style="color:var(--accent-purple)">Best for:</strong> Long-running background tasks. Batch operations. Tasks that don't need human supervision. Cheaper per token.</p>`
+  },
+  {
+    html: `<p style="color:var(--text-primary); font-weight:600; margin-bottom:8px;">Cursor (cursor adapter)</p>
+<p style="color:var(--text-body); font-size:14px; margin-bottom:8px;"><strong style="color:var(--accent-blue)">How it works:</strong> Embedded in the VS Code-based IDE. Shows inline diffs as it edits. Uses "Tab" to accept suggestions. More interactive, less autonomous.</p>
+<p style="color:var(--text-body); font-size:14px; margin-bottom:8px;"><strong style="color:var(--accent-green)">Tools:</strong> File editing (inline), codebase search, terminal commands</p>
+<p style="color:var(--text-body); font-size:14px; margin-bottom:8px;"><strong style="color:var(--accent-yellow)">Context window:</strong> Varies by underlying model</p>
+<p style="color:var(--text-body); font-size:14px;"><strong style="color:var(--accent-purple)">Best for:</strong> Interactive editing. Writing code alongside a human. Quick, focused changes where you want to see each diff before accepting.</p>`
+  },
+];
+
+let selectedAdapterIndex = -1;
+
+function selectAdapter(i) {
+  const cards = document.querySelectorAll('.adapter-card');
+  const detail = document.getElementById('adapterDetail');
+
+  if (selectedAdapterIndex === i) {
+    // Deselect
+    cards[i].classList.remove('selected');
+    detail.classList.remove('visible');
+    selectedAdapterIndex = -1;
+    return;
+  }
+
+  cards.forEach((c, j) => c.classList.toggle('selected', j === i));
+  detail.innerHTML = adapterDetails[i].html;
+  detail.classList.add('visible');
+  detail.className = 'adapter-detail visible fade-in';
+  selectedAdapterIndex = i;
+}
+
+// ============================================================
+// Lesson 7: Cost Calculator
+// ============================================================
+function updateCostCalc() {
+  const inputTokens = parseInt(document.getElementById('inputTokens').value);
+  const outputTokens = parseInt(document.getElementById('outputTokens').value);
+  const turns = parseInt(document.getElementById('turns').value);
+
+  document.getElementById('inputTokenLabel').textContent = inputTokens.toLocaleString();
+  document.getElementById('outputTokenLabel').textContent = outputTokens.toLocaleString();
+  document.getElementById('turnsLabel').textContent = turns;
+
+  // Claude Sonnet pricing: $3/1M input, $15/1M output
+  // Each turn re-sends all previous context, so input grows
+  const avgInputPerTurn = inputTokens;
+  const avgOutputPerTurn = outputTokens / turns;
+  const totalInput = avgInputPerTurn * turns;
+  const totalOutput = outputTokens;
+
+  const inputCost = (totalInput / 1000000) * 3;
+  const outputCost = (totalOutput / 1000000) * 15;
+  const total = inputCost + outputCost;
+
+  document.getElementById('inputCost').textContent = '$' + inputCost.toFixed(2);
+  document.getElementById('outputCost').textContent = '$' + outputCost.toFixed(2);
+  document.getElementById('totalTurns').textContent = turns;
+  document.getElementById('totalCost').textContent = '$' + total.toFixed(2);
+}
+
+// Initialize cost calc
+updateCostCalc();
+</script>
+<script src="/js/shared.js"></script>
+</body>
+</html>

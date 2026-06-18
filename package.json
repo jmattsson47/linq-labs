@@ -1,0 +1,9 @@
+{
+  "name": "the-fundamentals",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "npx serve .",
+    "build": "cp -r css js lessons index.html dist/ 2>/dev/null || echo 'Static site — no build step needed.'"
+  }
+}

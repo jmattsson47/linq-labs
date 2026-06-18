@@ -1,0 +1,2096 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How Authentication Works — The Fundamentals</title>
+<link rel="stylesheet" href="/css/shared.css">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+/* -- Top Nav -- */
+.top-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-primary);
+  padding: 10px 16px;
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+@media (min-width: 1024px) {
+  .top-nav { left: 280px; }
+}
+.top-nav::-webkit-scrollbar { height: 4px; }
+.top-nav::-webkit-scrollbar-thumb { background: var(--border-nav-btn); border-radius: 2px; }
+
+.nav-btn {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-nav-btn);
+  color: var(--text-nav);
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  white-space: nowrap;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.nav-btn:hover { border-color: var(--text-faint); color: var(--text-body); }
+.nav-btn.active {
+  background: var(--accent-blue-bg);
+  border-color: var(--accent-blue-bg);
+  color: var(--text-primary);
+}
+
+/* -- Container -- */
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 80px 20px 60px;
+}
+
+/* -- Lessons -- */
+.lesson { display: none; }
+.lesson.active { display: block; }
+
+.lesson h1 {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+}
+.lesson .subtitle {
+  font-size: 15px;
+  color: var(--text-muted);
+  margin-bottom: 32px;
+}
+
+h2 {
+  font-size: 22px;
+  color: var(--text-primary);
+  margin: 36px 0 14px;
+}
+h3 {
+  font-size: 18px;
+  color: var(--text-secondary);
+  margin: 24px 0 10px;
+}
+
+p { margin-bottom: 16px; color: var(--text-body); }
+
+/* -- Cards -- */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-secondary);
+  border-radius: 10px;
+  padding: 24px;
+  margin: 20px 0;
+}
+.card-dark {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  padding: 24px;
+  margin: 20px 0;
+}
+
+/* -- Analogy boxes -- */
+.analogy {
+  background: var(--bg-analogy);
+  border: 1px solid var(--border-analogy);
+  border-radius: 10px;
+  padding: 20px 24px;
+  margin: 24px 0;
+}
+.analogy strong { color: var(--accent-indigo); }
+.analogy p { color: var(--text-dim); margin-bottom: 0; }
+.analogy .analogy-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--accent-indigo);
+  margin-bottom: 8px;
+}
+
+/* -- Code blocks -- */
+pre {
+  background: var(--bg-code);
+  border: 1px solid var(--border-secondary);
+  border-radius: 8px;
+  padding: 16px 20px;
+  overflow-x: auto;
+  margin: 16px 0;
+  font-family: 'SF Mono', Monaco, monospace;
+  font-size: 14px;
+  line-height: 1.6;
+}
+code {
+  font-family: 'SF Mono', Monaco, monospace;
+  font-size: 13px;
+}
+.kw { color: var(--accent-purple); }
+.fn { color: var(--accent-blue); }
+.str { color: var(--accent-green); }
+.typ { color: var(--accent-yellow); }
+.cmt { color: var(--text-faint); font-style: italic; }
+
+/* inline code */
+p code, li code, td code {
+  background: var(--bg-analogy);
+  padding: 2px 7px;
+  border-radius: 4px;
+  color: var(--accent-indigo);
+  font-size: 13px;
+}
+
+/* -- Interactive buttons row -- */
+.btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0;
+}
+.ibtn {
+  background: var(--bg-btn);
+  border: 1px solid var(--border-btn);
+  color: var(--text-nav);
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.ibtn:hover { border-color: var(--accent-blue); color: var(--text-secondary); }
+.ibtn.selected {
+  background: var(--bg-btn-selected);
+  border-color: var(--border-btn-selected);
+  color: var(--text-primary);
+}
+
+/* -- Next button -- */
+.next-btn {
+  display: inline-block;
+  background: var(--accent-blue-bg);
+  color: var(--text-primary);
+  border: none;
+  padding: 14px 36px;
+  border-radius: 10px;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 40px;
+  transition: background 0.2s;
+  font-family: inherit;
+  font-weight: 600;
+}
+.next-btn:hover { background: #1d4ed8; }
+
+/* -- Diagram area -- */
+.diagram-area {
+  background: var(--bg-card);
+  border: 1px solid var(--border-secondary);
+  border-radius: 10px;
+  padding: 24px;
+  margin: 20px 0;
+  min-height: 120px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* -- Flow steps (reusable for login flow, OAuth flow, etc.) -- */
+.flow-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 20px 0;
+}
+.flow-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-radius: 10px;
+}
+.flow-step:hover { background: var(--bg-tertiary); }
+.flow-step.active-step { background: var(--bg-secondary); }
+.flow-step.completed-step { opacity: 0.7; }
+.flow-step-num {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--bg-btn);
+  border: 2px solid var(--border-btn);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent-blue);
+  flex-shrink: 0;
+  transition: all 0.3s;
+}
+.flow-step.completed-step .flow-step-num {
+  background: #065f46;
+  border-color: var(--accent-green);
+  color: var(--accent-green);
+}
+.flow-step.active-step .flow-step-num {
+  background: var(--bg-btn-selected);
+  border-color: var(--border-btn-selected);
+  box-shadow: 0 0 10px rgba(59,130,246,0.3);
+}
+.flow-step-content h4 { color: var(--text-secondary); font-size: 15px; margin-bottom: 4px; }
+.flow-step-content p { color: var(--text-muted); font-size: 13px; margin: 0; }
+.flow-connector {
+  width: 2px;
+  height: 16px;
+  background: var(--border-primary);
+  margin-left: 31px;
+}
+
+/* -- Compare layout (side-by-side) -- */
+.compare-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 20px 0;
+}
+.compare-panel {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  padding: 20px;
+}
+.compare-panel h4 {
+  font-size: 15px;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+.compare-panel p { font-size: 14px; margin-bottom: 0; }
+.compare-panel.danger { border-color: #991b1b; }
+.compare-panel.success { border-color: #065f46; }
+
+/* -- JWT Viewer -- */
+.jwt-viewer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 20px 0;
+}
+.jwt-raw {
+  background: var(--bg-code);
+  border: 1px solid var(--border-secondary);
+  border-radius: 8px;
+  padding: 16px 20px;
+  font-family: 'SF Mono', Monaco, monospace;
+  font-size: 13px;
+  word-break: break-all;
+  line-height: 1.8;
+}
+.jwt-part-header { color: var(--accent-pink); }
+.jwt-part-payload { color: var(--accent-purple); }
+.jwt-part-signature { color: var(--accent-blue); }
+.jwt-decoded {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+}
+.jwt-section {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  padding: 16px;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+.jwt-section.highlight {
+  box-shadow: 0 0 16px rgba(59, 130, 246, 0.15);
+}
+.jwt-section h5 {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+}
+.jwt-section pre {
+  margin: 0;
+  border: none;
+  background: transparent;
+  padding: 0;
+  font-size: 13px;
+}
+
+/* -- OAuth diagram -- */
+.oauth-diagram {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  padding: 30px 0;
+  flex-wrap: wrap;
+}
+.oauth-box {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 14px;
+  padding: 20px 24px;
+  text-align: center;
+  min-width: 140px;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+.oauth-box.active-box {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 16px rgba(96, 165, 250, 0.2);
+}
+.oauth-box h4 {
+  color: var(--text-primary);
+  margin-bottom: 4px;
+  font-size: 15px;
+}
+.oauth-box p { color: var(--text-muted); font-size: 12px; margin: 0; }
+.oauth-arrow {
+  font-size: 24px;
+  color: var(--border-btn);
+  flex-shrink: 0;
+  transition: color 0.3s;
+}
+.oauth-arrow.active-arrow { color: var(--accent-blue); }
+
+/* -- Hash demo -- */
+.hash-demo {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 16px 0;
+  flex-wrap: wrap;
+}
+.hash-input-box {
+  background: var(--bg-code);
+  border: 1px solid var(--border-secondary);
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-family: 'SF Mono', Monaco, monospace;
+  font-size: 14px;
+  color: var(--accent-green);
+  min-width: 180px;
+}
+.hash-input-box input {
+  background: transparent;
+  border: none;
+  color: var(--accent-green);
+  font-family: 'SF Mono', Monaco, monospace;
+  font-size: 14px;
+  width: 100%;
+  outline: none;
+}
+.hash-input-box input::placeholder {
+  color: var(--text-faint);
+}
+.hash-arrow {
+  font-size: 24px;
+  color: var(--accent-yellow);
+}
+.hash-output-box {
+  background: var(--bg-code);
+  border: 1px solid var(--border-secondary);
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-family: 'SF Mono', Monaco, monospace;
+  font-size: 13px;
+  color: var(--accent-pink);
+  word-break: break-all;
+  min-width: 180px;
+  flex: 1;
+}
+
+/* -- Role demo -- */
+.role-demo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 20px 0;
+}
+.role-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  padding: 20px;
+  transition: border-color 0.3s;
+}
+.role-card.active-role { border-color: var(--accent-blue); }
+.role-card h4 {
+  color: var(--text-primary);
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+.role-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.role-badge.admin { background: #7c3aed22; color: var(--accent-purple); border: 1px solid var(--accent-purple); }
+.role-badge.viewer { background: #60a5fa22; color: var(--accent-blue); border: 1px solid var(--accent-blue); }
+.endpoint-result {
+  background: var(--bg-code);
+  border: 1px solid var(--border-secondary);
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-family: 'SF Mono', Monaco, monospace;
+  font-size: 13px;
+  margin-top: 12px;
+  min-height: 60px;
+}
+
+/* -- Building diagram -- */
+.building-diagram {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  padding: 30px 0;
+  flex-wrap: wrap;
+}
+.building-box {
+  text-align: center;
+  min-width: 180px;
+}
+.building-icon {
+  font-size: 64px;
+  margin-bottom: 12px;
+  display: block;
+}
+.building-box h4 {
+  color: var(--text-primary);
+  font-size: 15px;
+  margin-bottom: 6px;
+}
+.building-box p {
+  color: var(--text-muted);
+  font-size: 13px;
+  margin: 0;
+}
+.building-doors {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 12px;
+}
+.door {
+  width: 36px;
+  height: 48px;
+  border-radius: 6px 6px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+.door.open { background: var(--accent-green); color: var(--bg-primary); }
+.door.locked { background: var(--bg-btn); border: 1px solid var(--border-btn); color: var(--text-faint); }
+.door.locked:hover { border-color: var(--accent-blue); }
+
+/* -- Expandable detail cards -- */
+.detail-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  padding: 16px 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin: 8px 0;
+}
+.detail-card:hover { border-color: var(--border-btn); }
+.detail-card.expanded { border-color: var(--accent-blue); background: var(--bg-card); }
+.detail-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.detail-card-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--bg-btn);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent-blue);
+  flex-shrink: 0;
+}
+.detail-card.expanded .detail-card-num { background: var(--bg-btn-selected); }
+.detail-card-title {
+  font-size: 15px;
+  color: var(--accent-blue);
+  font-weight: 600;
+}
+.detail-card-body {
+  display: none;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-secondary);
+  font-size: 14px;
+  color: var(--text-dim);
+  line-height: 1.7;
+}
+.detail-card.expanded .detail-card-body { display: block; }
+
+/* -- Cookie flow (step animation) -- */
+.cookie-flow {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 20px 0;
+}
+.cookie-step {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 20px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  opacity: 0.3;
+  transition: all 0.4s;
+}
+.cookie-step.visible {
+  opacity: 1;
+}
+.cookie-step.active-cookie {
+  opacity: 1;
+  border-color: var(--accent-blue);
+  background: var(--bg-card);
+}
+.cookie-step-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+  width: 32px;
+  text-align: center;
+}
+.cookie-step-text {
+  font-size: 14px;
+  color: var(--text-body);
+}
+.cookie-step-text strong { color: var(--text-primary); }
+
+/* -- Middleware code flow -- */
+.middleware-flow {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 20px 0;
+}
+.middleware-layer {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin: 4px 0;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+.middleware-layer:hover { border-color: var(--border-btn); }
+.middleware-layer.active-layer {
+  border-color: var(--accent-blue);
+  background: var(--bg-card);
+}
+.middleware-layer h4 {
+  color: var(--text-primary);
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+.middleware-layer p {
+  color: var(--text-muted);
+  font-size: 13px;
+  margin: 0;
+}
+.middleware-arrow {
+  text-align: center;
+  color: var(--border-btn);
+  font-size: 18px;
+  padding: 2px 0;
+}
+
+/* -- Fade-in animation -- */
+.fade-in {
+  animation: fadeIn 0.4s ease;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* -- Lists -- */
+ul, ol { padding-left: 24px; margin-bottom: 16px; }
+li { margin-bottom: 8px; color: var(--text-body); }
+
+/* -- Scrollbar -- */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background: var(--border-nav-btn); border-radius: 3px; }
+
+/* -- Responsive -- */
+@media (max-width: 640px) {
+  .top-nav { padding: 8px 10px; gap: 4px; }
+  .nav-btn { padding: 5px 10px; font-size: 12px; }
+  .container { padding: 70px 14px 40px; }
+  .lesson h1 { font-size: 24px; }
+  .compare-grid { grid-template-columns: 1fr; }
+  .jwt-decoded { grid-template-columns: 1fr; }
+  .role-demo { grid-template-columns: 1fr; }
+  .building-diagram { flex-direction: column; align-items: center; }
+  .oauth-diagram { flex-direction: column; }
+  .oauth-arrow { transform: rotate(90deg); }
+}
+
+.breadcrumb { margin-top: 64px; padding-top: 8px; }
+
+.next-course-banner { background: var(--bg-secondary); border: 1px solid var(--border-primary); border-radius: 10px; padding: 24px; margin-top: 32px; text-align: center; }
+.next-course-banner h3 { color: var(--text-primary); margin: 0 0 8px; font-size: 18px; }
+.next-course-banner p { color: var(--text-muted); font-size: 15px; margin: 0 0 16px; }
+.next-course-banner a { display: inline-block; background: var(--accent-blue-bg); color: var(--text-primary); padding: 10px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px; transition: background 0.2s; }
+.next-course-banner a:hover { background: #3b82f6; text-decoration: none; }
+</style>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <a href="/index.html" class="sidebar-logo">The Fundamentals</a>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="sidebar-section-title">Courses</div>
+    <a href="/lessons/databases.html" class="sidebar-link" data-course="databases">
+      <span class="sidebar-num">01</span> How Databases Work
+    </a>
+    <a href="/lessons/codebase.html" class="sidebar-link" data-course="codebase">
+      <span class="sidebar-num">02</span> The Codebase
+    </a>
+    <a href="/lessons/apis.html" class="sidebar-link" data-course="apis">
+      <span class="sidebar-num">03</span> APIs &amp; HTTP
+    </a>
+    <a href="/lessons/build.html" class="sidebar-link" data-course="build">
+      <span class="sidebar-num">04</span> Build a Mini App
+    </a>
+    <a href="/lessons/deployment.html" class="sidebar-link" data-course="deployment">
+      <span class="sidebar-num">05</span> How Deployment Works
+    </a>
+    <a href="/lessons/git.html" class="sidebar-link" data-course="git">
+      <span class="sidebar-num">06</span> How Git Works
+    </a>
+    <a href="/lessons/authentication.html" class="sidebar-link" data-course="authentication" aria-current="page">
+      <span class="sidebar-num">07</span> How Auth Works
+    </a>
+    <a href="/lessons/typescript.html" class="sidebar-link" data-course="typescript">
+      <span class="sidebar-num">08</span> How TypeScript Works
+    </a>
+    <a href="/lessons/react.html" class="sidebar-link" data-course="react">
+      <span class="sidebar-num">09</span> How React Works
+    </a>
+    <a href="/lessons/testing.html" class="sidebar-link" data-course="testing">
+      <span class="sidebar-num">10</span> How Testing Works
+    </a>
+    <a href="/lessons/ai-agents.html" class="sidebar-link" data-course="ai-agents">
+      <span class="sidebar-num">11</span> How AI Agents Work
+    </a>
+    <a href="/lessons/shipping.html" class="sidebar-link" data-course="shipping">
+      <span class="sidebar-num">12</span> How to Ship a Product
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <button class="theme-toggle" id="theme-toggle">
+      <span class="theme-icon" id="theme-icon">&#9728;&#65039;</span>
+      <span class="theme-label" id="theme-label">Light Mode</span>
+    </button>
+  </div>
+</aside>
+<button class="sidebar-toggle" id="sidebar-toggle">&#9776;</button>
+
+<div class="content-wrapper">
+
+<div class="breadcrumb"><a href="/index.html">Home</a><span class="sep">&#8250;</span><span>How Authentication Works</span></div>
+
+<!-- Top Nav -->
+<nav class="top-nav" id="topNav">
+  <button class="nav-btn active" onclick="goToLesson(0)">1. The Problem</button>
+  <button class="nav-btn" onclick="goToLesson(1)">2. Passwords</button>
+  <button class="nav-btn" onclick="goToLesson(2)">3. Sessions</button>
+  <button class="nav-btn" onclick="goToLesson(3)">4. Tokens (JWT)</button>
+  <button class="nav-btn" onclick="goToLesson(4)">5. OAuth</button>
+  <button class="nav-btn" onclick="goToLesson(5)">6. API Keys</button>
+  <button class="nav-btn" onclick="goToLesson(6)">7. AuthZ vs AuthN</button>
+  <button class="nav-btn" onclick="goToLesson(7)">8. In Practice</button>
+</nav>
+
+<div class="container">
+
+<!-- ============================================================
+     LESSON 1: THE PROBLEM
+     ============================================================ -->
+<div class="lesson active" id="lesson0">
+  <h1>The Problem</h1>
+  <p class="subtitle">Lesson 1 of 8 &mdash; Why does a server need to know who you are?</p>
+
+  <h2>A World Without Auth</h2>
+  <p>Imagine you build a beautiful web app. Users can create accounts, post messages, and manage their settings. You deploy it. Everything works. Then someone hits your API directly:</p>
+
+  <pre class="code-block"><span class="cmt"># Anyone can do this. No login required.</span>
+<span class="fn">DELETE</span> /api/users/42
+<span class="fn">POST</span>   /api/admin/make-admin  { "userId": 1 }
+<span class="fn">GET</span>    /api/users/all-emails</pre>
+
+  <p>Without authentication, <strong style="color:var(--accent-pink);">anyone can pretend to be anyone</strong>. They can delete other users' data, grant themselves admin access, or steal private information. The server has no way to tell the difference between a legitimate user and a malicious stranger.</p>
+
+  <h2>Try It: Unprotected vs. Protected</h2>
+  <p>Click on each API endpoint to see what happens with and without authentication:</p>
+
+  <div class="btn-row" id="apiDemoBtns">
+    <button class="ibtn" onclick="showApiDemo(0, this)">GET /api/profile</button>
+    <button class="ibtn" onclick="showApiDemo(1, this)">DELETE /api/users/5</button>
+    <button class="ibtn" onclick="showApiDemo(2, this)">POST /api/transfer-money</button>
+  </div>
+
+  <div id="apiDemoResult" style="display:none;"></div>
+
+  <div class="analogy">
+    <div class="analogy-label">Analogy</div>
+    <p><strong>A building with no locks vs. a building with keycards.</strong> Without authentication, your server is a building where every door is wide open. Anyone can walk into any room &mdash; the CEO's office, the server room, the vault. Authentication is the keycard system. You prove who you are at the front desk, get a card, and only the doors you're authorized for will open.</p>
+  </div>
+
+  <h2>What Authentication Actually Means</h2>
+  <p>Authentication answers one question: <strong style="color:var(--accent-blue);">"Who are you?"</strong></p>
+
+  <p>When a request hits your server, the server needs to know:</p>
+
+  <div class="card">
+    <ul>
+      <li><strong style="color:var(--accent-blue);">Identity</strong> &mdash; Which user is making this request?</li>
+      <li><strong style="color:var(--accent-green);">Proof</strong> &mdash; How do I know they are who they claim to be?</li>
+      <li><strong style="color:var(--accent-yellow);">Trust</strong> &mdash; How do I remember them for future requests?</li>
+    </ul>
+  </div>
+
+  <p>The rest of this course walks through exactly how each of those pieces works &mdash; from passwords to tokens to OAuth. By the end, you'll understand every step of the auth flow in a real application.</p>
+
+  <button class="next-btn" onclick="goToLesson(1)">Next: Passwords &rarr;</button>
+</div>
+
+<!-- ============================================================
+     LESSON 2: PASSWORDS
+     ============================================================ -->
+<div class="lesson" id="lesson1">
+  <h1>Passwords &amp; Hashing</h1>
+  <p class="subtitle">Lesson 2 of 8 &mdash; How the server checks your password without knowing it</p>
+
+  <h2>The Naive Approach</h2>
+  <p>The obvious way to handle passwords: store them in a database table.</p>
+
+  <pre class="code-block"><span class="cmt">-- DON'T DO THIS. Ever.</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> users;
+
+| id | email              | password     |
+|----|--------------------| -------------|
+| 1  | alice@example.com  | hunter42     |
+| 2  | bob@example.com    | p@ssw0rd     |
+| 3  | carol@example.com  | letmein123   |</pre>
+
+  <p style="color:var(--accent-pink);">This is a catastrophe waiting to happen.</p>
+  <p>If anyone gains access to your database &mdash; a hacker, a rogue employee, a backup that leaks &mdash; they have <em>every user's actual password</em>. And since most people reuse passwords, those credentials likely work on their bank, email, and social accounts too.</p>
+
+  <h2>The Solution: Hashing</h2>
+  <p>Instead of storing the password, you store a <strong>hash</strong> of the password. A hash is a one-way mathematical function that turns any input into a fixed-length scrambled string. The critical property: <strong style="color:var(--accent-yellow);">you cannot reverse it</strong>.</p>
+
+  <h3>Interactive: Watch Hashing in Action</h3>
+  <p>Type a password below and see what the hash looks like:</p>
+
+  <div class="hash-demo">
+    <div class="hash-input-box">
+      <input type="text" id="hashInput" placeholder="Type a password..." oninput="updateHash()" maxlength="40">
+    </div>
+    <div class="hash-arrow">&#8594;</div>
+    <div class="hash-output-box" id="hashOutput">
+      <span style="color:var(--text-faint);">hash will appear here...</span>
+    </div>
+  </div>
+
+  <p style="font-size:14px; color:var(--text-muted);">Try changing even one character. The entire hash changes completely.</p>
+
+  <div class="btn-row">
+    <button class="ibtn" onclick="setHashExample('password123')">Try "password123"</button>
+    <button class="ibtn" onclick="setHashExample('password124')">Try "password124"</button>
+    <button class="ibtn" onclick="setHashExample('Password123')">Try "Password123"</button>
+  </div>
+
+  <div id="hashComparison" class="card" style="display:none;"></div>
+
+  <h2>How Login Works with Hashes</h2>
+  <p>When a user creates an account, you hash their password and store the hash. When they log in, you hash the password they type and compare it to the stored hash:</p>
+
+  <div class="compare-grid">
+    <div class="compare-panel">
+      <h4 style="color:var(--accent-green);">Sign Up</h4>
+      <p style="color:var(--text-body); font-size:14px;">1. User types "hunter42"</p>
+      <p style="color:var(--text-body); font-size:14px;">2. Server hashes it: <code>$2b$10$Kx...</code></p>
+      <p style="color:var(--text-body); font-size:14px;">3. Server stores the hash in database</p>
+    </div>
+    <div class="compare-panel">
+      <h4 style="color:var(--accent-blue);">Log In</h4>
+      <p style="color:var(--text-body); font-size:14px;">1. User types "hunter42"</p>
+      <p style="color:var(--text-body); font-size:14px;">2. Server hashes it: <code>$2b$10$Kx...</code></p>
+      <p style="color:var(--text-body); font-size:14px;">3. Hashes match? You're in!</p>
+    </div>
+  </div>
+
+  <h2>Salt: Preventing Rainbow Tables</h2>
+  <p>There's a problem with plain hashing: if two users have the same password, they'll have the same hash. An attacker could precompute hashes for common passwords (a "rainbow table") and look them up.</p>
+
+  <p>The fix: <strong style="color:var(--accent-yellow);">salt</strong>. Before hashing, the server adds a random string (the salt) to your password. Each user gets a different salt, so even identical passwords produce different hashes.</p>
+
+  <pre class="code-block"><span class="cmt">// Without salt (bad) - same password = same hash</span>
+hash(<span class="str">"password123"</span>) <span class="cmt">// always: 5f4dcc3b...</span>
+
+<span class="cmt">// With salt (good) - same password = different hash every time</span>
+hash(<span class="str">"a9xK2m"</span> + <span class="str">"password123"</span>) <span class="cmt">// ef92b778...</span>
+hash(<span class="str">"q3Rv8p"</span> + <span class="str">"password123"</span>) <span class="cmt">// 1a4f6c92...</span></pre>
+
+  <h2>bcrypt: The Industry Standard</h2>
+  <p>In practice, you use <strong>bcrypt</strong> &mdash; a hashing algorithm designed specifically for passwords. It automatically handles salting, and it's intentionally slow (to make brute-force attacks impractical).</p>
+
+  <pre class="code-block"><span class="kw">import</span> bcrypt <span class="kw">from</span> <span class="str">'bcrypt'</span>;
+
+<span class="cmt">// Sign up: hash the password</span>
+<span class="kw">const</span> hash = <span class="kw">await</span> bcrypt.<span class="fn">hash</span>(<span class="str">'hunter42'</span>, <span class="typ">10</span>);
+<span class="cmt">// hash = "$2b$10$Kx9Z8Yq3..." (includes salt + hash)</span>
+
+<span class="cmt">// Log in: compare password to stored hash</span>
+<span class="kw">const</span> isValid = <span class="kw">await</span> bcrypt.<span class="fn">compare</span>(<span class="str">'hunter42'</span>, storedHash);
+<span class="cmt">// isValid = true</span></pre>
+
+  <div class="analogy">
+    <div class="analogy-label">Analogy</div>
+    <p><strong>Hashing is like a paper shredder.</strong> You feed a document (your password) into the shredder and get a pile of confetti (the hash). You can always shred the same document and get the same pattern of confetti. But you cannot reassemble the confetti back into the original document. That's what makes it secure &mdash; even if someone steals all your hashes, they can't recover the passwords.</p>
+  </div>
+
+  <button class="next-btn" onclick="goToLesson(2)">Next: Sessions &amp; Cookies &rarr;</button>
+</div>
+
+<!-- ============================================================
+     LESSON 3: SESSIONS & COOKIES
+     ============================================================ -->
+<div class="lesson" id="lesson2">
+  <h1>Sessions &amp; Cookies</h1>
+  <p class="subtitle">Lesson 3 of 8 &mdash; How the server remembers you after login</p>
+
+  <h2>The Problem After Login</h2>
+  <p>OK, so the user logs in with their email and password. The server checks the hash, and it matches. Great &mdash; the user is authenticated. But then they click to another page.</p>
+
+  <p>HTTP is <strong>stateless</strong>. Each request is independent. The server has no memory of the previous request. It's like having a conversation where you forget everything after each sentence.</p>
+
+  <p>So how does the server know that the next request comes from the same user who just logged in?</p>
+
+  <h2>Sessions: A Temporary Pass</h2>
+  <p>When the user logs in successfully, the server creates a <strong>session</strong> &mdash; a record that says "this user is currently logged in." The session gets a unique ID (a long random string).</p>
+
+  <pre class="code-block"><span class="cmt">// Server creates a session after successful login</span>
+<span class="kw">const</span> session = {
+  id: <span class="str">"abc123xyz789"</span>,
+  userId: <span class="typ">42</span>,
+  createdAt: <span class="str">"2026-06-18T10:00:00Z"</span>,
+  expiresAt: <span class="str">"2026-06-19T10:00:00Z"</span>
+};</pre>
+
+  <h2>Cookies: Delivering the Pass</h2>
+  <p>The server sends the session ID to the browser as a <strong>cookie</strong>. A cookie is a small piece of data that the browser stores and <em>automatically includes in every future request</em> to that server.</p>
+
+  <pre class="code-block"><span class="cmt">// Server response header</span>
+<span class="fn">Set-Cookie</span>: <span class="str">sessionId=abc123xyz789; HttpOnly; Secure; Path=/</span></pre>
+
+  <p>The browser receives this, stores the cookie, and from now on, every time it makes a request to your server, it automatically attaches the cookie. The server reads the session ID from the cookie, looks it up, and knows who you are.</p>
+
+  <h2>Interactive: The Login Flow</h2>
+  <p>Click "Next Step" to walk through the entire login flow:</p>
+
+  <div class="cookie-flow" id="cookieFlow">
+    <div class="cookie-step visible active-cookie" id="cstep0">
+      <div class="cookie-step-icon">&#9997;</div>
+      <div class="cookie-step-text"><strong>User types email and password</strong> into the login form and clicks "Sign In"</div>
+    </div>
+    <div class="cookie-step" id="cstep1">
+      <div class="cookie-step-icon">&#128272;</div>
+      <div class="cookie-step-text"><strong>Server receives the request</strong> and hashes the password. Compares hash to database.</div>
+    </div>
+    <div class="cookie-step" id="cstep2">
+      <div class="cookie-step-icon">&#9989;</div>
+      <div class="cookie-step-text"><strong>Hash matches!</strong> The server creates a session: <code>{ id: "abc123", userId: 42 }</code></div>
+    </div>
+    <div class="cookie-step" id="cstep3">
+      <div class="cookie-step-icon">&#127850;</div>
+      <div class="cookie-step-text"><strong>Server sends a cookie</strong> back in the response: <code>Set-Cookie: sessionId=abc123</code></div>
+    </div>
+    <div class="cookie-step" id="cstep4">
+      <div class="cookie-step-icon">&#128190;</div>
+      <div class="cookie-step-text"><strong>Browser stores the cookie</strong> automatically. You never see it, but it's there.</div>
+    </div>
+    <div class="cookie-step" id="cstep5">
+      <div class="cookie-step-icon">&#128640;</div>
+      <div class="cookie-step-text"><strong>Next request includes the cookie.</strong> Browser sends <code>Cookie: sessionId=abc123</code> with every request.</div>
+    </div>
+    <div class="cookie-step" id="cstep6">
+      <div class="cookie-step-icon">&#128100;</div>
+      <div class="cookie-step-text"><strong>Server reads the cookie,</strong> looks up session "abc123", finds userId 42. It knows who you are!</div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="ibtn" id="cookiePrevBtn" onclick="cookieFlowStep(-1)" style="opacity:0.4;">&#8592; Previous</button>
+    <button class="ibtn" id="cookieNextBtn" onclick="cookieFlowStep(1)">Next Step &#8594;</button>
+    <button class="ibtn" onclick="cookieFlowReset()">Reset</button>
+  </div>
+  <p id="cookieFlowStatus" style="font-size:13px; color:var(--text-muted); margin-top:8px;">Step 1 of 7</p>
+
+  <div class="analogy">
+    <div class="analogy-label">Analogy</div>
+    <p><strong>A wristband at a concert.</strong> You show your ticket at the gate (password). The staff verifies it and gives you a wristband (cookie). For the rest of the event, you just flash your wristband to get into any area &mdash; you don't need to show your ticket again. The wristband is proof that you already verified your identity.</p>
+  </div>
+
+  <h2>Important Cookie Properties</h2>
+  <div class="card">
+    <ul>
+      <li><strong style="color:var(--accent-blue);">HttpOnly</strong> &mdash; JavaScript cannot access the cookie (prevents XSS attacks from stealing it)</li>
+      <li><strong style="color:var(--accent-green);">Secure</strong> &mdash; Cookie is only sent over HTTPS (prevents network eavesdropping)</li>
+      <li><strong style="color:var(--accent-yellow);">SameSite</strong> &mdash; Cookie is only sent with requests from your own site (prevents CSRF attacks)</li>
+      <li><strong style="color:var(--accent-purple);">Expires / Max-Age</strong> &mdash; How long the cookie lasts (session cookies expire when you close the browser)</li>
+    </ul>
+  </div>
+
+  <button class="next-btn" onclick="goToLesson(3)">Next: Tokens (JWT) &rarr;</button>
+</div>
+
+<!-- ============================================================
+     LESSON 4: TOKENS (JWT)
+     ============================================================ -->
+<div class="lesson" id="lesson3">
+  <h1>Tokens (JWT)</h1>
+  <p class="subtitle">Lesson 4 of 8 &mdash; The token IS the proof</p>
+
+  <h2>The Limitation of Sessions</h2>
+  <p>Sessions work great, but they have a drawback: the server has to <em>store</em> every active session. If you have a million users logged in, that's a million sessions to keep track of. And if you have multiple servers, they all need access to the same session store.</p>
+
+  <h2>JWT: JSON Web Tokens</h2>
+  <p>A JWT is a different approach. Instead of the server storing session data, it <strong>encodes all the information into the token itself</strong>. The token contains your identity, and it's cryptographically signed so it can't be tampered with.</p>
+
+  <p>The server doesn't need to look anything up &mdash; it just reads the token and verifies the signature.</p>
+
+  <h2>Interactive: Decode a JWT</h2>
+  <p>A JWT has three parts, separated by dots. Click each part to decode it:</p>
+
+  <div class="jwt-viewer">
+    <div class="jwt-raw" id="jwtRaw">
+      <span class="jwt-part-header" style="cursor:pointer;" onclick="highlightJWTPart(0)">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9</span><span style="color:var(--text-faint);">.</span><span class="jwt-part-payload" style="cursor:pointer;" onclick="highlightJWTPart(1)">eyJ1c2VySWQiOjQyLCJlbWFpbCI6ImFsaWNlQGV4YW1wbGUuY29tIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzE4NzA5MjAwLCJleHAiOjE3MTg3OTU2MDB9</span><span style="color:var(--text-faint);">.</span><span class="jwt-part-signature" style="cursor:pointer;" onclick="highlightJWTPart(2)">SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c</span>
+    </div>
+
+    <div class="jwt-decoded" id="jwtDecoded">
+      <div class="jwt-section" id="jwtSection0" onclick="highlightJWTPart(0)" style="cursor:pointer;">
+        <h5 style="color:var(--accent-pink);">Header</h5>
+        <pre>{
+  "<span class="fn">alg</span>": "<span class="str">HS256</span>",
+  "<span class="fn">typ</span>": "<span class="str">JWT</span>"
+}</pre>
+        <p style="font-size:12px; color:var(--text-muted); margin:8px 0 0;">The algorithm used to sign the token</p>
+      </div>
+      <div class="jwt-section" id="jwtSection1" onclick="highlightJWTPart(1)" style="cursor:pointer;">
+        <h5 style="color:var(--accent-purple);">Payload</h5>
+        <pre>{
+  "<span class="fn">userId</span>": <span class="typ">42</span>,
+  "<span class="fn">email</span>": "<span class="str">alice@example.com</span>",
+  "<span class="fn">role</span>": "<span class="str">admin</span>",
+  "<span class="fn">iat</span>": <span class="typ">1718709200</span>,
+  "<span class="fn">exp</span>": <span class="typ">1718795600</span>
+}</pre>
+        <p style="font-size:12px; color:var(--text-muted); margin:8px 0 0;">The actual data &mdash; who you are and when the token expires</p>
+      </div>
+      <div class="jwt-section" id="jwtSection2" onclick="highlightJWTPart(2)" style="cursor:pointer;">
+        <h5 style="color:var(--accent-blue);">Signature</h5>
+        <pre>HMACSHA256(
+  base64(header) + "." +
+  base64(payload),
+  <span class="str">secret_key</span>
+)</pre>
+        <p style="font-size:12px; color:var(--text-muted); margin:8px 0 0;">Proof the token hasn't been tampered with</p>
+      </div>
+    </div>
+  </div>
+
+  <h2>How JWT Signing Works</h2>
+  <p>The signature is the key security feature. The server has a <strong>secret key</strong> that only it knows. It takes the header + payload, runs them through a signing algorithm with the secret key, and produces the signature.</p>
+
+  <p>Click to see what happens when someone tries to tamper with a JWT:</p>
+
+  <div class="btn-row" id="jwtTamperBtns">
+    <button class="ibtn" onclick="showJWTTamper(0, this)">Valid token</button>
+    <button class="ibtn" onclick="showJWTTamper(1, this)">Change role to "admin"</button>
+    <button class="ibtn" onclick="showJWTTamper(2, this)">Change userId to 1</button>
+  </div>
+  <div id="jwtTamperResult" class="card" style="display:none;"></div>
+
+  <h2>Sessions vs. JWTs</h2>
+  <div class="compare-grid">
+    <div class="compare-panel">
+      <h4 style="color:var(--accent-purple);">Sessions</h4>
+      <ul style="font-size:14px;">
+        <li>Server stores session data</li>
+        <li>Cookie contains only the session ID</li>
+        <li>Easy to invalidate (delete from server)</li>
+        <li>Requires a session store (database/Redis)</li>
+      </ul>
+    </div>
+    <div class="compare-panel">
+      <h4 style="color:var(--accent-blue);">JWT</h4>
+      <ul style="font-size:14px;">
+        <li>Server stores nothing</li>
+        <li>Token contains all user data</li>
+        <li>Can't be easily invalidated before expiry</li>
+        <li>Scales well across multiple servers</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="analogy">
+    <div class="analogy-label">Analogy</div>
+    <p><strong>A JWT is like a driver's license.</strong> It contains your information (name, address, date of birth) and has a hologram (signature) that proves it's real. A police officer doesn't need to call the DMV to verify you &mdash; they can read the license and check the hologram right there. But if someone peels off the hologram and sticks it on a fake ID, the hologram won't match, and the fraud is detected.</p>
+  </div>
+
+  <button class="next-btn" onclick="goToLesson(4)">Next: OAuth &rarr;</button>
+</div>
+
+<!-- ============================================================
+     LESSON 5: OAUTH
+     ============================================================ -->
+<div class="lesson" id="lesson4">
+  <h1>OAuth &mdash; "Login with Google"</h1>
+  <p class="subtitle">Lesson 5 of 8 &mdash; How third-party login works</p>
+
+  <h2>The Idea</h2>
+  <p>You've seen those "Sign in with Google" or "Login with GitHub" buttons. They're convenient because you don't need to create a new password for every app. But what's actually happening behind the scenes?</p>
+
+  <p>The protocol that makes this work is called <strong>OAuth 2.0</strong>. It lets your app delegate authentication to a trusted provider (Google, GitHub, etc.) without ever seeing the user's password.</p>
+
+  <h2>Interactive: The OAuth Flow</h2>
+  <p>Click through each step to see what happens when you click "Sign in with Google":</p>
+
+  <div class="oauth-diagram" id="oauthDiagram">
+    <div class="oauth-box" id="oauthApp">
+      <h4>Your App</h4>
+      <p>paperclip.dev</p>
+    </div>
+    <div class="oauth-arrow" id="oauthArrow1">&#8594;</div>
+    <div class="oauth-box" id="oauthProvider">
+      <h4>Google</h4>
+      <p>accounts.google.com</p>
+    </div>
+    <div class="oauth-arrow" id="oauthArrow2">&#8594;</div>
+    <div class="oauth-box" id="oauthUser">
+      <h4>User</h4>
+      <p>alice@gmail.com</p>
+    </div>
+  </div>
+
+  <div class="flow-steps" id="oauthSteps">
+    <div class="flow-step active-step" onclick="selectOAuthStep(0)">
+      <div class="flow-step-num">1</div>
+      <div class="flow-step-content">
+        <h4>User clicks "Sign in with Google"</h4>
+        <p>Your app redirects the user to Google's login page</p>
+      </div>
+    </div>
+    <div class="flow-connector"></div>
+    <div class="flow-step" onclick="selectOAuthStep(1)">
+      <div class="flow-step-num">2</div>
+      <div class="flow-step-content">
+        <h4>User logs into Google</h4>
+        <p>Google shows the consent screen: "Paperclip wants to access your email and profile"</p>
+      </div>
+    </div>
+    <div class="flow-connector"></div>
+    <div class="flow-step" onclick="selectOAuthStep(2)">
+      <div class="flow-step-num">3</div>
+      <div class="flow-step-content">
+        <h4>User clicks "Allow"</h4>
+        <p>Google redirects back to your app with an authorization code</p>
+      </div>
+    </div>
+    <div class="flow-connector"></div>
+    <div class="flow-step" onclick="selectOAuthStep(3)">
+      <div class="flow-step-num">4</div>
+      <div class="flow-step-content">
+        <h4>Your app exchanges the code for a token</h4>
+        <p>Server-to-server request: your app sends the code + your app's secret to Google</p>
+      </div>
+    </div>
+    <div class="flow-connector"></div>
+    <div class="flow-step" onclick="selectOAuthStep(4)">
+      <div class="flow-step-num">5</div>
+      <div class="flow-step-content">
+        <h4>Google sends back an access token</h4>
+        <p>Your app can now use this token to fetch the user's profile from Google</p>
+      </div>
+    </div>
+    <div class="flow-connector"></div>
+    <div class="flow-step" onclick="selectOAuthStep(5)">
+      <div class="flow-step-num">6</div>
+      <div class="flow-step-content">
+        <h4>Your app creates a session/JWT</h4>
+        <p>User is now logged in! Your app creates its own session or JWT for future requests.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="oauthDetail" class="card fade-in">
+    <p id="oauthDetailText" style="color:var(--text-body); margin:0;">
+      <strong style="color:var(--accent-blue);">Step 1: The Redirect</strong><br><br>
+      When the user clicks "Sign in with Google," your app doesn't handle any passwords. Instead, it constructs a URL and redirects the browser to Google:
+    </p>
+    <pre id="oauthDetailCode" style="margin-top:12px;"><span class="fn">GET</span> https://accounts.google.com/oauth/authorize
+  ?<span class="fn">client_id</span>=<span class="str">YOUR_APP_ID</span>
+  &<span class="fn">redirect_uri</span>=<span class="str">https://paperclip.dev/callback</span>
+  &<span class="fn">scope</span>=<span class="str">email profile</span>
+  &<span class="fn">response_type</span>=<span class="str">code</span></pre>
+  </div>
+
+  <div class="analogy">
+    <div class="analogy-label">Analogy</div>
+    <p><strong>A hotel giving you a room key authorized by the building owner.</strong> You (the user) want to check into a hotel (your app). Instead of the hotel verifying your identity directly, they call the building owner (Google) who already knows you. The building owner confirms your identity and tells the hotel "Yes, give them access." The hotel then gives you your own room key (session/JWT). You never showed the hotel your personal documents &mdash; the building owner vouched for you.</p>
+  </div>
+
+  <h2>Why OAuth is Popular</h2>
+  <div class="card">
+    <ul>
+      <li><strong style="color:var(--accent-blue);">No passwords to manage</strong> &mdash; Your app never touches user passwords</li>
+      <li><strong style="color:var(--accent-green);">Users trust it</strong> &mdash; They already have Google/GitHub accounts</li>
+      <li><strong style="color:var(--accent-yellow);">Scoped access</strong> &mdash; You only request what you need (email, profile, repos)</li>
+      <li><strong style="color:var(--accent-purple);">Revocable</strong> &mdash; Users can revoke access from Google's settings anytime</li>
+    </ul>
+  </div>
+
+  <button class="next-btn" onclick="goToLesson(5)">Next: API Keys &rarr;</button>
+</div>
+
+<!-- ============================================================
+     LESSON 6: API KEYS
+     ============================================================ -->
+<div class="lesson" id="lesson5">
+  <h1>API Keys</h1>
+  <p class="subtitle">Lesson 6 of 8 &mdash; How machines authenticate</p>
+
+  <h2>Not Everything is a Human</h2>
+  <p>So far we've talked about humans logging in with passwords or Google accounts. But what about automated systems, scripts, and agents? They can't type a password or click "Login with Google."</p>
+
+  <p>For machine-to-machine authentication, we use <strong>API keys</strong>: long, random secret strings that identify the caller.</p>
+
+  <h2>What an API Key Looks Like</h2>
+  <p>Click to reveal a sample API key:</p>
+
+  <div class="btn-row">
+    <button class="ibtn" id="revealKeyBtn" onclick="revealApiKey()">Reveal API Key</button>
+    <button class="ibtn" onclick="hideApiKey()">Hide</button>
+  </div>
+
+  <div id="apiKeyDisplay" class="card" style="display:none;">
+    <p style="font-size:12px; color:var(--text-muted); margin-bottom:8px;">Your Paperclip API Key:</p>
+    <pre style="margin:0;"><span class="str">pk_live_a8Kz9mR4xQ2vL7nB3wY5jF6hP0dC1eT8uI4oS</span></pre>
+    <p style="font-size:13px; color:var(--accent-pink); margin-top:12px; margin-bottom:0;">Never share this key or commit it to Git. Treat it like a password.</p>
+  </div>
+
+  <h2>How API Keys Are Used</h2>
+  <p>The key is included in the request headers. The server reads the header, looks up the key in its database, and determines who (or what) is making the request.</p>
+
+  <pre class="code-block"><span class="cmt"># Include API key in the Authorization header</span>
+<span class="fn">GET</span> /api/paperclips
+<span class="fn">Host</span>: api.paperclip.dev
+<span class="fn">Authorization</span>: <span class="str">Bearer pk_live_a8Kz9mR4xQ2vL7nB3wY5jF6hP0dC1eT8uI4oS</span></pre>
+
+  <pre class="code-block"><span class="cmt">// Server-side: checking the API key</span>
+<span class="kw">function</span> <span class="fn">authenticateApiKey</span>(req, res, next) {
+  <span class="kw">const</span> key = req.headers.authorization?.<span class="fn">replace</span>(<span class="str">'Bearer '</span>, <span class="str">''</span>);
+
+  <span class="kw">const</span> agent = <span class="kw">await</span> db.<span class="fn">query</span>(
+    <span class="str">'SELECT * FROM api_keys WHERE key = $1'</span>,
+    [key]
+  );
+
+  <span class="kw">if</span> (!agent) {
+    <span class="kw">return</span> res.<span class="fn">status</span>(<span class="typ">401</span>).<span class="fn">json</span>({ error: <span class="str">'Invalid API key'</span> });
+  }
+
+  req.agent = agent;
+  <span class="fn">next</span>();
+}</pre>
+
+  <h2>Interactive: Test an API Key</h2>
+  <p>Try making requests with different API keys:</p>
+
+  <div class="btn-row" id="apiKeyTestBtns">
+    <button class="ibtn" onclick="testApiKey(0, this)">Valid key</button>
+    <button class="ibtn" onclick="testApiKey(1, this)">Invalid key</button>
+    <button class="ibtn" onclick="testApiKey(2, this)">Expired key</button>
+    <button class="ibtn" onclick="testApiKey(3, this)">No key</button>
+  </div>
+  <div id="apiKeyTestResult" class="card" style="display:none;"></div>
+
+  <h2>Rate Limiting</h2>
+  <p>API keys also enable <strong>rate limiting</strong> &mdash; controlling how many requests a key can make. This prevents abuse and ensures fair usage.</p>
+
+  <pre class="code-block"><span class="cmt">// Rate limit: 100 requests per minute per API key</span>
+<span class="fn">GET</span> /api/paperclips
+<span class="fn">X-RateLimit-Limit</span>: <span class="typ">100</span>
+<span class="fn">X-RateLimit-Remaining</span>: <span class="typ">73</span>
+<span class="fn">X-RateLimit-Reset</span>: <span class="typ">1718709260</span></pre>
+
+  <div class="analogy">
+    <div class="analogy-label">Analogy</div>
+    <p><strong>A backstage pass.</strong> It doesn't have your photo or say who you are, but it proves you're allowed in. Anyone holding the pass gets access. That's why you guard it carefully &mdash; if someone copies your backstage pass, they get the same access you have. And the venue can revoke it at any time by telling security to stop accepting that pass number.</p>
+  </div>
+
+  <h2>API Keys vs. Passwords vs. JWTs</h2>
+  <div class="card">
+    <ul>
+      <li><strong style="color:var(--accent-blue);">Passwords</strong> &mdash; for humans logging into a website</li>
+      <li><strong style="color:var(--accent-purple);">JWTs</strong> &mdash; for maintaining user sessions after login</li>
+      <li><strong style="color:var(--accent-green);">API Keys</strong> &mdash; for machines, scripts, and agents calling your API</li>
+    </ul>
+  </div>
+
+  <button class="next-btn" onclick="goToLesson(6)">Next: AuthZ vs AuthN &rarr;</button>
+</div>
+
+<!-- ============================================================
+     LESSON 7: AUTHORIZATION VS AUTHENTICATION
+     ============================================================ -->
+<div class="lesson" id="lesson6">
+  <h1>Authorization vs. Authentication</h1>
+  <p class="subtitle">Lesson 7 of 8 &mdash; WHO you are vs. WHAT you're allowed to do</p>
+
+  <h2>Two Different Questions</h2>
+  <p>People often confuse these two concepts, but they're fundamentally different:</p>
+
+  <div class="compare-grid">
+    <div class="compare-panel">
+      <h4 style="color:var(--accent-blue);">Authentication (AuthN)</h4>
+      <p style="font-size:18px; color:var(--text-primary); font-weight:600; margin:12px 0;">WHO are you?</p>
+      <p style="color:var(--text-body); font-size:14px;">Verifying identity. Logging in. Proving you are who you claim to be.</p>
+      <p style="color:var(--text-muted); font-size:13px; margin-bottom:0;">Examples: password, fingerprint, Google OAuth, API key</p>
+    </div>
+    <div class="compare-panel">
+      <h4 style="color:var(--accent-purple);">Authorization (AuthZ)</h4>
+      <p style="font-size:18px; color:var(--text-primary); font-weight:600; margin:12px 0;">WHAT can you do?</p>
+      <p style="color:var(--text-body); font-size:14px;">Checking permissions. Deciding what actions you're allowed to perform.</p>
+      <p style="color:var(--text-muted); font-size:13px; margin-bottom:0;">Examples: admin vs. viewer, read-only vs. read-write, scopes</p>
+    </div>
+  </div>
+
+  <p>Authentication always comes first. You can't determine what someone is allowed to do until you know who they are.</p>
+
+  <h2>Interactive: Same Endpoint, Different Permissions</h2>
+  <p>Both users are <em>authenticated</em> (logged in), but they have different <em>authorization</em> (permissions). Click an endpoint to see the difference:</p>
+
+  <div class="btn-row" id="authzDemoBtns">
+    <button class="ibtn" onclick="showAuthzDemo(0, this)">GET /api/users</button>
+    <button class="ibtn" onclick="showAuthzDemo(1, this)">DELETE /api/users/5</button>
+    <button class="ibtn" onclick="showAuthzDemo(2, this)">GET /api/settings</button>
+    <button class="ibtn" onclick="showAuthzDemo(3, this)">POST /api/deploy</button>
+  </div>
+
+  <div class="role-demo" id="roleDemoArea" style="display:none;">
+    <div class="role-card active-role" id="adminCard">
+      <h4>Alice</h4>
+      <span class="role-badge admin">admin</span>
+      <div class="endpoint-result" id="adminResult"></div>
+    </div>
+    <div class="role-card active-role" id="viewerCard">
+      <h4>Bob</h4>
+      <span class="role-badge viewer">viewer</span>
+      <div class="endpoint-result" id="viewerResult"></div>
+    </div>
+  </div>
+
+  <h2>Roles and Permissions</h2>
+  <p>Most apps organize authorization through <strong>roles</strong>. Each role has a set of permissions that define what actions are allowed.</p>
+
+  <pre class="code-block"><span class="kw">const</span> roles = {
+  admin: {
+    permissions: [<span class="str">'read'</span>, <span class="str">'write'</span>, <span class="str">'delete'</span>, <span class="str">'manage_users'</span>, <span class="str">'deploy'</span>]
+  },
+  editor: {
+    permissions: [<span class="str">'read'</span>, <span class="str">'write'</span>]
+  },
+  viewer: {
+    permissions: [<span class="str">'read'</span>]
+  }
+};
+
+<span class="cmt">// Middleware that checks permissions</span>
+<span class="kw">function</span> <span class="fn">requirePermission</span>(permission) {
+  <span class="kw">return</span> (req, res, next) => {
+    <span class="kw">const</span> userRole = roles[req.user.role];
+    <span class="kw">if</span> (!userRole.permissions.<span class="fn">includes</span>(permission)) {
+      <span class="kw">return</span> res.<span class="fn">status</span>(<span class="typ">403</span>).<span class="fn">json</span>({ error: <span class="str">'Forbidden'</span> });
+    }
+    <span class="fn">next</span>();
+  };
+}</pre>
+
+  <h2>Scopes (for APIs)</h2>
+  <p>When you use OAuth, you request specific <strong>scopes</strong> &mdash; these are the permissions the user grants to your app. For example, when Paperclip uses the Google API:</p>
+
+  <pre class="code-block"><span class="cmt">// Paperclip only requests what it needs</span>
+scope=<span class="str">"email profile"</span>           <span class="cmt">// Read email and profile info</span>
+scope=<span class="str">"email profile calendar"</span>  <span class="cmt">// Also access Google Calendar</span></pre>
+
+  <p>The user sees exactly what permissions you're requesting and can decide whether to allow it. Your app <strong>never</strong> gets more access than the user approves.</p>
+
+  <h2>In Paperclip: Agent Roles</h2>
+  <p>Agents in the Paperclip org chart have roles and permissions too. Click to explore:</p>
+
+  <div class="btn-row" id="agentRoleBtns">
+    <button class="ibtn" onclick="showAgentRole(0, this)">CEO Agent</button>
+    <button class="ibtn" onclick="showAgentRole(1, this)">Manager Agent</button>
+    <button class="ibtn" onclick="showAgentRole(2, this)">Worker Agent</button>
+  </div>
+  <div id="agentRoleResult" class="card" style="display:none;"></div>
+
+  <div class="analogy">
+    <div class="analogy-label">Analogy</div>
+    <p><strong>Authentication is showing your employee badge at the door. Authorization is what floor your badge lets you access.</strong> The security guard confirms you work here (authentication). But your badge only opens doors on floors 1-3 &mdash; you can't get to the executive floor on 10 (authorization). The CEO's badge opens every door, but you still both have to swipe to get in.</p>
+  </div>
+
+  <button class="next-btn" onclick="goToLesson(7)">Next: Auth in Practice &rarr;</button>
+</div>
+
+<!-- ============================================================
+     LESSON 8: AUTH IN PRACTICE
+     ============================================================ -->
+<div class="lesson" id="lesson7">
+  <h1>Auth in Practice</h1>
+  <p class="subtitle">Lesson 8 of 8 &mdash; How Paperclip handles auth in the real codebase</p>
+
+  <h2>The Full Picture</h2>
+  <p>Now that you understand all the building blocks, let's see how they fit together in the Paperclip codebase. Paperclip uses three types of authentication for three types of users:</p>
+
+  <div class="card">
+    <ul>
+      <li><strong style="color:var(--accent-blue);">Board users (humans)</strong> &mdash; Log in with email/password or Google OAuth. Get a JWT.</li>
+      <li><strong style="color:var(--accent-green);">Agents (AI)</strong> &mdash; Authenticate with API keys. Each agent has a unique key.</li>
+      <li><strong style="color:var(--accent-yellow);">Runs (tasks)</strong> &mdash; Each agent run gets a short-lived JWT scoped to that specific task.</li>
+    </ul>
+  </div>
+
+  <h2>The Middleware Stack</h2>
+  <p>Every request to the Paperclip API passes through authentication middleware. Click each layer to see what it does:</p>
+
+  <div class="middleware-flow" id="middlewareFlow">
+    <div class="middleware-layer active-layer" onclick="selectMiddleware(0)">
+      <h4>1. Extract Token</h4>
+      <p>Read the Authorization header or cookie from the request</p>
+    </div>
+    <div class="middleware-arrow">&#8595;</div>
+    <div class="middleware-layer" onclick="selectMiddleware(1)">
+      <h4>2. Identify Type</h4>
+      <p>Is this a JWT? An API key? Determine the authentication method.</p>
+    </div>
+    <div class="middleware-arrow">&#8595;</div>
+    <div class="middleware-layer" onclick="selectMiddleware(2)">
+      <h4>3. Verify</h4>
+      <p>Check the token's signature, look up the API key, verify it hasn't expired</p>
+    </div>
+    <div class="middleware-arrow">&#8595;</div>
+    <div class="middleware-layer" onclick="selectMiddleware(3)">
+      <h4>4. Attach User</h4>
+      <p>Add the authenticated user/agent to the request object: req.user</p>
+    </div>
+    <div class="middleware-arrow">&#8595;</div>
+    <div class="middleware-layer" onclick="selectMiddleware(4)">
+      <h4>5. Check Permissions</h4>
+      <p>Route-specific: does this user have the required role/scope?</p>
+    </div>
+  </div>
+
+  <div id="middlewareDetail" class="card fade-in">
+    <p id="middlewareDetailText" style="color:var(--text-body); margin-bottom:12px;">
+      <strong style="color:var(--accent-blue);">Step 1: Extract Token</strong><br><br>
+      The first thing the middleware does is look for credentials in the incoming request. It checks two places: the <code>Authorization</code> header (for API keys and bearer tokens) and cookies (for browser sessions).
+    </p>
+    <pre id="middlewareDetailCode"><span class="kw">function</span> <span class="fn">extractToken</span>(req) {
+  <span class="cmt">// Check Authorization header first</span>
+  <span class="kw">const</span> authHeader = req.headers[<span class="str">'authorization'</span>];
+  <span class="kw">if</span> (authHeader?.startsWith(<span class="str">'Bearer '</span>)) {
+    <span class="kw">return</span> { type: <span class="str">'bearer'</span>, token: authHeader.<span class="fn">slice</span>(<span class="typ">7</span>) };
+  }
+
+  <span class="cmt">// Fall back to cookie</span>
+  <span class="kw">const</span> sessionCookie = req.cookies?.[<span class="str">'session'</span>];
+  <span class="kw">if</span> (sessionCookie) {
+    <span class="kw">return</span> { type: <span class="str">'session'</span>, token: sessionCookie };
+  }
+
+  <span class="kw">return</span> <span class="typ">null</span>;
+}</pre>
+  </div>
+
+  <h2>Putting It All Together</h2>
+  <p>Here's a complete request lifecycle. Click to trace a request through the auth system:</p>
+
+  <div class="btn-row" id="traceRequestBtns">
+    <button class="ibtn" onclick="traceRequest(0, this)">Board user loads dashboard</button>
+    <button class="ibtn" onclick="traceRequest(1, this)">Agent creates a paperclip</button>
+    <button class="ibtn" onclick="traceRequest(2, this)">Unauthorized request</button>
+  </div>
+  <div id="traceRequestResult" style="display:none;"></div>
+
+  <h2>Security Checklist</h2>
+  <p>Here's what every developer should remember about auth. Click each item to expand:</p>
+
+  <div id="securityChecklist">
+    <div class="detail-card" onclick="toggleDetailCard(this)">
+      <div class="detail-card-header">
+        <div class="detail-card-num">1</div>
+        <div class="detail-card-title">Never store plain-text passwords</div>
+      </div>
+      <div class="detail-card-body">Always use bcrypt (or argon2) to hash passwords. Never use MD5 or SHA-256 alone &mdash; they're too fast and can be brute-forced. bcrypt is intentionally slow and includes salt automatically.</div>
+    </div>
+    <div class="detail-card" onclick="toggleDetailCard(this)">
+      <div class="detail-card-header">
+        <div class="detail-card-num">2</div>
+        <div class="detail-card-title">Use HTTPS everywhere</div>
+      </div>
+      <div class="detail-card-body">Without HTTPS, anyone on the network can read your cookies, tokens, and API keys in plain text. In the deployment course, you learned about SSL certificates &mdash; they're not optional for auth.</div>
+    </div>
+    <div class="detail-card" onclick="toggleDetailCard(this)">
+      <div class="detail-card-header">
+        <div class="detail-card-num">3</div>
+        <div class="detail-card-title">Set HttpOnly and Secure on cookies</div>
+      </div>
+      <div class="detail-card-body">HttpOnly prevents JavaScript from accessing the cookie (blocks XSS attacks). Secure ensures the cookie is only sent over HTTPS. SameSite prevents CSRF attacks. Always set all three.</div>
+    </div>
+    <div class="detail-card" onclick="toggleDetailCard(this)">
+      <div class="detail-card-header">
+        <div class="detail-card-num">4</div>
+        <div class="detail-card-title">Give tokens an expiration</div>
+      </div>
+      <div class="detail-card-body">JWTs should expire (usually in 15 minutes to 24 hours). If a token is stolen, the damage is limited to the expiration window. Use refresh tokens for longer sessions.</div>
+    </div>
+    <div class="detail-card" onclick="toggleDetailCard(this)">
+      <div class="detail-card-header">
+        <div class="detail-card-num">5</div>
+        <div class="detail-card-title">Never put API keys in your code</div>
+      </div>
+      <div class="detail-card-body">Use environment variables. In the deployment course, you learned about <code>.env</code> files and platform secrets. API keys committed to Git are the #1 cause of security breaches in open-source projects.</div>
+    </div>
+    <div class="detail-card" onclick="toggleDetailCard(this)">
+      <div class="detail-card-header">
+        <div class="detail-card-num">6</div>
+        <div class="detail-card-title">Apply the principle of least privilege</div>
+      </div>
+      <div class="detail-card-body">Give users and agents the minimum permissions they need. A viewer shouldn't be able to delete. An agent that reads data shouldn't have write access. If an account is compromised, the blast radius is minimized.</div>
+    </div>
+  </div>
+
+  <h2>What You've Learned</h2>
+  <div class="card">
+    <ul>
+      <li><strong style="color:var(--accent-blue);">Passwords</strong> are hashed with bcrypt &mdash; the server never stores the real password</li>
+      <li><strong style="color:var(--accent-green);">Sessions &amp; cookies</strong> keep you logged in across requests</li>
+      <li><strong style="color:var(--accent-purple);">JWTs</strong> are self-contained tokens with signed data</li>
+      <li><strong style="color:var(--accent-yellow);">OAuth</strong> lets you delegate login to Google/GitHub</li>
+      <li><strong style="color:var(--accent-orange);">API keys</strong> authenticate machines and agents</li>
+      <li><strong style="color:var(--accent-pink);">Authentication</strong> is WHO, <strong style="color:var(--accent-indigo);">Authorization</strong> is WHAT</li>
+    </ul>
+  </div>
+
+  <p>You now understand the full auth stack &mdash; from a user typing a password to an agent calling an API to the middleware that protects every route. In the next course, you'll learn TypeScript: the language that makes all this code safer and more reliable.</p>
+
+  <div class="next-course-banner">
+    <h3>Up Next</h3>
+    <p>Continue to Course 08: How TypeScript Works &mdash; Types, safety, and the language of modern codebases.</p>
+    <a href="/lessons/typescript.html">Start How TypeScript Works &rarr;</a>
+  </div>
+</div>
+
+</div><!-- /container -->
+</div><!-- /content-wrapper -->
+
+<script>
+// ============================================================
+// Lesson Navigation
+// ============================================================
+function goToLesson(index) {
+  var lessons = document.querySelectorAll('.lesson');
+  var btns = document.querySelectorAll('.nav-btn');
+  lessons.forEach(function(l) { l.classList.remove('active'); });
+  btns.forEach(function(b) { b.classList.remove('active'); });
+  lessons[index].classList.add('active');
+  btns[index].classList.add('active');
+  window.scrollTo(0, 0);
+  // Scroll nav button into view
+  btns[index].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+}
+
+// ============================================================
+// LESSON 1: API Demo (unprotected vs protected)
+// ============================================================
+var apiDemos = [
+  {
+    endpoint: 'GET /api/profile',
+    unprotected: {
+      status: '200 OK',
+      statusColor: 'var(--accent-green)',
+      body: '{\n  "id": 42,\n  "email": "alice@example.com",\n  "ssn": "123-45-6789",\n  "salary": 95000\n}',
+      note: 'Anyone can see Alice\'s private data. SSN, salary, everything.'
+    },
+    protected: {
+      status: '401 Unauthorized',
+      statusColor: 'var(--accent-pink)',
+      body: '{\n  "error": "Authentication required"\n}',
+      note: 'The server refuses the request. You must log in first and can only see your own profile.'
+    }
+  },
+  {
+    endpoint: 'DELETE /api/users/5',
+    unprotected: {
+      status: '200 OK',
+      statusColor: 'var(--accent-green)',
+      body: '{\n  "message": "User 5 deleted successfully"\n}',
+      note: 'Anyone just deleted a user account. No questions asked.'
+    },
+    protected: {
+      status: '403 Forbidden',
+      statusColor: 'var(--accent-yellow)',
+      body: '{\n  "error": "Admin role required"\n}',
+      note: 'Even logged-in users can\'t delete unless they have admin permissions.'
+    }
+  },
+  {
+    endpoint: 'POST /api/transfer-money',
+    unprotected: {
+      status: '200 OK',
+      statusColor: 'var(--accent-green)',
+      body: '{\n  "message": "Transferred $10,000 to account XYZ"\n}',
+      note: 'Anyone can transfer money from any account. This is why auth matters.'
+    },
+    protected: {
+      status: '401 Unauthorized',
+      statusColor: 'var(--accent-pink)',
+      body: '{\n  "error": "Authentication required"\n}',
+      note: 'Must be logged in AND can only transfer from your own account.'
+    }
+  }
+];
+
+function showApiDemo(index, btn) {
+  var btns = document.getElementById('apiDemoBtns').querySelectorAll('.ibtn');
+  btns.forEach(function(b) { b.classList.remove('selected'); });
+  btn.classList.add('selected');
+
+  var demo = apiDemos[index];
+  var el = document.getElementById('apiDemoResult');
+  el.style.display = 'block';
+  el.innerHTML = '<div class="compare-grid fade-in">' +
+    '<div class="compare-panel danger">' +
+      '<h4 style="color:var(--accent-pink);">Without Auth</h4>' +
+      '<p style="color:' + demo.unprotected.statusColor + '; font-weight:600; font-size:14px; font-family:\'SF Mono\',Monaco,monospace;">' + demo.unprotected.status + '</p>' +
+      '<pre style="font-size:13px; margin:8px 0;">' + demo.unprotected.body + '</pre>' +
+      '<p style="color:var(--text-muted); font-size:13px; margin:0;">' + demo.unprotected.note + '</p>' +
+    '</div>' +
+    '<div class="compare-panel success">' +
+      '<h4 style="color:var(--accent-green);">With Auth</h4>' +
+      '<p style="color:' + demo.protected.statusColor + '; font-weight:600; font-size:14px; font-family:\'SF Mono\',Monaco,monospace;">' + demo.protected.status + '</p>' +
+      '<pre style="font-size:13px; margin:8px 0;">' + demo.protected.body + '</pre>' +
+      '<p style="color:var(--text-muted); font-size:13px; margin:0;">' + demo.protected.note + '</p>' +
+    '</div>' +
+  '</div>';
+}
+
+// ============================================================
+// LESSON 2: Hash Demo
+// ============================================================
+// Simple hash function for demonstration purposes (NOT cryptographic)
+function simpleHash(str) {
+  if (!str) return '';
+  var hash = 0;
+  for (var i = 0; i < str.length; i++) {
+    var char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  // Convert to hex-like string and pad
+  var hex = Math.abs(hash).toString(16);
+  // Generate a longer bcrypt-style output
+  var salt = '$2b$10$';
+  var extended = '';
+  for (var j = 0; j < 44; j++) {
+    var idx = (Math.abs(hash * (j + 1) * 7 + j * 13)) % 62;
+    var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    extended += chars[idx];
+  }
+  return salt + extended;
+}
+
+var hashHistory = [];
+
+function updateHash() {
+  var input = document.getElementById('hashInput').value;
+  var output = document.getElementById('hashOutput');
+  if (!input) {
+    output.innerHTML = '<span style="color:var(--text-faint);">hash will appear here...</span>';
+    return;
+  }
+  var hashed = simpleHash(input);
+  output.textContent = hashed;
+
+  // Track for comparison
+  var found = false;
+  for (var i = 0; i < hashHistory.length; i++) {
+    if (hashHistory[i].input === input) { found = true; break; }
+  }
+  if (!found && hashHistory.length < 5) {
+    hashHistory.push({ input: input, hash: hashed });
+  }
+  if (hashHistory.length >= 2) {
+    showHashComparison();
+  }
+}
+
+function setHashExample(val) {
+  document.getElementById('hashInput').value = val;
+  updateHash();
+}
+
+function showHashComparison() {
+  var el = document.getElementById('hashComparison');
+  if (hashHistory.length < 2) { el.style.display = 'none'; return; }
+  el.style.display = 'block';
+  var html = '<p style="color:var(--text-primary); font-weight:600; margin-bottom:12px;">Hash Comparison:</p>';
+  for (var i = 0; i < hashHistory.length; i++) {
+    html += '<div style="display:flex; gap:12px; align-items:center; margin-bottom:8px; flex-wrap:wrap;">';
+    html += '<code style="color:var(--accent-green); min-width:140px;">"' + hashHistory[i].input + '"</code>';
+    html += '<span style="color:var(--text-faint);">&rarr;</span>';
+    html += '<code style="color:var(--accent-pink); font-size:12px; word-break:break-all;">' + hashHistory[i].hash + '</code>';
+    html += '</div>';
+  }
+  html += '<p style="color:var(--text-muted); font-size:13px; margin-top:12px; margin-bottom:0;">Notice: even tiny changes produce completely different hashes. This is the "avalanche effect."</p>';
+  el.innerHTML = html;
+}
+
+// ============================================================
+// LESSON 3: Cookie Flow (step-by-step)
+// ============================================================
+var cookieStep = 0;
+var totalCookieSteps = 7;
+
+function cookieFlowStep(direction) {
+  var next = cookieStep + direction;
+  if (next < 0 || next >= totalCookieSteps) return;
+  cookieStep = next;
+  renderCookieFlow();
+}
+
+function cookieFlowReset() {
+  cookieStep = 0;
+  renderCookieFlow();
+}
+
+function renderCookieFlow() {
+  for (var i = 0; i < totalCookieSteps; i++) {
+    var step = document.getElementById('cstep' + i);
+    step.classList.remove('active-cookie', 'visible');
+    if (i <= cookieStep) {
+      step.classList.add('visible');
+    }
+    if (i === cookieStep) {
+      step.classList.add('active-cookie');
+    }
+  }
+  document.getElementById('cookieFlowStatus').textContent = 'Step ' + (cookieStep + 1) + ' of ' + totalCookieSteps;
+  document.getElementById('cookiePrevBtn').style.opacity = cookieStep === 0 ? '0.4' : '1';
+  document.getElementById('cookieNextBtn').style.opacity = cookieStep === totalCookieSteps - 1 ? '0.4' : '1';
+}
+
+// ============================================================
+// LESSON 4: JWT Interactive
+// ============================================================
+function highlightJWTPart(index) {
+  var sections = ['jwtSection0', 'jwtSection1', 'jwtSection2'];
+  var colors = ['var(--accent-pink)', 'var(--accent-purple)', 'var(--accent-blue)'];
+  for (var i = 0; i < sections.length; i++) {
+    var el = document.getElementById(sections[i]);
+    el.classList.remove('highlight');
+    el.style.borderColor = 'var(--border-primary)';
+  }
+  var active = document.getElementById(sections[index]);
+  active.classList.add('highlight');
+  active.style.borderColor = colors[index];
+}
+
+var jwtTamperResults = [
+  {
+    title: 'Valid Token',
+    color: 'var(--accent-green)',
+    text: 'The server reads the JWT, checks the signature against its secret key, and the signature matches. The payload is trusted.',
+    code: '<pre><span class="cmt">// Server verifies the token</span>\n<span class="kw">const</span> payload = jwt.<span class="fn">verify</span>(token, <span class="str">SECRET_KEY</span>);\n<span class="cmt">// payload = { userId: 42, role: "viewer", ... }</span>\n<span class="cmt">// Signature valid. Request allowed.</span></pre>'
+  },
+  {
+    title: 'Tampered: Changed role to "admin"',
+    color: 'var(--accent-pink)',
+    text: 'An attacker decoded the payload, changed "role" from "viewer" to "admin", and re-encoded it. But they don\'t have the secret key, so they can\'t generate a valid signature. The server detects the mismatch.',
+    code: '<pre><span class="cmt">// Attacker modifies the payload</span>\n{ "userId": 42, "role": <span class="str">"admin"</span> }  <span class="cmt">// changed!</span>\n\n<span class="cmt">// Server tries to verify</span>\njwt.<span class="fn">verify</span>(tamperedToken, <span class="str">SECRET_KEY</span>);\n<span class="cmt">// THROWS: JsonWebTokenError: invalid signature</span>\n<span class="cmt">// Request REJECTED.</span></pre>'
+  },
+  {
+    title: 'Tampered: Changed userId to 1',
+    color: 'var(--accent-pink)',
+    text: 'Same problem. The signature was computed from the original payload. Changing any byte of the payload invalidates the signature. The server rejects the request immediately.',
+    code: '<pre><span class="cmt">// Attacker changes userId to impersonate user 1</span>\n{ "userId": <span class="typ">1</span>, "role": <span class="str">"viewer"</span> }  <span class="cmt">// changed!</span>\n\n<span class="cmt">// Signature no longer matches</span>\n<span class="cmt">// HMACSHA256(newPayload, SECRET) !== originalSignature</span>\n<span class="cmt">// Request REJECTED.</span></pre>'
+  }
+];
+
+function showJWTTamper(index, btn) {
+  var btns = document.getElementById('jwtTamperBtns').querySelectorAll('.ibtn');
+  btns.forEach(function(b) { b.classList.remove('selected'); });
+  btn.classList.add('selected');
+
+  var result = jwtTamperResults[index];
+  var el = document.getElementById('jwtTamperResult');
+  el.style.display = 'block';
+  el.innerHTML = '<div class="fade-in">' +
+    '<p style="color:' + result.color + '; font-weight:600; margin-bottom:8px;">' + result.title + '</p>' +
+    '<p style="color:var(--text-body); font-size:14px;">' + result.text + '</p>' +
+    result.code +
+  '</div>';
+}
+
+// ============================================================
+// LESSON 5: OAuth Flow Steps
+// ============================================================
+var oauthDetails = [
+  {
+    text: '<strong style="color:var(--accent-blue);">Step 1: The Redirect</strong><br><br>When the user clicks "Sign in with Google," your app doesn\'t handle any passwords. Instead, it constructs a URL and redirects the browser to Google:',
+    code: '<pre style="margin-top:12px;"><span class="fn">GET</span> https://accounts.google.com/oauth/authorize\n  ?<span class="fn">client_id</span>=<span class="str">YOUR_APP_ID</span>\n  &<span class="fn">redirect_uri</span>=<span class="str">https://paperclip.dev/callback</span>\n  &<span class="fn">scope</span>=<span class="str">email profile</span>\n  &<span class="fn">response_type</span>=<span class="str">code</span></pre>',
+    boxes: [1, 0, 0], arrows: [1, 0]
+  },
+  {
+    text: '<strong style="color:var(--accent-blue);">Step 2: Google Login</strong><br><br>The user sees Google\'s login page. They enter their Google credentials. Your app never sees this password &mdash; it\'s entirely between the user and Google.',
+    code: '',
+    boxes: [0, 1, 1], arrows: [0, 1]
+  },
+  {
+    text: '<strong style="color:var(--accent-blue);">Step 3: User Consents</strong><br><br>Google shows a consent screen: "Paperclip wants to access your email and profile. Allow?" The user clicks "Allow" and Google redirects back to your app with an authorization code.',
+    code: '<pre style="margin-top:12px;"><span class="cmt">// Google redirects the user back to your app:</span>\n<span class="fn">GET</span> https://paperclip.dev/callback\n  ?<span class="fn">code</span>=<span class="str">4/0AX4XfWh...</span></pre>',
+    boxes: [0, 1, 1], arrows: [0, 1]
+  },
+  {
+    text: '<strong style="color:var(--accent-blue);">Step 4: Exchange Code for Token</strong><br><br>Your server (not the browser) sends the authorization code plus your app\'s secret to Google. This is a server-to-server call that the user never sees.',
+    code: '<pre style="margin-top:12px;"><span class="fn">POST</span> https://oauth2.googleapis.com/token\n  <span class="fn">client_id</span>=<span class="str">YOUR_APP_ID</span>\n  <span class="fn">client_secret</span>=<span class="str">YOUR_SECRET</span>\n  <span class="fn">code</span>=<span class="str">4/0AX4XfWh...</span>\n  <span class="fn">grant_type</span>=<span class="str">authorization_code</span></pre>',
+    boxes: [1, 1, 0], arrows: [1, 0]
+  },
+  {
+    text: '<strong style="color:var(--accent-blue);">Step 5: Google Returns Access Token</strong><br><br>Google verifies everything and sends back an access token. Your app can use this token to fetch the user\'s profile information from Google\'s API.',
+    code: '<pre style="margin-top:12px;"><span class="cmt">// Google responds with:</span>\n{\n  "<span class="fn">access_token</span>": "<span class="str">ya29.a0AfH6SM...</span>",\n  "<span class="fn">token_type</span>": "<span class="str">Bearer</span>",\n  "<span class="fn">expires_in</span>": <span class="typ">3600</span>\n}</pre>',
+    boxes: [1, 1, 0], arrows: [1, 0]
+  },
+  {
+    text: '<strong style="color:var(--accent-blue);">Step 6: Create Your Own Session</strong><br><br>Your app uses the access token to get the user\'s email/profile from Google. Then it creates its own JWT or session for the user. From here on, authentication works normally &mdash; Google\'s job is done.',
+    code: '<pre style="margin-top:12px;"><span class="cmt">// Fetch user info from Google</span>\n<span class="kw">const</span> profile = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">"https://www.googleapis.com/oauth2/v2/userinfo"</span>, {\n  headers: { Authorization: <span class="str">`Bearer ${accessToken}`</span> }\n});\n\n<span class="cmt">// Create our own JWT</span>\n<span class="kw">const</span> jwt = <span class="fn">signToken</span>({ userId: user.id, email: profile.email });</pre>',
+    boxes: [1, 0, 0], arrows: [0, 0]
+  }
+];
+
+function selectOAuthStep(index) {
+  var steps = document.querySelectorAll('#oauthSteps .flow-step');
+  steps.forEach(function(s, j) {
+    s.classList.remove('active-step', 'completed-step');
+    if (j < index) s.classList.add('completed-step');
+    if (j === index) s.classList.add('active-step');
+  });
+
+  var d = oauthDetails[index];
+  document.getElementById('oauthDetailText').innerHTML = d.text;
+  document.getElementById('oauthDetailCode').innerHTML = d.code;
+  document.getElementById('oauthDetail').className = 'card fade-in';
+
+  // Animate diagram boxes
+  var boxes = [document.getElementById('oauthApp'), document.getElementById('oauthProvider'), document.getElementById('oauthUser')];
+  var arrows = [document.getElementById('oauthArrow1'), document.getElementById('oauthArrow2')];
+  boxes.forEach(function(b, i) {
+    b.classList.toggle('active-box', !!d.boxes[i]);
+  });
+  arrows.forEach(function(a, i) {
+    a.classList.toggle('active-arrow', !!d.arrows[i]);
+  });
+}
+
+// ============================================================
+// LESSON 6: API Key Interactive
+// ============================================================
+function revealApiKey() {
+  document.getElementById('apiKeyDisplay').style.display = 'block';
+  document.getElementById('apiKeyDisplay').className = 'card fade-in';
+}
+
+function hideApiKey() {
+  document.getElementById('apiKeyDisplay').style.display = 'none';
+}
+
+var apiKeyTests = [
+  {
+    color: 'var(--accent-green)',
+    title: '200 OK - Valid API Key',
+    body: '{\n  "agent": "paperclip-worker-7",\n  "permissions": ["read", "write"],\n  "rateLimit": { "remaining": 97, "limit": 100 }\n}',
+    note: 'The key is valid. The server identified the agent and processed the request.'
+  },
+  {
+    color: 'var(--accent-pink)',
+    title: '401 Unauthorized - Invalid Key',
+    body: '{\n  "error": "Invalid API key",\n  "message": "The provided API key does not match any active key."\n}',
+    note: 'The key doesn\'t exist in the database. Request rejected.'
+  },
+  {
+    color: 'var(--accent-yellow)',
+    title: '401 Unauthorized - Expired Key',
+    body: '{\n  "error": "API key expired",\n  "message": "This key expired on 2026-05-01. Generate a new key."\n}',
+    note: 'The key was once valid but has expired. The agent needs a fresh key.'
+  },
+  {
+    color: 'var(--accent-pink)',
+    title: '401 Unauthorized - No Key',
+    body: '{\n  "error": "Authentication required",\n  "message": "Include an API key in the Authorization header."\n}',
+    note: 'No Authorization header at all. The server doesn\'t know who is calling.'
+  }
+];
+
+function testApiKey(index, btn) {
+  var btns = document.getElementById('apiKeyTestBtns').querySelectorAll('.ibtn');
+  btns.forEach(function(b) { b.classList.remove('selected'); });
+  btn.classList.add('selected');
+
+  var test = apiKeyTests[index];
+  var el = document.getElementById('apiKeyTestResult');
+  el.style.display = 'block';
+  el.innerHTML = '<div class="fade-in">' +
+    '<p style="color:' + test.color + '; font-weight:600; font-family:\'SF Mono\',Monaco,monospace; font-size:14px; margin-bottom:8px;">' + test.title + '</p>' +
+    '<pre style="font-size:13px; margin:8px 0;">' + test.body + '</pre>' +
+    '<p style="color:var(--text-muted); font-size:13px; margin:0;">' + test.note + '</p>' +
+  '</div>';
+}
+
+// ============================================================
+// LESSON 7: AuthZ Demo (roles)
+// ============================================================
+var authzDemos = [
+  {
+    endpoint: 'GET /api/users',
+    admin: { color: 'var(--accent-green)', result: '<span class="fn">200 OK</span>\n[\n  { "id": 1, "name": "Alice", "email": "alice@pc.dev", "role": "admin" },\n  { "id": 2, "name": "Bob", "email": "bob@pc.dev", "role": "viewer" },\n  { "id": 3, "name": "Carol", "email": "carol@pc.dev", "role": "editor" }\n]' },
+    viewer: { color: 'var(--accent-green)', result: '<span class="fn">200 OK</span>\n[\n  { "id": 2, "name": "Bob", "email": "bob@pc.dev", "role": "viewer" }\n]\n<span class="cmt">// Viewers can only see their own profile</span>' }
+  },
+  {
+    endpoint: 'DELETE /api/users/5',
+    admin: { color: 'var(--accent-green)', result: '<span class="fn">200 OK</span>\n{ "message": "User 5 deleted" }\n<span class="cmt">// Admins can delete any user</span>' },
+    viewer: { color: 'var(--accent-pink)', result: '<span class="fn">403 Forbidden</span>\n{ "error": "Insufficient permissions. Required: delete" }\n<span class="cmt">// Viewers cannot delete anything</span>' }
+  },
+  {
+    endpoint: 'GET /api/settings',
+    admin: { color: 'var(--accent-green)', result: '<span class="fn">200 OK</span>\n{\n  "billing": { "plan": "enterprise", "seats": 50 },\n  "security": { "mfa": true, "sso": true },\n  "api": { "rateLimit": 10000 }\n}' },
+    viewer: { color: 'var(--accent-green)', result: '<span class="fn">200 OK</span>\n{\n  "billing": { "plan": "enterprise" }\n}\n<span class="cmt">// Viewers see limited settings, no sensitive data</span>' }
+  },
+  {
+    endpoint: 'POST /api/deploy',
+    admin: { color: 'var(--accent-green)', result: '<span class="fn">200 OK</span>\n{ "message": "Deployment started", "deployId": "d-48291" }\n<span class="cmt">// Admins can trigger deployments</span>' },
+    viewer: { color: 'var(--accent-pink)', result: '<span class="fn">403 Forbidden</span>\n{ "error": "Insufficient permissions. Required: deploy" }\n<span class="cmt">// Viewers cannot deploy</span>' }
+  }
+];
+
+function showAuthzDemo(index, btn) {
+  var btns = document.getElementById('authzDemoBtns').querySelectorAll('.ibtn');
+  btns.forEach(function(b) { b.classList.remove('selected'); });
+  btn.classList.add('selected');
+
+  var demo = authzDemos[index];
+  document.getElementById('roleDemoArea').style.display = 'grid';
+  document.getElementById('roleDemoArea').className = 'role-demo fade-in';
+  document.getElementById('adminResult').innerHTML = '<pre style="margin:0; border:0; background:transparent; padding:0; font-size:12px; color:' + demo.admin.color + ';">' + demo.admin.result + '</pre>';
+  document.getElementById('viewerResult').innerHTML = '<pre style="margin:0; border:0; background:transparent; padding:0; font-size:12px; color:' + demo.viewer.color + ';">' + demo.viewer.result + '</pre>';
+}
+
+// Agent roles
+var agentRoles = [
+  {
+    title: 'CEO Agent',
+    color: 'var(--accent-purple)',
+    permissions: ['read', 'write', 'delete', 'manage_agents', 'deploy', 'billing', 'strategy'],
+    desc: 'Full access to everything. Can create/delete other agents, manage billing, and set organizational strategy. This is the "root" of the agent hierarchy.'
+  },
+  {
+    title: 'Manager Agent',
+    color: 'var(--accent-blue)',
+    permissions: ['read', 'write', 'assign_tasks', 'review_work'],
+    desc: 'Can read and write data, assign tasks to worker agents, and review their output. Cannot delete agents or access billing.'
+  },
+  {
+    title: 'Worker Agent',
+    color: 'var(--accent-green)',
+    permissions: ['read', 'write_own'],
+    desc: 'Can read shared data and write to its own workspace. Cannot modify other agents\' data, assign tasks, or access anything outside its scope.'
+  }
+];
+
+function showAgentRole(index, btn) {
+  var btns = document.getElementById('agentRoleBtns').querySelectorAll('.ibtn');
+  btns.forEach(function(b) { b.classList.remove('selected'); });
+  btn.classList.add('selected');
+
+  var role = agentRoles[index];
+  var el = document.getElementById('agentRoleResult');
+  el.style.display = 'block';
+  var permHtml = '';
+  for (var i = 0; i < role.permissions.length; i++) {
+    permHtml += '<span style="display:inline-block; background:var(--bg-btn); border:1px solid var(--border-btn); border-radius:6px; padding:2px 10px; font-size:12px; color:' + role.color + '; margin:3px; font-family:\'SF Mono\',Monaco,monospace;">' + role.permissions[i] + '</span>';
+  }
+  el.innerHTML = '<div class="fade-in">' +
+    '<p style="color:' + role.color + '; font-weight:600; margin-bottom:8px;">' + role.title + '</p>' +
+    '<p style="color:var(--text-body); font-size:14px; margin-bottom:12px;">' + role.desc + '</p>' +
+    '<p style="font-size:12px; color:var(--text-muted); margin-bottom:8px;">Permissions:</p>' +
+    '<div style="display:flex; flex-wrap:wrap; gap:4px;">' + permHtml + '</div>' +
+  '</div>';
+}
+
+// ============================================================
+// LESSON 8: Middleware Detail
+// ============================================================
+var middlewareDetails = [
+  {
+    text: '<strong style="color:var(--accent-blue);">Step 1: Extract Token</strong><br><br>The first thing the middleware does is look for credentials in the incoming request. It checks two places: the <code>Authorization</code> header (for API keys and bearer tokens) and cookies (for browser sessions).',
+    code: '<span class="kw">function</span> <span class="fn">extractToken</span>(req) {\n  <span class="cmt">// Check Authorization header first</span>\n  <span class="kw">const</span> authHeader = req.headers[<span class="str">\'authorization\'</span>];\n  <span class="kw">if</span> (authHeader?.startsWith(<span class="str">\'Bearer \'</span>)) {\n    <span class="kw">return</span> { type: <span class="str">\'bearer\'</span>, token: authHeader.<span class="fn">slice</span>(<span class="typ">7</span>) };\n  }\n\n  <span class="cmt">// Fall back to cookie</span>\n  <span class="kw">const</span> sessionCookie = req.cookies?.[<span class="str">\'session\'</span>];\n  <span class="kw">if</span> (sessionCookie) {\n    <span class="kw">return</span> { type: <span class="str">\'session\'</span>, token: sessionCookie };\n  }\n\n  <span class="kw">return</span> <span class="typ">null</span>;\n}'
+  },
+  {
+    text: '<strong style="color:var(--accent-blue);">Step 2: Identify Type</strong><br><br>Based on the format of the token, the middleware determines what kind of authentication to perform. API keys start with <code>pk_</code>, JWTs have three dot-separated parts, and session IDs are opaque strings.',
+    code: '<span class="kw">function</span> <span class="fn">identifyAuthType</span>(token) {\n  <span class="kw">if</span> (token.startsWith(<span class="str">\'pk_\'</span>)) {\n    <span class="kw">return</span> <span class="str">\'api_key\'</span>;\n  }\n  <span class="kw">if</span> (token.split(<span class="str">\'.\'</span>).length === <span class="typ">3</span>) {\n    <span class="kw">return</span> <span class="str">\'jwt\'</span>;\n  }\n  <span class="kw">return</span> <span class="str">\'session\'</span>;\n}'
+  },
+  {
+    text: '<strong style="color:var(--accent-blue);">Step 3: Verify</strong><br><br>For JWTs, verify the cryptographic signature. For API keys, look them up in the database. For sessions, check the session store. If anything fails, the request is rejected immediately.',
+    code: '<span class="kw">async function</span> <span class="fn">verify</span>(type, token) {\n  <span class="kw">if</span> (type === <span class="str">\'jwt\'</span>) {\n    <span class="kw">return</span> jwt.<span class="fn">verify</span>(token, process.env.<span class="typ">JWT_SECRET</span>);\n  }\n  <span class="kw">if</span> (type === <span class="str">\'api_key\'</span>) {\n    <span class="kw">return</span> <span class="kw">await</span> db.<span class="fn">query</span>(\n      <span class="str">\'SELECT * FROM api_keys WHERE key = $1 AND expires_at > NOW()\'</span>,\n      [token]\n    );\n  }\n  <span class="kw">if</span> (type === <span class="str">\'session\'</span>) {\n    <span class="kw">return</span> <span class="kw">await</span> redis.<span class="fn">get</span>(<span class="str">`session:${token}`</span>);\n  }\n}'
+  },
+  {
+    text: '<strong style="color:var(--accent-blue);">Step 4: Attach User</strong><br><br>Once verified, the middleware attaches the authenticated user (or agent) to the request object. From this point forward, any route handler can access <code>req.user</code> to know who is making the request.',
+    code: '<span class="cmt">// After verification succeeds</span>\nreq.user = {\n  id: <span class="typ">42</span>,\n  email: <span class="str">"alice@paperclip.dev"</span>,\n  role: <span class="str">"admin"</span>,\n  type: <span class="str">"board_user"</span>  <span class="cmt">// or "agent" or "run"</span>\n};\n\n<span class="cmt">// Now any route handler can do:</span>\napp.<span class="fn">get</span>(<span class="str">\'/api/profile\'</span>, (req, res) => {\n  res.<span class="fn">json</span>(req.user); <span class="cmt">// We know exactly who this is</span>\n});'
+  },
+  {
+    text: '<strong style="color:var(--accent-blue);">Step 5: Check Permissions</strong><br><br>This is the authorization step. Each route specifies what permissions are required, and the middleware checks whether the authenticated user has them.',
+    code: '<span class="cmt">// Route definitions with permission requirements</span>\napp.<span class="fn">get</span>(<span class="str">\'/api/users\'</span>,\n  <span class="fn">authenticate</span>,\n  <span class="fn">requirePermission</span>(<span class="str">\'read\'</span>),\n  listUsers\n);\n\napp.<span class="fn">delete</span>(<span class="str">\'/api/users/:id\'</span>,\n  <span class="fn">authenticate</span>,\n  <span class="fn">requirePermission</span>(<span class="str">\'delete\'</span>),\n  deleteUser\n);\n\napp.<span class="fn">post</span>(<span class="str">\'/api/deploy\'</span>,\n  <span class="fn">authenticate</span>,\n  <span class="fn">requirePermission</span>(<span class="str">\'deploy\'</span>),\n  triggerDeploy\n);'
+  }
+];
+
+function selectMiddleware(index) {
+  var layers = document.querySelectorAll('#middlewareFlow .middleware-layer');
+  layers.forEach(function(l) { l.classList.remove('active-layer'); });
+  layers[index].classList.add('active-layer');
+
+  var d = middlewareDetails[index];
+  document.getElementById('middlewareDetailText').innerHTML = d.text;
+  document.getElementById('middlewareDetailCode').innerHTML = d.code;
+  document.getElementById('middlewareDetail').className = 'card fade-in';
+}
+
+// ============================================================
+// LESSON 8: Trace Request
+// ============================================================
+var traceRequests = [
+  {
+    title: 'Board User Loads Dashboard',
+    color: 'var(--accent-blue)',
+    steps: [
+      { icon: '&#128187;', text: 'Browser sends <code>GET /api/dashboard</code> with cookie: <code>session=jwt_token_here</code>' },
+      { icon: '&#128270;', text: 'Middleware extracts JWT from cookie' },
+      { icon: '&#9989;', text: 'JWT signature verified. Payload: <code>{ userId: 42, role: "admin" }</code>' },
+      { icon: '&#128100;', text: '<code>req.user</code> set to Alice (admin)' },
+      { icon: '&#9989;', text: 'Permission check: "read" required. Admin has "read". Allowed.' },
+      { icon: '&#128200;', text: 'Dashboard data returned: <code>200 OK</code>' }
+    ]
+  },
+  {
+    title: 'Agent Creates a Paperclip',
+    color: 'var(--accent-green)',
+    steps: [
+      { icon: '&#129302;', text: 'Agent sends <code>POST /api/paperclips</code> with header: <code>Authorization: Bearer pk_live_a8Kz...</code>' },
+      { icon: '&#128270;', text: 'Middleware extracts API key from Authorization header' },
+      { icon: '&#128269;', text: 'Key starts with <code>pk_</code> &mdash; identified as API key. Looked up in database.' },
+      { icon: '&#9989;', text: 'Key found: belongs to "paperclip-worker-7", role: "worker"' },
+      { icon: '&#9989;', text: 'Permission check: "write_own" required. Worker has "write_own". Allowed.' },
+      { icon: '&#128206;', text: 'Paperclip created: <code>201 Created</code>' }
+    ]
+  },
+  {
+    title: 'Unauthorized Request',
+    color: 'var(--accent-pink)',
+    steps: [
+      { icon: '&#128187;', text: 'Someone sends <code>DELETE /api/users/1</code> with no cookie and no auth header' },
+      { icon: '&#128270;', text: 'Middleware looks for Authorization header &mdash; not found' },
+      { icon: '&#128270;', text: 'Middleware looks for session cookie &mdash; not found' },
+      { icon: '&#10060;', text: 'No credentials at all. Returns <code>401 Unauthorized</code>' },
+      { icon: '&#128721;', text: 'Request never reaches the route handler. Blocked at middleware.' }
+    ]
+  }
+];
+
+function traceRequest(index, btn) {
+  var btns = document.getElementById('traceRequestBtns').querySelectorAll('.ibtn');
+  btns.forEach(function(b) { b.classList.remove('selected'); });
+  btn.classList.add('selected');
+
+  var trace = traceRequests[index];
+  var el = document.getElementById('traceRequestResult');
+  el.style.display = 'block';
+
+  var html = '<div class="card fade-in">';
+  html += '<p style="color:' + trace.color + '; font-weight:600; margin-bottom:16px;">' + trace.title + '</p>';
+  html += '<div class="cookie-flow">';
+  for (var i = 0; i < trace.steps.length; i++) {
+    html += '<div class="cookie-step visible" style="opacity:1;">';
+    html += '<div class="cookie-step-icon">' + trace.steps[i].icon + '</div>';
+    html += '<div class="cookie-step-text">' + trace.steps[i].text + '</div>';
+    html += '</div>';
+  }
+  html += '</div></div>';
+  el.innerHTML = html;
+}
+
+// ============================================================
+// LESSON 8: Detail Card Toggle
+// ============================================================
+function toggleDetailCard(card) {
+  var wasExpanded = card.classList.contains('expanded');
+  // Close all
+  document.querySelectorAll('.detail-card').forEach(function(c) { c.classList.remove('expanded'); });
+  // Toggle clicked
+  if (!wasExpanded) card.classList.add('expanded');
+}
+</script>
+<script src="/js/shared.js"></script>
+</body>
+</html>

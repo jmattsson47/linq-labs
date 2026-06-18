@@ -1,0 +1,1922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How Testing Works — The Fundamentals</title>
+<link rel="stylesheet" href="/css/shared.css">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+/* -- Top Nav -- */
+.top-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-primary);
+  padding: 10px 16px;
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+@media (min-width: 1024px) {
+  .top-nav { left: 280px; }
+}
+.top-nav::-webkit-scrollbar { height: 4px; }
+.top-nav::-webkit-scrollbar-thumb { background: var(--border-nav-btn); border-radius: 2px; }
+
+.nav-btn {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-nav-btn);
+  color: var(--text-nav);
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  white-space: nowrap;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.nav-btn:hover { border-color: var(--text-faint); color: var(--text-body); }
+.nav-btn.active {
+  background: var(--accent-blue-bg);
+  border-color: var(--accent-blue-bg);
+  color: var(--text-primary);
+}
+
+/* -- Container -- */
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 80px 20px 60px;
+}
+
+/* -- Lessons -- */
+.lesson { display: none; }
+.lesson.active { display: block; }
+
+.lesson h1 {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+}
+.lesson .subtitle {
+  font-size: 15px;
+  color: var(--text-muted);
+  margin-bottom: 32px;
+}
+
+h2 {
+  font-size: 22px;
+  color: var(--text-primary);
+  margin: 36px 0 14px;
+}
+h3 {
+  font-size: 18px;
+  color: var(--text-secondary);
+  margin: 24px 0 10px;
+}
+
+p { margin-bottom: 16px; color: var(--text-body); }
+
+/* -- Cards -- */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-secondary);
+  border-radius: 10px;
+  padding: 24px;
+  margin: 20px 0;
+}
+.card-dark {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  padding: 24px;
+  margin: 20px 0;
+}
+
+/* -- Analogy boxes -- */
+.analogy {
+  background: var(--bg-analogy);
+  border: 1px solid var(--border-analogy);
+  border-radius: 10px;
+  padding: 20px 24px;
+  margin: 24px 0;
+}
+.analogy strong { color: var(--accent-indigo); }
+.analogy p { color: var(--text-dim); margin-bottom: 0; }
+.analogy .analogy-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--accent-indigo);
+  margin-bottom: 8px;
+}
+
+/* -- Code blocks -- */
+pre {
+  background: var(--bg-code);
+  border: 1px solid var(--border-secondary);
+  border-radius: 8px;
+  padding: 16px 20px;
+  overflow-x: auto;
+  margin: 16px 0;
+  font-family: 'SF Mono', Monaco, monospace;
+  font-size: 14px;
+  line-height: 1.6;
+}
+code {
+  font-family: 'SF Mono', Monaco, monospace;
+  font-size: 13px;
+}
+.kw { color: var(--accent-purple); }
+.fn { color: var(--accent-blue); }
+.str { color: var(--accent-green); }
+.typ { color: var(--accent-yellow); }
+.cmt { color: var(--text-faint); font-style: italic; }
+.del { color: #f87171; }
+.add { color: var(--accent-green); }
+
+/* inline code */
+p code, li code {
+  background: var(--bg-analogy);
+  padding: 2px 7px;
+  border-radius: 4px;
+  color: var(--accent-indigo);
+  font-size: 13px;
+}
+
+/* -- Interactive buttons row -- */
+.btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0;
+}
+.ibtn {
+  background: var(--bg-btn);
+  border: 1px solid var(--border-btn);
+  color: var(--text-nav);
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.ibtn:hover { border-color: var(--accent-blue); color: var(--text-secondary); }
+.ibtn.selected {
+  background: var(--bg-btn-selected);
+  border-color: var(--border-btn-selected);
+  color: var(--text-primary);
+}
+
+/* -- Next button -- */
+.next-btn {
+  display: inline-block;
+  background: var(--accent-blue-bg);
+  color: var(--text-primary);
+  border: none;
+  padding: 14px 36px;
+  border-radius: 10px;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 40px;
+  transition: background 0.2s;
+  font-family: inherit;
+  font-weight: 600;
+}
+.next-btn:hover { background: #3b82f6; }
+
+/* -- Test result display -- */
+.test-output {
+  background: var(--bg-code);
+  border: 1px solid var(--border-secondary);
+  border-radius: 8px;
+  padding: 16px 20px;
+  font-family: 'SF Mono', Monaco, monospace;
+  font-size: 13px;
+  line-height: 1.8;
+  margin: 16px 0;
+  min-height: 60px;
+}
+.test-pass { color: var(--accent-green); }
+.test-fail { color: #f87171; }
+.test-icon { margin-right: 6px; }
+
+/* -- Code editor area -- */
+.code-editor {
+  background: var(--bg-code);
+  border: 1px solid var(--border-secondary);
+  border-radius: 8px;
+  padding: 16px 20px;
+  font-family: 'SF Mono', Monaco, monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 16px 0;
+  position: relative;
+}
+.code-editor .editor-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-faint);
+  margin-bottom: 8px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* -- Pyramid -- */
+.pyramid-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  margin: 24px 0;
+}
+.pyramid-layer {
+  padding: 16px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 2px solid transparent;
+  position: relative;
+  color: var(--text-body);
+  font-weight: 600;
+  font-size: 14px;
+}
+.pyramid-layer:hover { opacity: 0.9; }
+.pyramid-layer.selected {
+  border-color: var(--text-primary);
+  z-index: 2;
+}
+.pyramid-e2e {
+  width: 160px;
+  background: var(--bg-btn);
+  border-radius: 8px 8px 0 0;
+  border-bottom: 1px solid var(--border-btn);
+}
+.pyramid-integration {
+  width: 260px;
+  background: var(--bg-btn);
+  border-bottom: 1px solid var(--border-btn);
+}
+.pyramid-unit {
+  width: 380px;
+  background: var(--bg-btn);
+  border-radius: 0 0 8px 8px;
+}
+.pyramid-detail {
+  background: var(--bg-card);
+  border: 1px solid var(--border-secondary);
+  border-radius: 10px;
+  padding: 20px 24px;
+  margin-top: 16px;
+  max-width: 500px;
+  width: 100%;
+  display: none;
+}
+.pyramid-detail.visible { display: block; }
+
+/* -- Trace flow -- */
+.trace-flow {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 20px 0;
+}
+.trace-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px;
+  border-radius: 10px;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+.trace-step:hover { background: var(--bg-secondary); }
+.trace-step.active-step { background: var(--bg-secondary); border: 1px solid var(--border-btn-selected); }
+.trace-step.completed-step { opacity: 0.6; }
+.trace-num {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--bg-btn);
+  border: 2px solid var(--border-btn);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent-blue);
+  flex-shrink: 0;
+  transition: all 0.3s;
+}
+.trace-step.active-step .trace-num {
+  background: var(--bg-btn-selected);
+  border-color: var(--border-btn-selected);
+  box-shadow: 0 0 10px rgba(59,130,246,0.3);
+}
+.trace-step.completed-step .trace-num {
+  background: #065f46;
+  border-color: var(--accent-green);
+  color: var(--accent-green);
+}
+.trace-content h4 { color: var(--text-primary); font-size: 15px; margin-bottom: 4px; }
+.trace-content p { color: var(--text-muted); font-size: 13px; margin: 0; }
+.trace-connector {
+  width: 2px;
+  height: 12px;
+  background: var(--border-primary);
+  margin-left: 31px;
+}
+
+/* -- Browser automation -- */
+.browser-mockup {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 12px;
+  overflow: hidden;
+  margin: 20px 0;
+}
+.browser-bar {
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-primary);
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.browser-dots {
+  display: flex;
+  gap: 6px;
+}
+.browser-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+.browser-dot.red { background: #f87171; }
+.browser-dot.yellow { background: var(--accent-yellow); }
+.browser-dot.green { background: var(--accent-green); }
+.browser-url {
+  flex: 1;
+  background: var(--bg-code);
+  border: 1px solid var(--border-secondary);
+  border-radius: 4px;
+  padding: 4px 10px;
+  font-size: 12px;
+  color: var(--text-muted);
+  font-family: 'SF Mono', Monaco, monospace;
+}
+.browser-content {
+  padding: 24px;
+  min-height: 200px;
+  position: relative;
+}
+.browser-element {
+  transition: all 0.3s;
+}
+
+/* -- TDD Cycle -- */
+.tdd-cycle {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 24px 0;
+}
+.tdd-phase {
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-primary);
+  border-radius: 12px;
+  padding: 20px 24px;
+  text-align: center;
+  min-width: 140px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.tdd-phase:hover { border-color: var(--border-btn); }
+.tdd-phase.active-phase { border-color: var(--border-btn-selected); }
+.tdd-phase h4 { margin-bottom: 4px; font-size: 16px; }
+.tdd-phase p { font-size: 13px; color: var(--text-muted); margin: 0; }
+.tdd-red h4 { color: #f87171; }
+.tdd-green h4 { color: var(--accent-green); }
+.tdd-refactor h4 { color: var(--accent-yellow); }
+.tdd-phase.active-phase.tdd-red { border-color: #f87171; background: rgba(248,113,113,0.05); }
+.tdd-phase.active-phase.tdd-green { border-color: var(--accent-green); background: rgba(52,211,153,0.05); }
+.tdd-phase.active-phase.tdd-refactor { border-color: var(--accent-yellow); background: rgba(251,191,36,0.05); }
+
+/* -- Arrow connectors between TDD phases -- */
+.tdd-arrow {
+  display: flex;
+  align-items: center;
+  font-size: 24px;
+  color: var(--text-faint);
+}
+
+/* -- Mock comparison -- */
+.mock-compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 16px 0;
+}
+.mock-panel {
+  background: var(--bg-code);
+  border: 1px solid var(--border-secondary);
+  border-radius: 8px;
+  padding: 16px;
+}
+.mock-panel h5 {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+}
+.mock-panel.active-mock {
+  border-color: var(--border-btn-selected);
+}
+@media (max-width: 640px) {
+  .mock-compare { grid-template-columns: 1fr; }
+}
+
+/* -- Lists -- */
+ul, ol { padding-left: 24px; margin-bottom: 16px; }
+li { margin-bottom: 8px; color: var(--text-body); }
+
+/* -- Fade-in animation -- */
+.fade-in {
+  animation: fadeIn 0.4s ease;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* -- Scrollbar -- */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background: var(--border-nav-btn); border-radius: 3px; }
+
+/* -- Responsive -- */
+@media (max-width: 640px) {
+  .top-nav { padding: 8px 10px; gap: 4px; }
+  .nav-btn { padding: 5px 10px; font-size: 12px; }
+  .container { padding: 70px 14px 40px; }
+  .lesson h1 { font-size: 24px; }
+  .pyramid-unit { width: 100%; }
+  .pyramid-integration { width: 85%; }
+  .pyramid-e2e { width: 60%; }
+  .tdd-cycle { flex-direction: column; align-items: center; }
+  .tdd-arrow { transform: rotate(90deg); }
+}
+
+.breadcrumb { margin-top: 64px; padding-top: 8px; }
+
+.next-course-banner { background: var(--bg-secondary); border: 1px solid var(--border-primary); border-radius: 10px; padding: 24px; margin-top: 32px; text-align: center; }
+.next-course-banner h3 { color: var(--text-primary); margin: 0 0 8px; font-size: 18px; }
+.next-course-banner p { color: var(--text-muted); font-size: 15px; margin: 0 0 16px; }
+.next-course-banner a { display: inline-block; background: var(--accent-blue-bg); color: var(--text-primary); padding: 10px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px; transition: background 0.2s; }
+.next-course-banner a:hover { background: #3b82f6; }
+</style>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <a href="/index.html" class="sidebar-logo">The Fundamentals</a>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="sidebar-section-title">Courses</div>
+    <a href="/lessons/databases.html" class="sidebar-link" data-course="databases">
+      <span class="sidebar-num">01</span> How Databases Work
+    </a>
+    <a href="/lessons/codebase.html" class="sidebar-link" data-course="codebase">
+      <span class="sidebar-num">02</span> The Codebase
+    </a>
+    <a href="/lessons/apis.html" class="sidebar-link" data-course="apis">
+      <span class="sidebar-num">03</span> APIs &amp; HTTP
+    </a>
+    <a href="/lessons/build.html" class="sidebar-link" data-course="build">
+      <span class="sidebar-num">04</span> Build a Mini App
+    </a>
+    <a href="/lessons/deployment.html" class="sidebar-link" data-course="deployment">
+      <span class="sidebar-num">05</span> How Deployment Works
+    </a>
+    <a href="/lessons/git.html" class="sidebar-link" data-course="git">
+      <span class="sidebar-num">06</span> How Git Works
+    </a>
+    <a href="/lessons/authentication.html" class="sidebar-link" data-course="authentication">
+      <span class="sidebar-num">07</span> How Auth Works
+    </a>
+    <a href="/lessons/typescript.html" class="sidebar-link" data-course="typescript">
+      <span class="sidebar-num">08</span> How TypeScript Works
+    </a>
+    <a href="/lessons/react.html" class="sidebar-link" data-course="react">
+      <span class="sidebar-num">09</span> How React Works
+    </a>
+    <a href="/lessons/testing.html" class="sidebar-link" data-course="testing" aria-current="page">
+      <span class="sidebar-num">10</span> How Testing Works
+    </a>
+    <a href="/lessons/ai-agents.html" class="sidebar-link" data-course="ai-agents">
+      <span class="sidebar-num">11</span> How AI Agents Work
+    </a>
+    <a href="/lessons/shipping.html" class="sidebar-link" data-course="shipping">
+      <span class="sidebar-num">12</span> How Shipping Works
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <button class="theme-toggle" id="theme-toggle">
+      <span class="theme-icon" id="theme-icon">☀️</span>
+      <span class="theme-label" id="theme-label">Light Mode</span>
+    </button>
+  </div>
+</aside>
+<button class="sidebar-toggle" id="sidebar-toggle">☰</button>
+
+<div class="content-wrapper">
+
+<div class="breadcrumb"><a href="/index.html">Home</a><span class="sep">›</span><span>How Testing Works</span></div>
+
+<!-- Top Nav -->
+<nav class="top-nav" id="topNav">
+  <button class="nav-btn active" onclick="goToLesson(0)">1. Why Test?</button>
+  <button class="nav-btn" onclick="goToLesson(1)">2. Unit Tests</button>
+  <button class="nav-btn" onclick="goToLesson(2)">3. What to Test</button>
+  <button class="nav-btn" onclick="goToLesson(3)">4. Integration</button>
+  <button class="nav-btn" onclick="goToLesson(4)">5. End-to-End</button>
+  <button class="nav-btn" onclick="goToLesson(5)">6. Mocking</button>
+  <button class="nav-btn" onclick="goToLesson(6)">7. TDD</button>
+  <button class="nav-btn" onclick="goToLesson(7)">8. In Practice</button>
+</nav>
+
+<div class="container">
+
+<!-- ============================================================
+     LESSON 1: WHY TEST?
+     ============================================================ -->
+<div class="lesson active" id="lesson0">
+  <h1>Why Test?</h1>
+  <p class="subtitle">Lesson 1 of 8 &mdash; The case for automated testing</p>
+
+  <h2>The Problem: Fix One Bug, Create Two More</h2>
+  <p>You fix the login page. Ship it. Then someone reports that the signup page is broken. You fix signup. Now the dashboard is broken. Every change feels like playing whack-a-mole &mdash; you can never be sure that fixing one thing didn't break three others.</p>
+
+  <p>This is called a <strong style="color:var(--text-primary);">regression</strong> &mdash; when something that used to work stops working because of a new change. Regressions are the most common type of bug in real software.</p>
+
+  <h2>Without Tests: Fear of Changing Code</h2>
+  <div class="card">
+    <p style="margin-bottom:8px; color:#f87171; font-weight:600;">The developer's inner monologue without tests:</p>
+    <ul>
+      <li>"I need to refactor this function, but what if I break something?"</li>
+      <li>"This code is messy, but I'm afraid to touch it."</li>
+      <li>"I <em>think</em> this change is safe... let me just deploy and pray."</li>
+      <li>"We should update this dependency, but who knows what it'll break."</li>
+    </ul>
+    <p style="margin-bottom:0; color:var(--text-muted); font-size:14px;">Fear makes codebases rot. When developers are afraid to change code, the code gets worse over time.</p>
+  </div>
+
+  <h2>With Tests: Confidence</h2>
+  <div class="card">
+    <p style="margin-bottom:8px; color:var(--accent-green); font-weight:600;">The developer's inner monologue with tests:</p>
+    <ul>
+      <li>"I'll refactor this &mdash; if I break anything, the tests will tell me."</li>
+      <li>"Let me clean up this messy code. The tests have my back."</li>
+      <li>"I'll make this change, run the tests, and know immediately if it's safe."</li>
+      <li>"Let's update that dependency &mdash; we'll know in seconds if anything broke."</li>
+    </ul>
+    <p style="margin-bottom:0; color:var(--text-muted); font-size:14px;">Tests give you the confidence to move fast without breaking things.</p>
+  </div>
+
+  <h2>See It In Action</h2>
+  <p>Here's a simple function that calculates a discount. Watch what happens when we change the code &mdash; the test catches the bug instantly.</p>
+
+  <div class="code-editor">
+    <div class="editor-label">Function</div>
+    <pre id="whyTestCode" style="margin:0; border:none; padding:0; background:transparent;"><span class="kw">function</span> <span class="fn">calculateDiscount</span>(<span class="typ">price</span>, <span class="typ">percent</span>) {
+  <span class="kw">return</span> price * (percent / <span class="str">100</span>);
+}</pre>
+  </div>
+
+  <div class="code-editor">
+    <div class="editor-label">Test</div>
+    <pre style="margin:0; border:none; padding:0; background:transparent;"><span class="fn">test</span>(<span class="str">'calculates 20% of $100 as $20'</span>, () => {
+  <span class="fn">expect</span>(<span class="fn">calculateDiscount</span>(<span class="str">100</span>, <span class="str">20</span>)).<span class="fn">toBe</span>(<span class="str">20</span>);
+});</pre>
+  </div>
+
+  <div class="btn-row">
+    <button class="ibtn selected" onclick="whyTestDemo('original', this)">Original Code</button>
+    <button class="ibtn" onclick="whyTestDemo('broken', this)">Introduce a Bug</button>
+    <button class="ibtn" onclick="whyTestDemo('fixed', this)">Fix the Bug</button>
+  </div>
+
+  <div class="test-output" id="whyTestOutput">
+    <span class="test-pass"><span class="test-icon">&#10003;</span> calculates 20% of $100 as $20</span><br>
+    <br>
+    <span class="test-pass">Tests: 1 passed, 1 total</span><br>
+    <span style="color:var(--text-muted);">Time: 0.03s</span>
+  </div>
+
+  <div class="analogy">
+    <div class="analogy-label">Analogy</div>
+    <p><strong>Tests are like a safety net for tightrope walkers.</strong> The net doesn't help you walk better, but it lets you be bold. You can try daring moves because you know the net will catch you if you fall. Without the net, you inch along in fear. With it, you can dance.</p>
+  </div>
+
+  <h2>What a Test Actually Does</h2>
+  <p>A test is just code that checks other code. It does three things:</p>
+  <div class="card">
+    <ol>
+      <li><strong style="color:var(--text-primary);">Arrange</strong> &mdash; Set up the inputs</li>
+      <li><strong style="color:var(--text-primary);">Act</strong> &mdash; Call the function</li>
+      <li><strong style="color:var(--text-primary);">Assert</strong> &mdash; Check the result is what you expected</li>
+    </ol>
+    <p style="margin-top:12px; margin-bottom:0; color:var(--text-muted); font-size:14px;">That's it. Every test follows this pattern: set up, do something, check the result.</p>
+  </div>
+
+  <button class="next-btn" onclick="goToLesson(1)">Next: Unit Tests &rarr;</button>
+</div>
+
+<!-- ============================================================
+     LESSON 2: UNIT TESTS
+     ============================================================ -->
+<div class="lesson" id="lesson1">
+  <h1>Unit Tests</h1>
+  <p class="subtitle">Lesson 2 of 8 &mdash; Testing one function at a time</p>
+
+  <h2>What Is a Unit Test?</h2>
+  <p>A <strong style="color:var(--text-primary);">unit test</strong> tests a single function in isolation. You give it inputs and check that the output is correct. No database, no network, no UI &mdash; just the function and its logic.</p>
+
+  <p>Think of it like testing a single brick before building a wall. You want to make sure each brick is solid on its own.</p>
+
+  <h2>The Anatomy of a Test</h2>
+  <p>Paperclip uses <strong style="color:var(--text-primary);">Vitest</strong> &mdash; a modern, fast testing framework. Here's what a test looks like:</p>
+
+  <div class="card-dark">
+    <pre class="code-block"><span class="kw">import</span> { <span class="fn">describe</span>, <span class="fn">it</span>, <span class="fn">expect</span> } <span class="kw">from</span> <span class="str">'vitest'</span>;
+<span class="kw">import</span> { <span class="fn">calculateBudgetRemaining</span> } <span class="kw">from</span> <span class="str">'./budget'</span>;
+
+<span class="fn">describe</span>(<span class="str">'calculateBudgetRemaining'</span>, () => {
+  <span class="fn">it</span>(<span class="str">'returns remaining budget after spending'</span>, () => {
+    <span class="kw">const</span> result = <span class="fn">calculateBudgetRemaining</span>(<span class="str">1000</span>, <span class="str">350</span>);
+    <span class="fn">expect</span>(result).<span class="fn">toBe</span>(<span class="str">650</span>);
+  });
+
+  <span class="fn">it</span>(<span class="str">'returns zero when budget is fully spent'</span>, () => {
+    <span class="kw">const</span> result = <span class="fn">calculateBudgetRemaining</span>(<span class="str">500</span>, <span class="str">500</span>);
+    <span class="fn">expect</span>(result).<span class="fn">toBe</span>(<span class="str">0</span>);
+  });
+
+  <span class="fn">it</span>(<span class="str">'never returns negative (clamps to zero)'</span>, () => {
+    <span class="kw">const</span> result = <span class="fn">calculateBudgetRemaining</span>(<span class="str">100</span>, <span class="str">200</span>);
+    <span class="fn">expect</span>(result).<span class="fn">toBe</span>(<span class="str">0</span>);
+  });
+});</pre>
+  </div>
+
+  <p>Let's break down the key parts:</p>
+  <div class="card">
+    <ul>
+      <li><code>describe</code> &mdash; Groups related tests together (like a folder)</li>
+      <li><code>it</code> &mdash; Defines a single test case (reads like "it should...")</li>
+      <li><code>expect</code> &mdash; Makes an assertion: "I expect this value to be..."</li>
+      <li><code>.toBe()</code> &mdash; The matcher: checks if the value equals what you expect</li>
+    </ul>
+  </div>
+
+  <h2>Try It: Pass or Fail?</h2>
+  <p>Here's the <code>calculateBudgetRemaining</code> function. Modify it and see if the tests pass or fail.</p>
+
+  <div class="code-editor">
+    <div class="editor-label">budget.ts</div>
+    <pre id="unitFnCode" style="margin:0; border:none; padding:0; background:transparent;"><span class="kw">export function</span> <span class="fn">calculateBudgetRemaining</span>(<span class="typ">budget</span>: <span class="typ">number</span>, <span class="typ">spent</span>: <span class="typ">number</span>): <span class="typ">number</span> {
+  <span class="kw">const</span> remaining = budget - spent;
+  <span class="kw">return</span> Math.<span class="fn">max</span>(<span class="str">0</span>, remaining);
+}</pre>
+  </div>
+
+  <div class="btn-row">
+    <button class="ibtn selected" onclick="unitTestDemo('correct', this)">Correct Version</button>
+    <button class="ibtn" onclick="unitTestDemo('no-clamp', this)">Remove the clamp</button>
+    <button class="ibtn" onclick="unitTestDemo('wrong-math', this)">Wrong math (+ instead of -)</button>
+  </div>
+
+  <div class="test-output" id="unitTestOutput">
+    <span class="test-pass"><span class="test-icon">&#10003;</span> returns remaining budget after spending</span><br>
+    <span class="test-pass"><span class="test-icon">&#10003;</span> returns zero when budget is fully spent</span><br>
+    <span class="test-pass"><span class="test-icon">&#10003;</span> never returns negative (clamps to zero)</span><br>
+    <br>
+    <span class="test-pass">Tests: 3 passed, 3 total</span><br>
+    <span style="color:var(--text-muted);">Time: 0.02s</span>
+  </div>
+
+  <h2>Common Matchers</h2>
+  <p>Vitest (and Jest) give you many ways to check values:</p>
+  <div class="card-dark">
+    <pre class="code-block"><span class="fn">expect</span>(value).<span class="fn">toBe</span>(<span class="str">42</span>);              <span class="cmt">// exact equality</span>
+<span class="fn">expect</span>(value).<span class="fn">toEqual</span>({ <span class="typ">name</span>: <span class="str">'Jared'</span> }); <span class="cmt">// deep equality (objects)</span>
+<span class="fn">expect</span>(value).<span class="fn">toBeTruthy</span>();           <span class="cmt">// not null/undefined/false/0</span>
+<span class="fn">expect</span>(value).<span class="fn">toBeNull</span>();             <span class="cmt">// is null</span>
+<span class="fn">expect</span>(value).<span class="fn">toContain</span>(<span class="str">'hello'</span>);     <span class="cmt">// string or array contains</span>
+<span class="fn">expect</span>(value).<span class="fn">toThrow</span>();              <span class="cmt">// function throws an error</span>
+<span class="fn">expect</span>(value).<span class="fn">toHaveLength</span>(<span class="str">3</span>);        <span class="cmt">// array/string length</span></pre>
+  </div>
+
+  <div class="analogy">
+    <div class="analogy-label">Key Idea</div>
+    <p><strong>Unit tests are fast &mdash; really fast.</strong> A typical project runs hundreds of unit tests in under a second. That speed is crucial: you want to run tests every time you save a file and get instant feedback.</p>
+  </div>
+
+  <button class="next-btn" onclick="goToLesson(2)">Next: What to Test &rarr;</button>
+</div>
+
+<!-- ============================================================
+     LESSON 3: WHAT TO TEST (AND WHAT NOT TO)
+     ============================================================ -->
+<div class="lesson" id="lesson2">
+  <h1>What to Test (and What Not To)</h1>
+  <p class="subtitle">Lesson 3 of 8 &mdash; Focusing your testing effort</p>
+
+  <h2>Test Behavior, Not Implementation</h2>
+  <p>A common mistake: testing <em>how</em> code works internally instead of <em>what</em> it does. If you test implementation details, your tests break every time you refactor &mdash; even when the behavior is the same.</p>
+
+  <div class="card">
+    <p style="color:#f87171; font-weight:600; margin-bottom:12px;">Bad: Testing implementation</p>
+    <pre style="margin:0;"><span class="cmt">// This test breaks if you rename the internal variable</span>
+<span class="fn">expect</span>(calculator._internalSum).<span class="fn">toBe</span>(<span class="str">42</span>);</pre>
+  </div>
+
+  <div class="card">
+    <p style="color:var(--accent-green); font-weight:600; margin-bottom:12px;">Good: Testing behavior</p>
+    <pre style="margin:0;"><span class="cmt">// This test survives refactoring — it only checks the output</span>
+<span class="fn">expect</span>(<span class="fn">calculator.getTotal</span>()).<span class="fn">toBe</span>(<span class="str">42</span>);</pre>
+  </div>
+
+  <h2>The Testing Pyramid</h2>
+  <p>Not all tests are created equal. The testing pyramid shows you how many of each type to write. Click each layer to learn more.</p>
+
+  <div class="pyramid-container">
+    <div class="pyramid-layer pyramid-e2e" onclick="selectPyramidLayer('e2e', this)">E2E Tests</div>
+    <div class="pyramid-layer pyramid-integration" onclick="selectPyramidLayer('integration', this)">Integration Tests</div>
+    <div class="pyramid-layer pyramid-unit" onclick="selectPyramidLayer('unit', this)">Unit Tests</div>
+
+    <div class="pyramid-detail" id="pyramidDetail">
+      <div id="pyramidDetailContent"></div>
+    </div>
+  </div>
+
+  <h2>What NOT to Test</h2>
+  <p>Testing everything is a waste of time. Skip these:</p>
+  <div class="card">
+    <ul>
+      <li><strong style="color:var(--text-primary);">Framework code</strong> &mdash; Don't test that React renders a component. React's own tests handle that.</li>
+      <li><strong style="color:var(--text-primary);">Trivial getters/setters</strong> &mdash; <code>getName() { return this.name; }</code> doesn't need a test.</li>
+      <li><strong style="color:var(--text-primary);">Third-party libraries</strong> &mdash; Don't test that <code>lodash.sortBy</code> works. Trust the library.</li>
+      <li><strong style="color:var(--text-primary);">Exact CSS/UI layout</strong> &mdash; "Is this button exactly 42px wide?" is a fragile, low-value test.</li>
+    </ul>
+  </div>
+
+  <h2>What TO Test</h2>
+  <div class="card">
+    <ul>
+      <li><strong style="color:var(--accent-green);">Business logic</strong> &mdash; Calculations, rules, validations. This is where bugs have the biggest impact.</li>
+      <li><strong style="color:var(--accent-green);">Edge cases</strong> &mdash; What happens with zero? With null? With a huge number? With an empty string?</li>
+      <li><strong style="color:var(--accent-green);">Public API contracts</strong> &mdash; "Given this input, does this function return the right output?"</li>
+      <li><strong style="color:var(--accent-green);">Error handling</strong> &mdash; Does the code fail gracefully when things go wrong?</li>
+      <li><strong style="color:var(--accent-green);">Integration points</strong> &mdash; Where your code talks to other systems (database, APIs).</li>
+    </ul>
+  </div>
+
+  <div class="analogy">
+    <div class="analogy-label">Rule of Thumb</div>
+    <p><strong>Test the things that would embarrass you if they broke in production.</strong> If a bug in a function would cause users to see wrong data, lose money, or be unable to log in &mdash; that function needs tests.</p>
+  </div>
+
+  <button class="next-btn" onclick="goToLesson(3)">Next: Integration Tests &rarr;</button>
+</div>
+
+<!-- ============================================================
+     LESSON 4: INTEGRATION TESTS
+     ============================================================ -->
+<div class="lesson" id="lesson3">
+  <h1>Integration Tests</h1>
+  <p class="subtitle">Lesson 4 of 8 &mdash; Testing pieces working together</p>
+
+  <h2>Beyond Single Functions</h2>
+  <p>Unit tests check individual functions. But what about when those functions work together? An <strong style="color:var(--text-primary);">integration test</strong> tests multiple pieces of your system as a group: send an HTTP request, hit the route handler, which calls the service, which talks to the database, and check the response.</p>
+
+  <h2>A Paperclip Example</h2>
+  <p>Let's test the endpoint that creates a new issue. This test exercises the full stack: HTTP layer, route handler, service logic, and database.</p>
+
+  <div class="card-dark">
+    <pre class="code-block"><span class="kw">import</span> { <span class="fn">describe</span>, <span class="fn">it</span>, <span class="fn">expect</span> } <span class="kw">from</span> <span class="str">'vitest'</span>;
+<span class="kw">import</span> { <span class="fn">app</span> } <span class="kw">from</span> <span class="str">'../src/app'</span>;
+
+<span class="fn">describe</span>(<span class="str">'POST /api/issues'</span>, () => {
+  <span class="fn">it</span>(<span class="str">'creates a task and returns it'</span>, <span class="kw">async</span> () => {
+    <span class="kw">const</span> response = <span class="kw">await</span> app.<span class="fn">request</span>(<span class="str">'/api/issues'</span>, {
+      <span class="typ">method</span>: <span class="str">'POST'</span>,
+      <span class="typ">headers</span>: { <span class="str">'Content-Type'</span>: <span class="str">'application/json'</span> },
+      <span class="typ">body</span>: <span class="fn">JSON.stringify</span>({
+        <span class="typ">title</span>: <span class="str">'Fix search bar'</span>,
+        <span class="typ">status</span>: <span class="str">'todo'</span>,
+        <span class="typ">agentId</span>: <span class="str">'agent-1'</span>,
+      }),
+    });
+
+    <span class="fn">expect</span>(response.<span class="typ">status</span>).<span class="fn">toBe</span>(<span class="str">201</span>);
+
+    <span class="kw">const</span> task = <span class="kw">await</span> response.<span class="fn">json</span>();
+    <span class="fn">expect</span>(task.<span class="typ">title</span>).<span class="fn">toBe</span>(<span class="str">'Fix search bar'</span>);
+    <span class="fn">expect</span>(task.<span class="typ">status</span>).<span class="fn">toBe</span>(<span class="str">'todo'</span>);
+    <span class="fn">expect</span>(task.<span class="typ">id</span>).<span class="fn">toBeDefined</span>();
+  });
+});</pre>
+  </div>
+
+  <h2>Trace the Request</h2>
+  <p>Click each step to see what happens when this integration test runs:</p>
+
+  <div class="trace-flow" id="traceFlow">
+    <div class="trace-step active-step" onclick="selectTraceStep(0)">
+      <div class="trace-num">1</div>
+      <div class="trace-content">
+        <h4>HTTP Request</h4>
+        <p>Test sends POST /api/issues with JSON body</p>
+      </div>
+    </div>
+    <div class="trace-connector"></div>
+    <div class="trace-step" onclick="selectTraceStep(1)">
+      <div class="trace-num">2</div>
+      <div class="trace-content">
+        <h4>Route Handler</h4>
+        <p>Server matches the route, parses the body</p>
+      </div>
+    </div>
+    <div class="trace-connector"></div>
+    <div class="trace-step" onclick="selectTraceStep(2)">
+      <div class="trace-num">3</div>
+      <div class="trace-content">
+        <h4>Service Layer</h4>
+        <p>Business logic validates and processes the task</p>
+      </div>
+    </div>
+    <div class="trace-connector"></div>
+    <div class="trace-step" onclick="selectTraceStep(3)">
+      <div class="trace-num">4</div>
+      <div class="trace-content">
+        <h4>Database</h4>
+        <p>INSERT INTO issues (...) — task is persisted</p>
+      </div>
+    </div>
+    <div class="trace-connector"></div>
+    <div class="trace-step" onclick="selectTraceStep(4)">
+      <div class="trace-num">5</div>
+      <div class="trace-content">
+        <h4>Response</h4>
+        <p>201 Created + JSON body with the new task</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card fade-in" id="traceDetail">
+    <div id="traceDetailContent">
+      <p style="color:var(--accent-blue); font-weight:600; margin-bottom:8px;">Step 1: HTTP Request</p>
+      <p>The test acts like a client &mdash; it sends a real HTTP POST request to <code>/api/issues</code> with a JSON body containing <code>title</code>, <code>status</code>, and <code>agentId</code>. The test framework creates an in-memory server, so no actual network call is made &mdash; but the server processes it exactly like a real request.</p>
+      <pre style="margin-bottom:0;"><span class="fn">POST</span> <span class="str">/api/issues</span>
+<span class="typ">Content-Type</span>: <span class="str">application/json</span>
+
+{
+  <span class="str">"title"</span>: <span class="str">"Fix search bar"</span>,
+  <span class="str">"status"</span>: <span class="str">"todo"</span>,
+  <span class="str">"agentId"</span>: <span class="str">"agent-1"</span>
+}</pre>
+    </div>
+  </div>
+
+  <h2>Why Integration Tests Matter</h2>
+  <div class="card">
+    <p style="margin-bottom:8px;">Unit tests verify each brick is solid. Integration tests verify <strong style="color:var(--text-primary);">the bricks fit together</strong>. You could have perfect bricks that don't connect &mdash; integration tests catch those gaps.</p>
+    <ul style="margin-bottom:0;">
+      <li>Does the route actually call the right service function?</li>
+      <li>Does the database query return data in the format the API expects?</li>
+      <li>Does error handling work end-to-end (bad input to error response)?</li>
+    </ul>
+  </div>
+
+  <div class="analogy">
+    <div class="analogy-label">Analogy</div>
+    <p><strong>Unit tests are like testing each instrument in an orchestra individually. Integration tests are like a rehearsal</strong> &mdash; you check that the violins and cellos sound good together, that the timing is right, that the conductor's cues actually work.</p>
+  </div>
+
+  <button class="next-btn" onclick="goToLesson(4)">Next: End-to-End Tests &rarr;</button>
+</div>
+
+<!-- ============================================================
+     LESSON 5: END-TO-END TESTS
+     ============================================================ -->
+<div class="lesson" id="lesson4">
+  <h1>End-to-End Tests</h1>
+  <p class="subtitle">Lesson 5 of 8 &mdash; Testing from the user's perspective</p>
+
+  <h2>The Full Picture</h2>
+  <p>An <strong style="color:var(--text-primary);">end-to-end (E2E) test</strong> tests your entire application from the user's perspective. It opens a real browser, clicks real buttons, fills in real forms, and verifies what actually appears on screen.</p>
+
+  <p>Paperclip uses <strong style="color:var(--text-primary);">Playwright</strong> &mdash; a tool that automates browser actions. You write code that says "go to this page, click this button, type in this field, check that this text appears."</p>
+
+  <h2>A Playwright Test</h2>
+  <div class="card-dark">
+    <pre class="code-block"><span class="kw">import</span> { <span class="fn">test</span>, <span class="fn">expect</span> } <span class="kw">from</span> <span class="str">'@playwright/test'</span>;
+
+<span class="fn">test</span>(<span class="str">'can create a new agent'</span>, <span class="kw">async</span> ({ <span class="typ">page</span> }) => {
+  <span class="cmt">// Navigate to the agents page</span>
+  <span class="kw">await</span> page.<span class="fn">goto</span>(<span class="str">'http://localhost:3000/agents'</span>);
+
+  <span class="cmt">// Click the "New Agent" button</span>
+  <span class="kw">await</span> page.<span class="fn">click</span>(<span class="str">'button:has-text("New Agent")'</span>);
+
+  <span class="cmt">// Fill in the form</span>
+  <span class="kw">await</span> page.<span class="fn">fill</span>(<span class="str">'input[name="name"]'</span>, <span class="str">'Research Bot'</span>);
+  <span class="kw">await</span> page.<span class="fn">fill</span>(<span class="str">'input[name="budget"]'</span>, <span class="str">'500'</span>);
+  <span class="kw">await</span> page.<span class="fn">selectOption</span>(<span class="str">'select[name="model"]'</span>, <span class="str">'claude-sonnet'</span>);
+
+  <span class="cmt">// Submit the form</span>
+  <span class="kw">await</span> page.<span class="fn">click</span>(<span class="str">'button:has-text("Create Agent")'</span>);
+
+  <span class="cmt">// Verify the new agent appears on the page</span>
+  <span class="kw">await</span> <span class="fn">expect</span>(page.<span class="fn">locator</span>(<span class="str">'text=Research Bot'</span>)).<span class="fn">toBeVisible</span>();
+});</pre>
+  </div>
+
+  <h2>Browser Automation Steps</h2>
+  <p>Click each step to see what the browser does:</p>
+
+  <div class="btn-row" id="e2eStepBtns">
+    <button class="ibtn selected" onclick="e2eStep(0, this)">1. Navigate</button>
+    <button class="ibtn" onclick="e2eStep(1, this)">2. Click Button</button>
+    <button class="ibtn" onclick="e2eStep(2, this)">3. Fill Form</button>
+    <button class="ibtn" onclick="e2eStep(3, this)">4. Submit</button>
+    <button class="ibtn" onclick="e2eStep(4, this)">5. Verify</button>
+  </div>
+
+  <div class="browser-mockup">
+    <div class="browser-bar">
+      <div class="browser-dots">
+        <div class="browser-dot red"></div>
+        <div class="browser-dot yellow"></div>
+        <div class="browser-dot green"></div>
+      </div>
+      <div class="browser-url" id="e2eBrowserUrl">localhost:3000/agents</div>
+    </div>
+    <div class="browser-content" id="e2eBrowserContent">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h3 style="color:var(--text-primary); margin:0; font-size:20px;">Agents</h3>
+        <button class="ibtn" id="e2eNewAgentBtn" style="pointer-events:none;">+ New Agent</button>
+      </div>
+      <div id="e2eAgentList">
+        <div style="padding:12px; background:var(--bg-code); border-radius:8px; margin-bottom:8px; display:flex; justify-content:space-between;">
+          <span style="color:var(--text-primary);">Code Review Bot</span>
+          <span style="color:var(--text-muted); font-size:13px;">$200 budget</span>
+        </div>
+        <div style="padding:12px; background:var(--bg-code); border-radius:8px; display:flex; justify-content:space-between;">
+          <span style="color:var(--text-primary);">Bug Fixer</span>
+          <span style="color:var(--text-muted); font-size:13px;">$300 budget</span>
+        </div>
+      </div>
+      <div id="e2eForm" style="display:none; margin-top:16px; padding:16px; background:var(--bg-code); border-radius:8px; border:1px solid var(--border-secondary);">
+        <h4 style="color:var(--text-primary); margin:0 0 12px; font-size:15px;">Create New Agent</h4>
+        <div style="margin-bottom:8px;">
+          <label style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:4px;">Name</label>
+          <div id="e2eNameField" style="background:var(--bg-secondary); border:1px solid var(--border-primary); border-radius:4px; padding:6px 10px; color:var(--text-body); font-size:14px; min-height:28px;"></div>
+        </div>
+        <div style="margin-bottom:8px;">
+          <label style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:4px;">Budget ($)</label>
+          <div id="e2eBudgetField" style="background:var(--bg-secondary); border:1px solid var(--border-primary); border-radius:4px; padding:6px 10px; color:var(--text-body); font-size:14px; min-height:28px;"></div>
+        </div>
+        <div style="margin-bottom:12px;">
+          <label style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:4px;">Model</label>
+          <div id="e2eModelField" style="background:var(--bg-secondary); border:1px solid var(--border-primary); border-radius:4px; padding:6px 10px; color:var(--text-body); font-size:14px; min-height:28px;"></div>
+        </div>
+        <button class="ibtn" id="e2eSubmitBtn" style="pointer-events:none; background:var(--accent-blue-bg); border-color:var(--accent-blue-bg); color:var(--text-primary);">Create Agent</button>
+      </div>
+      <div id="e2eNewAgent" style="display:none; padding:12px; background:var(--bg-code); border-radius:8px; margin-top:8px; display:none; border:2px solid var(--accent-green);">
+        <div style="display:flex; justify-content:space-between;">
+          <span style="color:var(--accent-green); font-weight:600;">Research Bot</span>
+          <span style="color:var(--text-muted); font-size:13px;">$500 budget</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="e2eStepDescription">
+    <p style="color:var(--accent-blue); font-weight:600; margin-bottom:8px;">Step 1: Navigate</p>
+    <p style="margin-bottom:0;"><code>await page.goto('http://localhost:3000/agents')</code><br><br>Playwright opens the browser and navigates to the agents page. The page loads and shows the list of existing agents.</p>
+  </div>
+
+  <h2>E2E Tests Are Slow but Powerful</h2>
+  <div class="card">
+    <ul>
+      <li><strong style="color:var(--accent-green);">Pro:</strong> Tests exactly what users experience &mdash; if the E2E test passes, the feature works for real users</li>
+      <li><strong style="color:var(--accent-green);">Pro:</strong> Catches bugs that unit and integration tests miss (CSS hiding a button, broken navigation)</li>
+      <li><strong style="color:#f87171;">Con:</strong> Slow &mdash; each test takes seconds, not milliseconds</li>
+      <li><strong style="color:#f87171;">Con:</strong> Flaky &mdash; timing issues can cause tests to randomly fail</li>
+      <li><strong style="color:#f87171;">Con:</strong> Expensive to maintain &mdash; UI changes break E2E tests</li>
+    </ul>
+    <p style="margin-top:12px; margin-bottom:0; color:var(--text-muted); font-size:14px;">This is why the testing pyramid says to write <em>few</em> E2E tests &mdash; just enough to cover the critical user journeys.</p>
+  </div>
+
+  <button class="next-btn" onclick="goToLesson(5)">Next: Mocking &amp; Fixtures &rarr;</button>
+</div>
+
+<!-- ============================================================
+     LESSON 6: MOCKING & FIXTURES
+     ============================================================ -->
+<div class="lesson" id="lesson5">
+  <h1>Mocking &amp; Fixtures</h1>
+  <p class="subtitle">Lesson 6 of 8 &mdash; Faking the things you can't (or don't want to) use for real</p>
+
+  <h2>The Problem: Real Dependencies Are Messy</h2>
+  <p>When you test a function that calls the database, you have a choice: use the real database, or fake it. Real databases are slow, require setup, and can have leftover data from other tests. External APIs cost money and might be down. Sometimes faking is better.</p>
+
+  <h2>What Is a Mock?</h2>
+  <p>A <strong style="color:var(--text-primary);">mock</strong> is a fake version of something real. Instead of calling the actual database, your test calls a mock that instantly returns pre-defined data. Same interface, no side effects.</p>
+
+  <h2>See the Difference</h2>
+  <p>Click to switch between a test with a real DB call and the same test using a mock:</p>
+
+  <div class="btn-row">
+    <button class="ibtn selected" onclick="showMockVersion('real', this)">With Real DB</button>
+    <button class="ibtn" onclick="showMockVersion('mocked', this)">With Mock</button>
+  </div>
+
+  <div class="mock-compare" id="mockCompare">
+    <div class="mock-panel active-mock" id="mockPanelLeft">
+      <h5 id="mockLeftTitle">Test (Real Database)</h5>
+      <pre id="mockLeftCode" style="margin:0; border:none; padding:0; background:transparent; font-size:13px;"><span class="fn">it</span>(<span class="str">'fetches agent by id'</span>, <span class="kw">async</span> () => {
+  <span class="cmt">// Arrange: insert real data into the DB</span>
+  <span class="kw">await</span> db.<span class="fn">insert</span>(agents).<span class="fn">values</span>({
+    <span class="typ">id</span>: <span class="str">'agent-1'</span>,
+    <span class="typ">name</span>: <span class="str">'Research Bot'</span>,
+    <span class="typ">budget</span>: <span class="str">500</span>,
+  });
+
+  <span class="cmt">// Act</span>
+  <span class="kw">const</span> result = <span class="kw">await</span> <span class="fn">getAgent</span>(<span class="str">'agent-1'</span>);
+
+  <span class="cmt">// Assert</span>
+  <span class="fn">expect</span>(result.<span class="typ">name</span>).<span class="fn">toBe</span>(<span class="str">'Research Bot'</span>);
+});</pre>
+    </div>
+    <div class="mock-panel" id="mockPanelRight">
+      <h5 id="mockRightTitle">Characteristics</h5>
+      <div id="mockRightContent" style="font-size:13px; color:var(--text-body); line-height:1.8;">
+        <p style="margin-bottom:8px;"><span style="color:#f87171;">Slow:</span> Has to connect to a real database</p>
+        <p style="margin-bottom:8px;"><span style="color:#f87171;">Setup:</span> Requires a running DB instance</p>
+        <p style="margin-bottom:8px;"><span style="color:#f87171;">Cleanup:</span> Need to delete test data afterward</p>
+        <p style="margin-bottom:0;"><span style="color:var(--accent-green);">Realistic:</span> Tests the real database behavior</p>
+      </div>
+    </div>
+  </div>
+
+  <h2>Fixtures: Pre-Built Test Data</h2>
+  <p>A <strong style="color:var(--text-primary);">fixture</strong> is pre-built test data you reuse across tests. Instead of creating test data from scratch in every test, you define it once:</p>
+
+  <div class="card-dark">
+    <pre class="code-block"><span class="cmt">// fixtures/agents.ts</span>
+<span class="kw">export const</span> <span class="typ">testAgent</span> = {
+  <span class="typ">id</span>: <span class="str">'agent-1'</span>,
+  <span class="typ">name</span>: <span class="str">'Research Bot'</span>,
+  <span class="typ">budget</span>: <span class="str">500</span>,
+  <span class="typ">model</span>: <span class="str">'claude-sonnet'</span>,
+  <span class="typ">status</span>: <span class="str">'active'</span>,
+};
+
+<span class="kw">export const</span> <span class="typ">testIssue</span> = {
+  <span class="typ">id</span>: <span class="str">'issue-1'</span>,
+  <span class="typ">title</span>: <span class="str">'Fix search bar'</span>,
+  <span class="typ">status</span>: <span class="str">'todo'</span>,
+  <span class="typ">agentId</span>: <span class="str">'agent-1'</span>,
+};
+
+<span class="cmt">// Then in your tests:</span>
+<span class="fn">it</span>(<span class="str">'assigns issue to agent'</span>, () => {
+  <span class="kw">const</span> result = <span class="fn">assignIssue</span>(testIssue, testAgent);
+  <span class="fn">expect</span>(result.<span class="typ">agentId</span>).<span class="fn">toBe</span>(<span class="str">'agent-1'</span>);
+});</pre>
+  </div>
+
+  <div class="analogy">
+    <div class="analogy-label">Analogy</div>
+    <p><strong>Mocking is like a flight simulator.</strong> You're testing the pilot's skills without risking a real plane. The controls feel real, the instruments look real, but it's all simulated. The pilot gets realistic practice without the danger, expense, or unpredictability of actual flight.</p>
+  </div>
+
+  <h2>When to Mock, When Not To</h2>
+  <div class="card">
+    <p style="color:var(--accent-green); font-weight:600; margin-bottom:8px;">Mock when:</p>
+    <ul>
+      <li>The real dependency is slow (database, network, file system)</li>
+      <li>The real dependency has side effects (sending emails, charging cards)</li>
+      <li>The real dependency is unreliable (external APIs that might be down)</li>
+      <li>You want to test error scenarios (simulate a database crash)</li>
+    </ul>
+    <p style="color:#f87171; font-weight:600; margin-bottom:8px; margin-top:16px;">Don't mock when:</p>
+    <ul style="margin-bottom:0;">
+      <li>The real thing is fast and reliable &mdash; just use it</li>
+      <li>You're writing integration tests &mdash; the whole point is to test real connections</li>
+      <li>The mock would be more complex than the real thing</li>
+    </ul>
+  </div>
+
+  <button class="next-btn" onclick="goToLesson(6)">Next: TDD &rarr;</button>
+</div>
+
+<!-- ============================================================
+     LESSON 7: TEST-DRIVEN DEVELOPMENT (TDD)
+     ============================================================ -->
+<div class="lesson" id="lesson6">
+  <h1>Test-Driven Development (TDD)</h1>
+  <p class="subtitle">Lesson 7 of 8 &mdash; Write the test first, then the code</p>
+
+  <h2>The TDD Cycle</h2>
+  <p>TDD flips the normal order: instead of writing code then testing it, you <strong style="color:var(--text-primary);">write the test first</strong>. Then you write just enough code to make the test pass. Then you clean up.</p>
+
+  <div class="tdd-cycle">
+    <div class="tdd-phase tdd-red active-phase" onclick="selectTDDPhase(0)">
+      <h4>Red</h4>
+      <p>Write a failing test</p>
+    </div>
+    <div class="tdd-arrow">&#8594;</div>
+    <div class="tdd-phase tdd-green" onclick="selectTDDPhase(1)">
+      <h4>Green</h4>
+      <p>Make it pass</p>
+    </div>
+    <div class="tdd-arrow">&#8594;</div>
+    <div class="tdd-phase tdd-refactor" onclick="selectTDDPhase(2)">
+      <h4>Refactor</h4>
+      <p>Clean up</p>
+    </div>
+  </div>
+
+  <h2>Walk Through an Example</h2>
+  <p>Let's build a function called <code>formatAgentStatus</code> using TDD. Click each phase to see the cycle in action:</p>
+
+  <div class="btn-row" id="tddBtns">
+    <button class="ibtn selected" onclick="tddStep(0, this)">1. Red: Write Test</button>
+    <button class="ibtn" onclick="tddStep(1, this)">2. Red: Run It</button>
+    <button class="ibtn" onclick="tddStep(2, this)">3. Green: Write Code</button>
+    <button class="ibtn" onclick="tddStep(3, this)">4. Green: Run It</button>
+    <button class="ibtn" onclick="tddStep(4, this)">5. Refactor</button>
+    <button class="ibtn" onclick="tddStep(5, this)">6. Final Run</button>
+  </div>
+
+  <div class="code-editor" id="tddTestEditor">
+    <div class="editor-label" id="tddEditorLabel">Test File: formatAgentStatus.test.ts</div>
+    <pre id="tddTestCode" style="margin:0; border:none; padding:0; background:transparent;"><span class="cmt">// Step 1: Write the test FIRST — before the function exists</span>
+
+<span class="kw">import</span> { <span class="fn">describe</span>, <span class="fn">it</span>, <span class="fn">expect</span> } <span class="kw">from</span> <span class="str">'vitest'</span>;
+<span class="kw">import</span> { <span class="fn">formatAgentStatus</span> } <span class="kw">from</span> <span class="str">'./formatAgentStatus'</span>;
+
+<span class="fn">describe</span>(<span class="str">'formatAgentStatus'</span>, () => {
+  <span class="fn">it</span>(<span class="str">'returns "Active" with green icon for active agents'</span>, () => {
+    <span class="fn">expect</span>(<span class="fn">formatAgentStatus</span>(<span class="str">'active'</span>)).<span class="fn">toEqual</span>({
+      <span class="typ">label</span>: <span class="str">'Active'</span>,
+      <span class="typ">color</span>: <span class="str">'green'</span>,
+    });
+  });
+
+  <span class="fn">it</span>(<span class="str">'returns "Paused" with yellow icon for paused agents'</span>, () => {
+    <span class="fn">expect</span>(<span class="fn">formatAgentStatus</span>(<span class="str">'paused'</span>)).<span class="fn">toEqual</span>({
+      <span class="typ">label</span>: <span class="str">'Paused'</span>,
+      <span class="typ">color</span>: <span class="str">'yellow'</span>,
+    });
+  });
+
+  <span class="fn">it</span>(<span class="str">'returns "Error" with red icon for errored agents'</span>, () => {
+    <span class="fn">expect</span>(<span class="fn">formatAgentStatus</span>(<span class="str">'error'</span>)).<span class="fn">toEqual</span>({
+      <span class="typ">label</span>: <span class="str">'Error'</span>,
+      <span class="typ">color</span>: <span class="str">'red'</span>,
+    });
+  });
+});</pre>
+  </div>
+
+  <div class="test-output" id="tddTestOutput">
+    <span style="color:var(--text-muted);">Tests have not been run yet. Click "2. Red: Run It" to see what happens.</span>
+  </div>
+
+  <div class="card" id="tddExplanation">
+    <p style="color:#f87171; font-weight:600; margin-bottom:8px;">Phase: RED</p>
+    <p style="margin-bottom:0;">We write the test before the function exists. The test describes the <em>behavior</em> we want: given a status string, return a label and a color. Notice how the test reads like a specification &mdash; anyone can understand what <code>formatAgentStatus</code> should do just by reading the tests.</p>
+  </div>
+
+  <h2>Why TDD Works</h2>
+  <div class="card">
+    <ul>
+      <li><strong style="color:var(--text-primary);">Forces you to think first.</strong> Writing the test first means you have to decide what the function should do before you write it.</li>
+      <li><strong style="color:var(--text-primary);">Guarantees test coverage.</strong> Every function starts with a test &mdash; you can't forget to test it later.</li>
+      <li><strong style="color:var(--text-primary);">Keeps code simple.</strong> You only write enough code to pass the test. No over-engineering.</li>
+      <li><strong style="color:var(--text-primary);">Instant feedback.</strong> You know within seconds if your code works.</li>
+    </ul>
+  </div>
+
+  <div class="analogy">
+    <div class="analogy-label">Key Idea</div>
+    <p><strong>TDD doesn't mean you must always write tests first.</strong> In practice, most developers use TDD selectively &mdash; for complex business logic, tricky algorithms, or bug fixes (write a test that reproduces the bug, then fix it). The important thing is that the code ends up with good tests, regardless of the order you wrote them.</p>
+  </div>
+
+  <button class="next-btn" onclick="goToLesson(7)">Next: Testing in Practice &rarr;</button>
+</div>
+
+<!-- ============================================================
+     LESSON 8: TESTING IN PRACTICE
+     ============================================================ -->
+<div class="lesson" id="lesson7">
+  <h1>Testing in Practice</h1>
+  <p class="subtitle">Lesson 8 of 8 &mdash; How Paperclip actually tests its code</p>
+
+  <h2>Paperclip's Test Setup</h2>
+  <p>Paperclip uses two tools, each for a different kind of test:</p>
+
+  <div class="card">
+    <div style="display:flex; gap:24px; flex-wrap:wrap;">
+      <div style="flex:1; min-width:200px;">
+        <p style="color:var(--accent-blue); font-weight:700; margin-bottom:8px; font-size:16px;">Vitest</p>
+        <p style="font-size:14px; color:var(--text-muted); margin-bottom:8px;">Unit &amp; Integration Tests</p>
+        <ul style="font-size:14px; margin-bottom:0;">
+          <li>Fast &mdash; runs in milliseconds</li>
+          <li>Tests functions, services, API routes</li>
+          <li>Runs in Node.js (no browser needed)</li>
+        </ul>
+      </div>
+      <div style="flex:1; min-width:200px;">
+        <p style="color:var(--accent-purple); font-weight:700; margin-bottom:8px; font-size:16px;">Playwright</p>
+        <p style="font-size:14px; color:var(--text-muted); margin-bottom:8px;">End-to-End Tests</p>
+        <ul style="font-size:14px; margin-bottom:0;">
+          <li>Slower &mdash; runs in seconds</li>
+          <li>Tests the full app in a real browser</li>
+          <li>Simulates real user actions</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <h2>The Test Commands</h2>
+  <p>These are the commands you'll use every day:</p>
+
+  <div class="card-dark">
+    <pre class="code-block"><span class="cmt"># Run all unit and integration tests once</span>
+<span class="fn">pnpm</span> <span class="str">test</span>
+
+<span class="cmt"># Run tests in watch mode — re-runs on every file save</span>
+<span class="fn">pnpm</span> <span class="str">test:watch</span>
+
+<span class="cmt"># Run end-to-end tests</span>
+<span class="fn">pnpm</span> <span class="str">test:e2e</span>
+
+<span class="cmt"># Run a specific test file</span>
+<span class="fn">pnpm</span> <span class="str">test</span> src/services/budget.test.ts
+
+<span class="cmt"># Run tests matching a pattern</span>
+<span class="fn">pnpm</span> <span class="str">test</span> --grep <span class="str">"budget"</span></pre>
+  </div>
+
+  <p>The one you'll use most is <code>pnpm test:watch</code>. It sits in the background and re-runs relevant tests every time you save a file. You get feedback in under a second.</p>
+
+  <h2>CI/CD: Tests on Every Pull Request</h2>
+  <p>Remember <a href="/lessons/git.html">Course 6 (How Git Works)</a> and <a href="/lessons/deployment.html">Course 5 (How Deployment Works)</a>? Tests connect to both:</p>
+
+  <div class="card">
+    <p style="color:var(--text-primary); font-weight:600; margin-bottom:12px;">What happens when you open a Pull Request:</p>
+    <ol>
+      <li>You push your branch to GitHub</li>
+      <li><strong style="color:var(--accent-blue);">CI (Continuous Integration)</strong> automatically runs <em>all</em> tests</li>
+      <li>GitHub shows a green checkmark or red X on your PR</li>
+      <li>If tests fail, you can't merge &mdash; this protects the main branch</li>
+      <li>If tests pass, reviewers can merge with confidence</li>
+    </ol>
+  </div>
+
+  <div class="card-dark">
+    <pre class="code-block"><span class="cmt"># .github/workflows/test.yml — Runs on every PR</span>
+<span class="typ">name</span>: <span class="str">Tests</span>
+<span class="typ">on</span>: [<span class="str">pull_request</span>]
+
+<span class="typ">jobs</span>:
+  <span class="typ">test</span>:
+    <span class="typ">runs-on</span>: <span class="str">ubuntu-latest</span>
+    <span class="typ">steps</span>:
+      - <span class="typ">uses</span>: <span class="str">actions/checkout@v4</span>
+      - <span class="typ">run</span>: <span class="fn">pnpm install</span>
+      - <span class="typ">run</span>: <span class="fn">pnpm test</span>
+      - <span class="typ">run</span>: <span class="fn">pnpm test:e2e</span></pre>
+  </div>
+
+  <h2>Paperclip's File Structure</h2>
+  <p>Tests live next to the code they test. This makes it easy to find the test for any file:</p>
+
+  <div class="card-dark">
+    <pre class="code-block"><span class="str">src/</span>
+  <span class="str">services/</span>
+    <span class="fn">budget.ts</span>              <span class="cmt"># The code</span>
+    <span class="fn">budget.test.ts</span>         <span class="cmt"># The unit tests</span>
+    <span class="fn">agents.ts</span>
+    <span class="fn">agents.test.ts</span>
+  <span class="str">routes/</span>
+    <span class="fn">issues.ts</span>
+    <span class="fn">issues.test.ts</span>         <span class="cmt"># Integration tests</span>
+<span class="str">e2e/</span>
+  <span class="fn">create-agent.spec.ts</span>     <span class="cmt"># E2E tests (separate folder)</span>
+  <span class="fn">issue-flow.spec.ts</span></pre>
+  </div>
+
+  <h2>The Testing Mindset</h2>
+  <div class="card">
+    <ul>
+      <li><strong style="color:var(--text-primary);">Write tests as you go,</strong> not at the end. Tests written after the fact feel like a chore; tests written alongside the code feel like a tool.</li>
+      <li><strong style="color:var(--text-primary);">Test the happy path first,</strong> then edge cases. Make sure the normal flow works before worrying about errors.</li>
+      <li><strong style="color:var(--text-primary);">A failing test is a gift.</strong> It tells you exactly what's broken and where &mdash; before your users find out.</li>
+      <li><strong style="color:var(--text-primary);">100% coverage is not the goal.</strong> Covering the critical paths with good tests is more valuable than covering everything with shallow tests.</li>
+    </ul>
+  </div>
+
+  <div class="analogy">
+    <div class="analogy-label">What You've Learned</div>
+    <p>You now understand how testing works &mdash; from unit tests that check individual functions, to integration tests that verify your API, to E2E tests that simulate real users. <strong>You know about mocking, TDD, and how CI/CD runs tests automatically on every pull request.</strong> Testing isn't extra work &mdash; it's the foundation that lets you move fast without breaking things.</p>
+  </div>
+
+  <div style="text-align:center; margin-top:40px; padding:40px 0; border-top: 1px solid var(--border-primary);">
+    <h2 style="margin:0 0 8px;">Tutorial Complete!</h2>
+    <p style="color:var(--text-muted); font-size:15px;">You've learned how testing works &mdash; from unit tests to CI/CD.</p>
+  </div>
+
+  <div class="next-course-banner">
+    <h3>Up Next</h3>
+    <p>Continue to Course 11: How AI Agents Work — LLMs, prompts, tool use, and the agent loop.</p>
+    <a href="/lessons/ai-agents.html">Start How AI Agents Work &#8594;</a>
+  </div>
+</div>
+
+</div><!-- /container -->
+
+</div><!-- end content-wrapper -->
+
+<script>
+// -- Lesson Navigation --
+function goToLesson(n) {
+  const lessons = document.querySelectorAll('.lesson');
+  const buttons = document.querySelectorAll('.nav-btn');
+  lessons.forEach((l,i) => {
+    l.classList.toggle('active', i === n);
+  });
+  buttons.forEach((b,i) => {
+    b.classList.toggle('active', i === n);
+  });
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+// ============================================================
+// LESSON 1: Why Test? — Interactive Demo
+// ============================================================
+function whyTestDemo(version, btn) {
+  const btns = btn.parentElement.querySelectorAll('.ibtn');
+  btns.forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+
+  const codeEl = document.getElementById('whyTestCode');
+  const outputEl = document.getElementById('whyTestOutput');
+
+  if (version === 'original') {
+    codeEl.innerHTML = `<span class="kw">function</span> <span class="fn">calculateDiscount</span>(<span class="typ">price</span>, <span class="typ">percent</span>) {
+  <span class="kw">return</span> price * (percent / <span class="str">100</span>);
+}`;
+    outputEl.innerHTML = `<span class="test-pass"><span class="test-icon">&#10003;</span> calculates 20% of $100 as $20</span><br>
+<br>
+<span class="test-pass">Tests: 1 passed, 1 total</span><br>
+<span style="color:var(--text-muted);">Time: 0.03s</span>`;
+  } else if (version === 'broken') {
+    codeEl.innerHTML = `<span class="kw">function</span> <span class="fn">calculateDiscount</span>(<span class="typ">price</span>, <span class="typ">percent</span>) {
+  <span class="cmt">// Someone "fixed" this to also add tax...</span>
+  <span class="kw">return</span> price * (percent / <span class="str">100</span>) <span class="del">+ price * 0.08</span>;
+}`;
+    outputEl.innerHTML = `<span class="test-fail"><span class="test-icon">&#10007;</span> calculates 20% of $100 as $20</span><br>
+<br>
+<span style="color:var(--text-muted);">Expected: </span><span class="test-pass">20</span><br>
+<span style="color:var(--text-muted);">Received: </span><span class="test-fail">28</span><br>
+<br>
+<span class="test-fail">Tests: 1 failed, 1 total</span><br>
+<span style="color:var(--text-muted);">Time: 0.03s</span>`;
+  } else if (version === 'fixed') {
+    codeEl.innerHTML = `<span class="kw">function</span> <span class="fn">calculateDiscount</span>(<span class="typ">price</span>, <span class="typ">percent</span>) {
+  <span class="cmt">// Fixed: removed the accidental tax addition</span>
+  <span class="kw">return</span> price * (percent / <span class="str">100</span>);
+}`;
+    outputEl.innerHTML = `<span class="test-pass"><span class="test-icon">&#10003;</span> calculates 20% of $100 as $20</span><br>
+<br>
+<span class="test-pass">Tests: 1 passed, 1 total</span><br>
+<span style="color:var(--text-muted);">Time: 0.03s</span>`;
+  }
+}
+
+// ============================================================
+// LESSON 2: Unit Tests — Interactive Demo
+// ============================================================
+function unitTestDemo(version, btn) {
+  const btns = btn.parentElement.querySelectorAll('.ibtn');
+  btns.forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+
+  const codeEl = document.getElementById('unitFnCode');
+  const outputEl = document.getElementById('unitTestOutput');
+
+  if (version === 'correct') {
+    codeEl.innerHTML = `<span class="kw">export function</span> <span class="fn">calculateBudgetRemaining</span>(<span class="typ">budget</span>: <span class="typ">number</span>, <span class="typ">spent</span>: <span class="typ">number</span>): <span class="typ">number</span> {
+  <span class="kw">const</span> remaining = budget - spent;
+  <span class="kw">return</span> Math.<span class="fn">max</span>(<span class="str">0</span>, remaining);
+}`;
+    outputEl.innerHTML = `<span class="test-pass"><span class="test-icon">&#10003;</span> returns remaining budget after spending</span><br>
+<span class="test-pass"><span class="test-icon">&#10003;</span> returns zero when budget is fully spent</span><br>
+<span class="test-pass"><span class="test-icon">&#10003;</span> never returns negative (clamps to zero)</span><br>
+<br>
+<span class="test-pass">Tests: 3 passed, 3 total</span><br>
+<span style="color:var(--text-muted);">Time: 0.02s</span>`;
+  } else if (version === 'no-clamp') {
+    codeEl.innerHTML = `<span class="kw">export function</span> <span class="fn">calculateBudgetRemaining</span>(<span class="typ">budget</span>: <span class="typ">number</span>, <span class="typ">spent</span>: <span class="typ">number</span>): <span class="typ">number</span> {
+  <span class="kw">const</span> remaining = budget - spent;
+  <span class="kw">return</span> remaining; <span class="cmt">// removed Math.max(0, ...)</span>
+}`;
+    outputEl.innerHTML = `<span class="test-pass"><span class="test-icon">&#10003;</span> returns remaining budget after spending</span><br>
+<span class="test-pass"><span class="test-icon">&#10003;</span> returns zero when budget is fully spent</span><br>
+<span class="test-fail"><span class="test-icon">&#10007;</span> never returns negative (clamps to zero)</span><br>
+<br>
+<span style="color:var(--text-muted);">Expected: </span><span class="test-pass">0</span><br>
+<span style="color:var(--text-muted);">Received: </span><span class="test-fail">-100</span><br>
+<br>
+<span class="test-fail">Tests: 1 failed</span>, <span class="test-pass">2 passed</span>, 3 total<br>
+<span style="color:var(--text-muted);">Time: 0.02s</span>`;
+  } else if (version === 'wrong-math') {
+    codeEl.innerHTML = `<span class="kw">export function</span> <span class="fn">calculateBudgetRemaining</span>(<span class="typ">budget</span>: <span class="typ">number</span>, <span class="typ">spent</span>: <span class="typ">number</span>): <span class="typ">number</span> {
+  <span class="kw">const</span> remaining = budget <span class="del">+</span> spent; <span class="cmt">// oops: + instead of -</span>
+  <span class="kw">return</span> Math.<span class="fn">max</span>(<span class="str">0</span>, remaining);
+}`;
+    outputEl.innerHTML = `<span class="test-fail"><span class="test-icon">&#10007;</span> returns remaining budget after spending</span><br>
+<span style="color:var(--text-muted);">  Expected: </span><span class="test-pass">650</span><br>
+<span style="color:var(--text-muted);">  Received: </span><span class="test-fail">1350</span><br>
+<br>
+<span class="test-fail"><span class="test-icon">&#10007;</span> returns zero when budget is fully spent</span><br>
+<span style="color:var(--text-muted);">  Expected: </span><span class="test-pass">0</span><br>
+<span style="color:var(--text-muted);">  Received: </span><span class="test-fail">1000</span><br>
+<br>
+<span class="test-fail"><span class="test-icon">&#10007;</span> never returns negative (clamps to zero)</span><br>
+<span style="color:var(--text-muted);">  Expected: </span><span class="test-pass">0</span><br>
+<span style="color:var(--text-muted);">  Received: </span><span class="test-fail">300</span><br>
+<br>
+<span class="test-fail">Tests: 3 failed, 3 total</span><br>
+<span style="color:var(--text-muted);">Time: 0.02s</span>`;
+  }
+}
+
+// ============================================================
+// LESSON 3: Testing Pyramid
+// ============================================================
+const pyramidData = {
+  e2e: {
+    title: 'End-to-End Tests (Few)',
+    content: `<p style="color:var(--accent-purple); font-weight:600; margin-bottom:8px;">Fewest in number &mdash; Slowest to run</p>
+<p style="margin-bottom:8px;">Test the full app from a user's perspective. Open a browser, click buttons, fill forms.</p>
+<p style="margin-bottom:8px; font-size:14px;"><strong style="color:var(--text-primary);">Examples:</strong></p>
+<ul style="font-size:14px; margin-bottom:0;">
+  <li>Can a user log in, create an agent, and see it on the dashboard?</li>
+  <li>Does the search feature return results and navigate correctly?</li>
+  <li>Can a user complete the full onboarding flow?</li>
+</ul>`
+  },
+  integration: {
+    title: 'Integration Tests (Some)',
+    content: `<p style="color:var(--accent-blue); font-weight:600; margin-bottom:8px;">Medium number &mdash; Medium speed</p>
+<p style="margin-bottom:8px;">Test multiple components working together: API routes, database queries, service functions.</p>
+<p style="margin-bottom:8px; font-size:14px;"><strong style="color:var(--text-primary);">Examples:</strong></p>
+<ul style="font-size:14px; margin-bottom:0;">
+  <li>POST /api/issues creates a record in the database and returns 201</li>
+  <li>GET /api/agents?status=active returns only active agents</li>
+  <li>DELETE /api/issues/:id removes the record and returns 204</li>
+</ul>`
+  },
+  unit: {
+    title: 'Unit Tests (Many)',
+    content: `<p style="color:var(--accent-green); font-weight:600; margin-bottom:8px;">Most numerous &mdash; Fastest to run</p>
+<p style="margin-bottom:8px;">Test individual functions in isolation. No database, no network &mdash; pure logic.</p>
+<p style="margin-bottom:8px; font-size:14px;"><strong style="color:var(--text-primary);">Examples:</strong></p>
+<ul style="font-size:14px; margin-bottom:0;">
+  <li>calculateBudgetRemaining(1000, 350) returns 650</li>
+  <li>formatDate("2026-06-18") returns "Jun 18, 2026"</li>
+  <li>validateEmail("bad") returns false</li>
+</ul>`
+  }
+};
+
+function selectPyramidLayer(layer, el) {
+  // Toggle selection
+  document.querySelectorAll('.pyramid-layer').forEach(l => l.classList.remove('selected'));
+  el.classList.add('selected');
+
+  const detail = document.getElementById('pyramidDetail');
+  const content = document.getElementById('pyramidDetailContent');
+  const data = pyramidData[layer];
+
+  content.innerHTML = `<p style="color:var(--text-primary); font-weight:700; font-size:16px; margin-bottom:12px;">${data.title}</p>${data.content}`;
+  detail.className = 'pyramid-detail visible fade-in';
+}
+
+// ============================================================
+// LESSON 4: Integration Tests — Trace Flow
+// ============================================================
+const traceDetails = [
+  {
+    title: 'Step 1: HTTP Request',
+    content: `<p>The test acts like a client &mdash; it sends a real HTTP POST request to <code>/api/issues</code> with a JSON body containing <code>title</code>, <code>status</code>, and <code>agentId</code>. The test framework creates an in-memory server, so no actual network call is made &mdash; but the server processes it exactly like a real request.</p>
+<pre style="margin-bottom:0;"><span class="fn">POST</span> <span class="str">/api/issues</span>
+<span class="typ">Content-Type</span>: <span class="str">application/json</span>
+
+{
+  <span class="str">"title"</span>: <span class="str">"Fix search bar"</span>,
+  <span class="str">"status"</span>: <span class="str">"todo"</span>,
+  <span class="str">"agentId"</span>: <span class="str">"agent-1"</span>
+}</pre>`
+  },
+  {
+    title: 'Step 2: Route Handler',
+    content: `<p>The server receives the request and matches it to the <code>POST /api/issues</code> route handler. The handler parses the JSON body and extracts <code>title</code>, <code>status</code>, and <code>agentId</code>. It then passes these to the service layer.</p>
+<pre style="margin-bottom:0;"><span class="cmt">// routes/issues.ts</span>
+app.<span class="fn">post</span>(<span class="str">'/api/issues'</span>, <span class="kw">async</span> (c) => {
+  <span class="kw">const</span> body = <span class="kw">await</span> c.req.<span class="fn">json</span>();
+  <span class="kw">const</span> issue = <span class="kw">await</span> issueService.<span class="fn">create</span>(body);
+  <span class="kw">return</span> c.<span class="fn">json</span>(issue, <span class="str">201</span>);
+});</pre>`
+  },
+  {
+    title: 'Step 3: Service Layer',
+    content: `<p>The service layer contains the business logic. It validates the input (is the title non-empty? does the agent exist?), generates an ID, sets timestamps, and then calls the database layer to store the record.</p>
+<pre style="margin-bottom:0;"><span class="cmt">// services/issues.ts</span>
+<span class="kw">async function</span> <span class="fn">create</span>(input) {
+  <span class="fn">validate</span>(input);  <span class="cmt">// throws if invalid</span>
+  <span class="kw">const</span> issue = {
+    <span class="typ">id</span>: <span class="fn">generateId</span>(),
+    ...input,
+    <span class="typ">createdAt</span>: <span class="kw">new</span> <span class="fn">Date</span>(),
+  };
+  <span class="kw">return</span> db.<span class="fn">insert</span>(issues).<span class="fn">values</span>(issue);
+}</pre>`
+  },
+  {
+    title: 'Step 4: Database',
+    content: `<p>The database layer executes the SQL to persist the new issue. In an integration test, this uses a real (but temporary) test database. The row is inserted with an auto-generated ID and timestamp.</p>
+<pre style="margin-bottom:0;"><span class="fn">INSERT INTO</span> <span class="str">issues</span> (id, title, status, agent_id, created_at)
+<span class="fn">VALUES</span> (<span class="str">'iss_a1b2c3'</span>, <span class="str">'Fix search bar'</span>, <span class="str">'todo'</span>, <span class="str">'agent-1'</span>, <span class="str">NOW()</span>);</pre>`
+  },
+  {
+    title: 'Step 5: Response',
+    content: `<p>The newly created issue flows back up the stack: database returns the row, service returns it to the route, the route serializes it to JSON and sends a <code>201 Created</code> response. The test then checks this response.</p>
+<pre style="margin-bottom:0;"><span class="fn">HTTP 201 Created</span>
+
+{
+  <span class="str">"id"</span>: <span class="str">"iss_a1b2c3"</span>,
+  <span class="str">"title"</span>: <span class="str">"Fix search bar"</span>,
+  <span class="str">"status"</span>: <span class="str">"todo"</span>,
+  <span class="str">"agentId"</span>: <span class="str">"agent-1"</span>,
+  <span class="str">"createdAt"</span>: <span class="str">"2026-06-18T..."</span>
+}</pre>`
+  }
+];
+
+function selectTraceStep(i) {
+  const steps = document.querySelectorAll('.trace-step');
+  steps.forEach((s, j) => {
+    s.classList.remove('active-step', 'completed-step');
+    if (j < i) s.classList.add('completed-step');
+    if (j === i) s.classList.add('active-step');
+  });
+
+  const detail = document.getElementById('traceDetail');
+  const content = document.getElementById('traceDetailContent');
+  const data = traceDetails[i];
+  content.innerHTML = `<p style="color:var(--accent-blue); font-weight:600; margin-bottom:8px;">${data.title}</p>${data.content}`;
+  detail.className = 'card fade-in';
+}
+
+// ============================================================
+// LESSON 5: E2E — Browser Automation Steps
+// ============================================================
+const e2eStepDescriptions = [
+  {
+    title: 'Step 1: Navigate',
+    desc: `<code>await page.goto('http://localhost:3000/agents')</code><br><br>Playwright opens the browser and navigates to the agents page. The page loads and shows the list of existing agents.`
+  },
+  {
+    title: 'Step 2: Click "New Agent" Button',
+    desc: `<code>await page.click('button:has-text("New Agent")')</code><br><br>Playwright finds the "New Agent" button and clicks it. A form appears on the page for creating a new agent.`
+  },
+  {
+    title: 'Step 3: Fill In the Form',
+    desc: `<code>await page.fill('input[name="name"]', 'Research Bot')</code><br><code>await page.fill('input[name="budget"]', '500')</code><br><code>await page.selectOption('select[name="model"]', 'claude-sonnet')</code><br><br>Playwright types into each form field, just like a user would. The form fills in automatically.`
+  },
+  {
+    title: 'Step 4: Submit the Form',
+    desc: `<code>await page.click('button:has-text("Create Agent")')</code><br><br>Playwright clicks the "Create Agent" button to submit the form. The app sends the data to the API, creates the agent, and updates the page.`
+  },
+  {
+    title: 'Step 5: Verify the Result',
+    desc: `<code>await expect(page.locator('text=Research Bot')).toBeVisible()</code><br><br>Playwright checks that the text "Research Bot" is now visible on the page. If it's there, the test passes. If not, the test fails. This confirms the full flow worked: UI form, API call, database insert, and UI update.`
+  }
+];
+
+function e2eStep(step, btn) {
+  const btns = document.getElementById('e2eStepBtns').querySelectorAll('.ibtn');
+  btns.forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+
+  // Update browser mockup
+  const url = document.getElementById('e2eBrowserUrl');
+  const form = document.getElementById('e2eForm');
+  const nameField = document.getElementById('e2eNameField');
+  const budgetField = document.getElementById('e2eBudgetField');
+  const modelField = document.getElementById('e2eModelField');
+  const newAgent = document.getElementById('e2eNewAgent');
+  const newAgentBtn = document.getElementById('e2eNewAgentBtn');
+
+  // Reset
+  form.style.display = 'none';
+  newAgent.style.display = 'none';
+  nameField.textContent = '';
+  budgetField.textContent = '';
+  modelField.textContent = '';
+  newAgentBtn.style.background = '';
+  newAgentBtn.style.borderColor = '';
+  newAgentBtn.style.color = '';
+  url.textContent = 'localhost:3000/agents';
+
+  if (step >= 1) {
+    // Show form
+    form.style.display = 'block';
+    newAgentBtn.style.background = 'var(--accent-blue-bg)';
+    newAgentBtn.style.borderColor = 'var(--accent-blue-bg)';
+    newAgentBtn.style.color = 'var(--text-primary)';
+  }
+
+  if (step >= 2) {
+    // Fill form
+    nameField.textContent = 'Research Bot';
+    nameField.style.color = 'var(--text-primary)';
+    budgetField.textContent = '500';
+    budgetField.style.color = 'var(--text-primary)';
+    modelField.textContent = 'claude-sonnet';
+    modelField.style.color = 'var(--text-primary)';
+  }
+
+  if (step >= 3) {
+    // Submit - hide form
+    form.style.display = 'none';
+  }
+
+  if (step >= 4) {
+    // Show new agent
+    newAgent.style.display = 'block';
+  }
+
+  // Update description
+  const descEl = document.getElementById('e2eStepDescription');
+  const data = e2eStepDescriptions[step];
+  descEl.innerHTML = `<p style="color:var(--accent-blue); font-weight:600; margin-bottom:8px;">${data.title}</p><p style="margin-bottom:0;">${data.desc}</p>`;
+}
+
+// ============================================================
+// LESSON 6: Mocking — Compare Real vs Mock
+// ============================================================
+function showMockVersion(version, btn) {
+  const btns = btn.parentElement.querySelectorAll('.ibtn');
+  btns.forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+
+  const leftCode = document.getElementById('mockLeftCode');
+  const leftTitle = document.getElementById('mockLeftTitle');
+  const rightContent = document.getElementById('mockRightContent');
+  const rightTitle = document.getElementById('mockRightTitle');
+  const leftPanel = document.getElementById('mockPanelLeft');
+  const rightPanel = document.getElementById('mockPanelRight');
+
+  if (version === 'real') {
+    leftTitle.textContent = 'Test (Real Database)';
+    leftCode.innerHTML = `<span class="fn">it</span>(<span class="str">'fetches agent by id'</span>, <span class="kw">async</span> () => {
+  <span class="cmt">// Arrange: insert real data into the DB</span>
+  <span class="kw">await</span> db.<span class="fn">insert</span>(agents).<span class="fn">values</span>({
+    <span class="typ">id</span>: <span class="str">'agent-1'</span>,
+    <span class="typ">name</span>: <span class="str">'Research Bot'</span>,
+    <span class="typ">budget</span>: <span class="str">500</span>,
+  });
+
+  <span class="cmt">// Act</span>
+  <span class="kw">const</span> result = <span class="kw">await</span> <span class="fn">getAgent</span>(<span class="str">'agent-1'</span>);
+
+  <span class="cmt">// Assert</span>
+  <span class="fn">expect</span>(result.<span class="typ">name</span>).<span class="fn">toBe</span>(<span class="str">'Research Bot'</span>);
+});`;
+    rightTitle.textContent = 'Characteristics';
+    rightContent.innerHTML = `<p style="margin-bottom:8px;"><span style="color:#f87171;">Slow:</span> Has to connect to a real database</p>
+<p style="margin-bottom:8px;"><span style="color:#f87171;">Setup:</span> Requires a running DB instance</p>
+<p style="margin-bottom:8px;"><span style="color:#f87171;">Cleanup:</span> Need to delete test data afterward</p>
+<p style="margin-bottom:0;"><span style="color:var(--accent-green);">Realistic:</span> Tests the real database behavior</p>`;
+    leftPanel.classList.add('active-mock');
+    rightPanel.classList.remove('active-mock');
+  } else {
+    leftTitle.textContent = 'Test (With Mock)';
+    leftCode.innerHTML = `<span class="kw">import</span> { <span class="fn">vi</span> } <span class="kw">from</span> <span class="str">'vitest'</span>;
+
+<span class="cmt">// Replace the real DB with a mock</span>
+vi.<span class="fn">mock</span>(<span class="str">'../db'</span>, () => ({
+  <span class="fn">getAgent</span>: vi.<span class="fn">fn</span>().<span class="fn">mockResolvedValue</span>({
+    <span class="typ">id</span>: <span class="str">'agent-1'</span>,
+    <span class="typ">name</span>: <span class="str">'Research Bot'</span>,
+    <span class="typ">budget</span>: <span class="str">500</span>,
+  }),
+}));
+
+<span class="fn">it</span>(<span class="str">'fetches agent by id'</span>, <span class="kw">async</span> () => {
+  <span class="kw">const</span> result = <span class="kw">await</span> <span class="fn">getAgent</span>(<span class="str">'agent-1'</span>);
+  <span class="fn">expect</span>(result.<span class="typ">name</span>).<span class="fn">toBe</span>(<span class="str">'Research Bot'</span>);
+});`;
+    rightTitle.textContent = 'Characteristics';
+    rightContent.innerHTML = `<p style="margin-bottom:8px;"><span style="color:var(--accent-green);">Fast:</span> No database connection needed</p>
+<p style="margin-bottom:8px;"><span style="color:var(--accent-green);">No setup:</span> Works anywhere, no DB required</p>
+<p style="margin-bottom:8px;"><span style="color:var(--accent-green);">No cleanup:</span> Mock resets automatically</p>
+<p style="margin-bottom:0;"><span style="color:#f87171;">Less realistic:</span> Won't catch real DB issues</p>`;
+    leftPanel.classList.remove('active-mock');
+    rightPanel.classList.add('active-mock');
+  }
+}
+
+// ============================================================
+// LESSON 7: TDD — Step-by-step
+// ============================================================
+const tddSteps = [
+  {
+    label: 'Test File: formatAgentStatus.test.ts',
+    code: `<span class="cmt">// Step 1: Write the test FIRST — before the function exists</span>
+
+<span class="kw">import</span> { <span class="fn">describe</span>, <span class="fn">it</span>, <span class="fn">expect</span> } <span class="kw">from</span> <span class="str">'vitest'</span>;
+<span class="kw">import</span> { <span class="fn">formatAgentStatus</span> } <span class="kw">from</span> <span class="str">'./formatAgentStatus'</span>;
+
+<span class="fn">describe</span>(<span class="str">'formatAgentStatus'</span>, () => {
+  <span class="fn">it</span>(<span class="str">'returns "Active" with green icon for active agents'</span>, () => {
+    <span class="fn">expect</span>(<span class="fn">formatAgentStatus</span>(<span class="str">'active'</span>)).<span class="fn">toEqual</span>({
+      <span class="typ">label</span>: <span class="str">'Active'</span>,
+      <span class="typ">color</span>: <span class="str">'green'</span>,
+    });
+  });
+
+  <span class="fn">it</span>(<span class="str">'returns "Paused" with yellow icon for paused agents'</span>, () => {
+    <span class="fn">expect</span>(<span class="fn">formatAgentStatus</span>(<span class="str">'paused'</span>)).<span class="fn">toEqual</span>({
+      <span class="typ">label</span>: <span class="str">'Paused'</span>,
+      <span class="typ">color</span>: <span class="str">'yellow'</span>,
+    });
+  });
+
+  <span class="fn">it</span>(<span class="str">'returns "Error" with red icon for errored agents'</span>, () => {
+    <span class="fn">expect</span>(<span class="fn">formatAgentStatus</span>(<span class="str">'error'</span>)).<span class="fn">toEqual</span>({
+      <span class="typ">label</span>: <span class="str">'Error'</span>,
+      <span class="typ">color</span>: <span class="str">'red'</span>,
+    });
+  });
+});`,
+    output: `<span style="color:var(--text-muted);">Tests have not been run yet. Click "2. Red: Run It" to see what happens.</span>`,
+    explanation: `<p style="color:#f87171; font-weight:600; margin-bottom:8px;">Phase: RED</p>
+<p style="margin-bottom:0;">We write the test before the function exists. The test describes the <em>behavior</em> we want: given a status string, return a label and a color. Notice how the test reads like a specification &mdash; anyone can understand what <code>formatAgentStatus</code> should do just by reading the tests.</p>`,
+    phase: 0
+  },
+  {
+    label: 'Test File: formatAgentStatus.test.ts',
+    code: null,
+    output: `<span class="test-fail"><span class="test-icon">&#10007;</span> returns "Active" with green icon for active agents</span><br>
+<span style="color:var(--text-muted);">  Error: formatAgentStatus is not a function</span><br>
+<br>
+<span class="test-fail"><span class="test-icon">&#10007;</span> returns "Paused" with yellow icon for paused agents</span><br>
+<span style="color:var(--text-muted);">  Error: formatAgentStatus is not a function</span><br>
+<br>
+<span class="test-fail"><span class="test-icon">&#10007;</span> returns "Error" with red icon for errored agents</span><br>
+<span style="color:var(--text-muted);">  Error: formatAgentStatus is not a function</span><br>
+<br>
+<span class="test-fail">Tests: 3 failed, 3 total</span><br>
+<span style="color:var(--text-muted);">Time: 0.01s</span>`,
+    explanation: `<p style="color:#f87171; font-weight:600; margin-bottom:8px;">Phase: RED &mdash; Tests Fail!</p>
+<p style="margin-bottom:0;">All three tests fail because <code>formatAgentStatus</code> doesn't exist yet. This is expected! In TDD, <strong style="color:var(--text-primary);">you always start with failing tests</strong>. The red tells you the tests are working correctly &mdash; they detect that the function is missing.</p>`,
+    phase: 0
+  },
+  {
+    label: 'Source File: formatAgentStatus.ts',
+    code: `<span class="cmt">// Step 3: Write the MINIMUM code to make tests pass</span>
+
+<span class="kw">export function</span> <span class="fn">formatAgentStatus</span>(<span class="typ">status</span>: <span class="typ">string</span>) {
+  <span class="kw">if</span> (status === <span class="str">'active'</span>) <span class="kw">return</span> { <span class="typ">label</span>: <span class="str">'Active'</span>, <span class="typ">color</span>: <span class="str">'green'</span> };
+  <span class="kw">if</span> (status === <span class="str">'paused'</span>) <span class="kw">return</span> { <span class="typ">label</span>: <span class="str">'Paused'</span>, <span class="typ">color</span>: <span class="str">'yellow'</span> };
+  <span class="kw">if</span> (status === <span class="str">'error'</span>) <span class="kw">return</span> { <span class="typ">label</span>: <span class="str">'Error'</span>, <span class="typ">color</span>: <span class="str">'red'</span> };
+  <span class="kw">return</span> { <span class="typ">label</span>: <span class="str">'Unknown'</span>, <span class="typ">color</span>: <span class="str">'gray'</span> };
+}`,
+    output: `<span style="color:var(--text-muted);">Code written. Click "4. Green: Run It" to see if the tests pass now.</span>`,
+    explanation: `<p style="color:var(--accent-green); font-weight:600; margin-bottom:8px;">Phase: GREEN &mdash; Write the Code</p>
+<p style="margin-bottom:0;">Now we write the simplest code that makes the tests pass. We don't over-engineer &mdash; just a simple <code>if</code> chain that returns the right label and color for each status. The tests tell us exactly what to implement.</p>`,
+    phase: 1
+  },
+  {
+    label: 'Source File: formatAgentStatus.ts',
+    code: null,
+    output: `<span class="test-pass"><span class="test-icon">&#10003;</span> returns "Active" with green icon for active agents</span><br>
+<span class="test-pass"><span class="test-icon">&#10003;</span> returns "Paused" with yellow icon for paused agents</span><br>
+<span class="test-pass"><span class="test-icon">&#10003;</span> returns "Error" with red icon for errored agents</span><br>
+<br>
+<span class="test-pass">Tests: 3 passed, 3 total</span><br>
+<span style="color:var(--text-muted);">Time: 0.01s</span>`,
+    explanation: `<p style="color:var(--accent-green); font-weight:600; margin-bottom:8px;">Phase: GREEN &mdash; Tests Pass!</p>
+<p style="margin-bottom:0;">All three tests pass! The function works correctly for all inputs we care about. This is the satisfying moment in TDD &mdash; going from red to green. You know your code works because the tests prove it.</p>`,
+    phase: 1
+  },
+  {
+    label: 'Source File: formatAgentStatus.ts (Refactored)',
+    code: `<span class="cmt">// Step 5: Refactor — clean up without changing behavior</span>
+
+<span class="kw">const</span> <span class="typ">STATUS_MAP</span>: <span class="typ">Record</span>&lt;<span class="typ">string</span>, { <span class="typ">label</span>: <span class="typ">string</span>; <span class="typ">color</span>: <span class="typ">string</span> }&gt; = {
+  <span class="str">active</span>:  { <span class="typ">label</span>: <span class="str">'Active'</span>,  <span class="typ">color</span>: <span class="str">'green'</span>  },
+  <span class="str">paused</span>:  { <span class="typ">label</span>: <span class="str">'Paused'</span>,  <span class="typ">color</span>: <span class="str">'yellow'</span> },
+  <span class="str">error</span>:   { <span class="typ">label</span>: <span class="str">'Error'</span>,   <span class="typ">color</span>: <span class="str">'red'</span>    },
+};
+
+<span class="kw">export function</span> <span class="fn">formatAgentStatus</span>(<span class="typ">status</span>: <span class="typ">string</span>) {
+  <span class="kw">return</span> STATUS_MAP[status] ?? { <span class="typ">label</span>: <span class="str">'Unknown'</span>, <span class="typ">color</span>: <span class="str">'gray'</span> };
+}`,
+    output: `<span style="color:var(--text-muted);">Code refactored. Click "6. Final Run" to verify tests still pass.</span>`,
+    explanation: `<p style="color:var(--accent-yellow); font-weight:600; margin-bottom:8px;">Phase: REFACTOR &mdash; Clean Up</p>
+<p style="margin-bottom:0;">The code works, but we can make it cleaner. We replace the <code>if</code> chain with a lookup object. This is easier to read and easier to extend (just add a new entry to the map). The key rule: <strong style="color:var(--text-primary);">the tests should still pass after refactoring</strong>. If they don't, you broke something.</p>`,
+    phase: 2
+  },
+  {
+    label: 'Source File: formatAgentStatus.ts (Refactored)',
+    code: null,
+    output: `<span class="test-pass"><span class="test-icon">&#10003;</span> returns "Active" with green icon for active agents</span><br>
+<span class="test-pass"><span class="test-icon">&#10003;</span> returns "Paused" with yellow icon for paused agents</span><br>
+<span class="test-pass"><span class="test-icon">&#10003;</span> returns "Error" with red icon for errored agents</span><br>
+<br>
+<span class="test-pass">Tests: 3 passed, 3 total</span><br>
+<span style="color:var(--text-muted);">Time: 0.01s</span>`,
+    explanation: `<p style="color:var(--accent-green); font-weight:600; margin-bottom:8px;">Cycle Complete!</p>
+<p style="margin-bottom:0;"><strong style="color:var(--text-primary);">Red &rarr; Green &rarr; Refactor.</strong> The tests still pass after the refactor, which confirms we didn't break anything while cleaning up. This is the power of TDD: you can refactor fearlessly because the tests catch any regressions. Now you'd repeat the cycle for the next piece of functionality.</p>`,
+    phase: 2
+  }
+];
+
+function tddStep(step, btn) {
+  const btns = document.getElementById('tddBtns').querySelectorAll('.ibtn');
+  btns.forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+
+  const data = tddSteps[step];
+  const labelEl = document.getElementById('tddEditorLabel');
+  const codeEl = document.getElementById('tddTestCode');
+  const outputEl = document.getElementById('tddTestOutput');
+  const explEl = document.getElementById('tddExplanation');
+
+  labelEl.textContent = data.label;
+  if (data.code !== null) {
+    codeEl.innerHTML = data.code;
+  }
+  outputEl.innerHTML = data.output;
+  explEl.innerHTML = data.explanation;
+
+  // Update TDD phase indicators
+  const phases = document.querySelectorAll('.tdd-phase');
+  phases.forEach((p, i) => {
+    p.classList.toggle('active-phase', i === data.phase);
+  });
+}
+
+function selectTDDPhase(i) {
+  // Map phase click to the first step of that phase
+  const stepMap = [0, 2, 4]; // red=step 0, green=step 2, refactor=step 4
+  const btns = document.getElementById('tddBtns').querySelectorAll('.ibtn');
+  tddStep(stepMap[i], btns[stepMap[i]]);
+}
+</script>
+<script src="/js/shared.js"></script>
+</body>
+</html>
