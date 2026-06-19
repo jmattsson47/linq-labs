@@ -1,5 +1,5 @@
 /* ============================================================
-   Linq Labs — Shared Stylesheet
+   linq labs — Shared Stylesheet
    ============================================================ */
 
 /* --- Brand Fonts --- */
@@ -289,7 +289,7 @@ body, .sidebar, .nav, .top-nav, .content-wrapper, .db-table, .analogy, .code-blo
    ============================================================ */
 .breadcrumb {
   padding: 8px 32px 0;
-  margin-top: 64px;
+  margin-top: 20px;
   margin-bottom: -16px;
   font-size: 13px;
   color: var(--text-faint);
@@ -357,6 +357,60 @@ body, .sidebar, .nav, .top-nav, .content-wrapper, .db-table, .analogy, .code-blo
 
 .sidebar-link.completed .check {
   display: inline;
+}
+
+/* ============================================================
+   Sidebar Lesson Sub-Nav
+   ============================================================ */
+.sidebar-lessons {
+  padding: 2px 0 4px;
+}
+
+.sidebar-lesson {
+  display: flex;
+  align-items: center;
+  padding: 7px 20px 7px 48px;
+  color: var(--text-faint);
+  text-decoration: none;
+  font-size: 0.8rem;
+  cursor: pointer;
+  border-radius: 4px;
+  margin: 1px 8px;
+  transition: background 0.15s ease, color 0.15s ease;
+  border: none;
+  background: none;
+  width: calc(100% - 16px);
+  text-align: left;
+  font-family: inherit;
+}
+
+.sidebar-lesson:hover {
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+  text-decoration: none;
+}
+
+.sidebar-lesson.active {
+  color: var(--accent-blue);
+  background: rgba(96, 165, 250, 0.08);
+}
+
+.sidebar-lesson.visited {
+  color: var(--text-muted);
+}
+
+.sidebar-lesson .lesson-num {
+  display: inline-block;
+  width: 18px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-faint);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.sidebar-lesson.active .lesson-num {
+  color: var(--accent-blue);
 }
 
 /* ============================================================
@@ -792,7 +846,7 @@ body, .sidebar, .nav, .top-nav, .content-wrapper, .db-table, .analogy, .code-blo
 .container {
   max-width: 960px;
   margin: 0 auto;
-  padding: 80px 20px 60px;
+  padding: 32px 20px 60px;
 }
 
 .lesson { display: none; }

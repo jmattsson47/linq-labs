@@ -1,5 +1,5 @@
 /* ============================================================
-   Linq Labs — Shared JavaScript
+   linq labs — Shared JavaScript
    ============================================================ */
 
 (function () {
@@ -437,26 +437,28 @@
       var activeLesson = document.querySelector('.lesson.active');
       if (!activeLesson) return;
 
-      var lessonMatch = activeLesson.id.match(/lesson(\d+)/);
+      var lessonMatch = activeLesson.id.match(/lesson-?(\d+)/);
       if (!lessonMatch) return;
 
       var currentNum = parseInt(lessonMatch[1]);
       var nextNum = e.key === 'ArrowRight' ? currentNum + 1 : currentNum - 1;
 
-      if (document.getElementById('lesson' + nextNum) && typeof window.goTo === 'function') {
-        window.goTo(nextNum);
+      // Try both ID patterns and both function names
+      var nextExists = document.getElementById('lesson' + nextNum) || document.getElementById('lesson-' + nextNum);
+      if (nextExists) {
+        if (typeof window.goTo === 'function') window.goTo(nextNum);
+        else if (typeof window.goToLesson === 'function') window.goToLesson(nextNum);
       }
     });
 
-    /* --- Breadcrumb: show current lesson name --- */
+    /* --- Sidebar Lesson Sub-Nav & Breadcrumb --- */
     function updateBreadcrumbLesson() {
       var bc = document.querySelector('.breadcrumb');
       if (!bc) return;
       var activeL = document.querySelector('.lesson.active');
       if (!activeL) return;
-      var h1 = activeL.querySelector('h1');
+      var h1 = activeL.querySelector('h1, h2');
       if (!h1) return;
-      // Remove existing lesson elements if present
       bc.querySelectorAll('.breadcrumb-lesson').forEach(function (el) { el.remove(); });
       var sep = document.createElement('span');
       sep.className = 'sep breadcrumb-lesson';
@@ -468,62 +470,101 @@
       bc.appendChild(lessonSpan);
     }
 
-    // Wrap goTo to update breadcrumb on lesson change
+    function updateSidebarLessonActive(n) {
+      document.querySelectorAll('.sidebar-lesson').forEach(function (el, i) {
+        el.classList.toggle('active', i === n);
+      });
+    }
+
+    // The navigate function: calls whichever goTo variant the page defines
+    function navigateToLesson(n) {
+      if (typeof window.goTo === 'function') {
+        window.goTo(n);
+      } else if (typeof window.goToLesson === 'function') {
+        window.goToLesson(n);
+      }
+      updateSidebarLessonActive(n);
+      updateBreadcrumbLesson();
+      // Track visited
+      if (pathMatch) {
+        markLessonVisited(pathMatch[1], n);
+        var sidebarLesson = document.querySelectorAll('.sidebar-lesson')[n];
+        if (sidebarLesson) sidebarLesson.classList.add('visited');
+      }
+    }
+
+    // Wrap goTo/goToLesson to keep sidebar in sync
     if (typeof window.goTo === 'function') {
       var originalGoTo = window.goTo;
       window.goTo = function (n) {
         originalGoTo(n);
+        updateSidebarLessonActive(n);
         updateBreadcrumbLesson();
+        if (pathMatch) markLessonVisited(pathMatch[1], n);
       };
     }
-    updateBreadcrumbLesson();
-
-    /* --- Mobile Nav: Auto-scroll active button into view --- */
-    var activeNavBtn = document.querySelector('.nav button.active, .top-nav button.active');
-    if (activeNavBtn) {
-      activeNavBtn.scrollIntoView({ inline: 'center', block: 'nearest' });
+    if (typeof window.goToLesson === 'function') {
+      var originalGoToLesson = window.goToLesson;
+      window.goToLesson = function (n) {
+        originalGoToLesson(n);
+        updateSidebarLessonActive(n);
+        updateBreadcrumbLesson();
+        if (pathMatch) markLessonVisited(pathMatch[1], n);
+      };
     }
 
-    /* --- Sub-Lesson Visit Tracking & Course Nav Footer --- */
     if (pathMatch) {
       var currentCourseId = pathMatch[1];
       var visitedLessons = getLessonProgress(currentCourseId);
 
-      // Mark the initially active lesson as visited
-      var activeLesson = document.querySelector('.lesson.active');
-      if (activeLesson) {
-        var activeMatch = activeLesson.id.match(/lesson(\d+)/);
-        if (activeMatch) {
-          markLessonVisited(currentCourseId, parseInt(activeMatch[1]));
-          visitedLessons = getLessonProgress(currentCourseId);
-        }
-      }
-
-      // Find and mark nav buttons as visited, add click tracking
-      var navButtons = document.querySelectorAll('[id^="nav"]');
-      navButtons.forEach(function (btn) {
-        if (btn.tagName !== 'BUTTON') return;
-        var navMatch = btn.id.match(/^nav(\d+)$/);
-        if (!navMatch) return;
-
-        var lessonNum = parseInt(navMatch[1]);
-        if (visitedLessons.indexOf(lessonNum) !== -1) {
-          btn.classList.add('visited');
-        }
-
-        btn.addEventListener('click', function () {
-          markLessonVisited(currentCourseId, lessonNum);
-          btn.classList.add('visited');
-        });
-      });
-
-      // Auto-generate course navigation footer
+      // Find the current course in courseIndex
       var courseIdx = -1;
       for (var ci = 0; ci < courseIndex.length; ci++) {
         if (courseIndex[ci].id === currentCourseId) { courseIdx = ci; break; }
       }
 
+      // Inject lesson sub-nav into sidebar under the active course link
       if (courseIdx !== -1) {
+        var activeSidebarLink = document.querySelector('.sidebar-link[data-course="' + currentCourseId + '"]');
+        if (activeSidebarLink) {
+          var lessonsDiv = document.createElement('div');
+          lessonsDiv.className = 'sidebar-lessons';
+          var lessons = courseIndex[courseIdx].lessons;
+
+          // Find which lesson is currently active
+          var activeLesson = document.querySelector('.lesson.active');
+          var activeLessonIdx = 0;
+          if (activeLesson) {
+            var activeMatch = activeLesson.id.match(/lesson-?(\d+)/);
+            if (activeMatch) activeLessonIdx = parseInt(activeMatch[1]);
+          }
+
+          lessons.forEach(function (lessonName, i) {
+            var btn = document.createElement('button');
+            btn.className = 'sidebar-lesson';
+            if (i === activeLessonIdx) btn.classList.add('active');
+            if (visitedLessons.indexOf(i) !== -1) btn.classList.add('visited');
+            btn.innerHTML = '<span class="lesson-num">' + (i + 1) + '</span>' + lessonName;
+            btn.addEventListener('click', function () {
+              navigateToLesson(i);
+              // Close sidebar on mobile
+              if (window.innerWidth < 1024) {
+                var sb = document.getElementById('sidebar');
+                var ov = document.getElementById('sidebar-overlay');
+                if (sb) sb.classList.remove('open');
+                if (ov) ov.classList.remove('active');
+              }
+            });
+            lessonsDiv.appendChild(btn);
+          });
+
+          activeSidebarLink.parentNode.insertBefore(lessonsDiv, activeSidebarLink.nextSibling);
+
+          // Mark initial lesson as visited
+          markLessonVisited(currentCourseId, activeLessonIdx);
+        }
+
+        // Auto-generate course navigation footer
         var container = document.querySelector('.container');
         if (container) {
           var navFooter = document.createElement('div');
@@ -549,5 +590,7 @@
         }
       }
     }
+
+    updateBreadcrumbLesson();
   });
 })();
