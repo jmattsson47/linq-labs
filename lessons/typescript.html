@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Learn how TypeScript works — types, interfaces, generics, union types, and compile-time safety.">
+<meta property="og:title" content="How TypeScript Works — The Fundamentals">
+<meta property="og:description" content="Learn how TypeScript works — types, interfaces, generics, union types, and compile-time safety.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://the-fundamentals-eight.vercel.app/lessons/typescript">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="How TypeScript Works — The Fundamentals">
+<meta name="twitter:description" content="Learn how TypeScript works — types, interfaces, generics, union types, and compile-time safety.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='2' y='4' width='28' height='5' rx='2' fill='%2334d399'/><rect x='2' y='11' width='28' height='5' rx='2' fill='%2360a5fa'/><rect x='2' y='18' width='28' height='5' rx='2' fill='%23c084fc'/><rect x='2' y='25' width='28' height='5' rx='2' fill='%23fbbf24'/></svg>">
 <title>How TypeScript Works — The Fundamentals</title>
 <link rel="stylesheet" href="/css/shared.css">
@@ -211,44 +218,44 @@ li { margin-bottom: 8px; color: var(--text-body); }
 <div class="sidebar-overlay" id="sidebar-overlay"></div>
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-header">
-    <a href="/index.html" class="sidebar-logo">The Fundamentals</a>
+    <a href="/" class="sidebar-logo">The Fundamentals</a>
   </div>
   <nav class="sidebar-nav">
     <div class="sidebar-section-title">Courses</div>
-    <a href="/lessons/databases.html" class="sidebar-link" data-course="databases">
+    <a href="/lessons/databases" class="sidebar-link" data-course="databases">
       <span class="sidebar-num">01</span> How Databases Work
     </a>
-    <a href="/lessons/codebase.html" class="sidebar-link" data-course="codebase">
+    <a href="/lessons/codebase" class="sidebar-link" data-course="codebase">
       <span class="sidebar-num">02</span> The Codebase
     </a>
-    <a href="/lessons/apis.html" class="sidebar-link" data-course="apis">
+    <a href="/lessons/apis" class="sidebar-link" data-course="apis">
       <span class="sidebar-num">03</span> APIs &amp; HTTP
     </a>
-    <a href="/lessons/build.html" class="sidebar-link" data-course="build">
+    <a href="/lessons/build" class="sidebar-link" data-course="build">
       <span class="sidebar-num">04</span> Build a Mini App
     </a>
-    <a href="/lessons/deployment.html" class="sidebar-link" data-course="deployment">
+    <a href="/lessons/deployment" class="sidebar-link" data-course="deployment">
       <span class="sidebar-num">05</span> How Deployment Works
     </a>
-    <a href="/lessons/git.html" class="sidebar-link" data-course="git">
+    <a href="/lessons/git" class="sidebar-link" data-course="git">
       <span class="sidebar-num">06</span> How Git Works
     </a>
-    <a href="/lessons/authentication.html" class="sidebar-link" data-course="authentication">
+    <a href="/lessons/authentication" class="sidebar-link" data-course="authentication">
       <span class="sidebar-num">07</span> How Auth Works
     </a>
-    <a href="/lessons/typescript.html" class="sidebar-link active" data-course="typescript" aria-current="page">
+    <a href="/lessons/typescript" class="sidebar-link active" data-course="typescript" aria-current="page">
       <span class="sidebar-num">08</span> How TypeScript Works
     </a>
-    <a href="/lessons/react.html" class="sidebar-link" data-course="react">
+    <a href="/lessons/react" class="sidebar-link" data-course="react">
       <span class="sidebar-num">09</span> How React Works
     </a>
-    <a href="/lessons/testing.html" class="sidebar-link" data-course="testing">
+    <a href="/lessons/testing" class="sidebar-link" data-course="testing">
       <span class="sidebar-num">10</span> How Testing Works
     </a>
-    <a href="/lessons/ai-agents.html" class="sidebar-link" data-course="ai-agents">
+    <a href="/lessons/ai-agents" class="sidebar-link" data-course="ai-agents">
       <span class="sidebar-num">11</span> How AI Agents Work
     </a>
-    <a href="/lessons/shipping.html" class="sidebar-link" data-course="shipping">
+    <a href="/lessons/shipping" class="sidebar-link" data-course="shipping">
       <span class="sidebar-num">12</span> How Shipping Works
     </a>
   </nav>
@@ -263,7 +270,7 @@ li { margin-bottom: 8px; color: var(--text-body); }
 
 <div class="content-wrapper">
 
-<div class="breadcrumb"><a href="/index.html">Home</a><span class="sep">›</span><span>How TypeScript Works</span></div>
+<div class="breadcrumb"><a href="/">Home</a><span class="sep">›</span><span>How TypeScript Works</span></div>
 
 <!-- Top Nav -->
 <nav class="top-nav" id="topNav">
@@ -888,7 +895,7 @@ app.<span class="fn">get</span>(<span class="str">"/api/agents/:companyId"</span
 });</div>
 
   <h2>Pattern 2: Database Schema Types</h2>
-  <p>The database schema defines the types once, and they flow through the entire app. This is connected to what you learned in <a href="/lessons/databases.html">Course 01 (Databases)</a>:</p>
+  <p>The database schema defines the types once, and they flow through the entire app. This is connected to what you learned in <a href="/lessons/databases">Course 01 (Databases)</a>:</p>
 
   <div class="code-block"><span class="cmt">// Schema definition (Drizzle ORM)</span>
 <span class="kw">export const</span> agents = <span class="fn">pgTable</span>(<span class="str">"agents"</span>, {
@@ -927,7 +934,7 @@ app.<span class="fn">get</span>(<span class="str">"/api/agents/:companyId"</span
 
   <h2>The Type System as Documentation</h2>
   <div class="card">
-    <p>Here's the key insight that connects to <a href="/lessons/codebase.html">Course 02 (The Codebase)</a>: TypeScript types serve as <strong style="color:var(--text-primary)">documentation that never goes stale</strong>.</p>
+    <p>Here's the key insight that connects to <a href="/lessons/codebase">Course 02 (The Codebase)</a>: TypeScript types serve as <strong style="color:var(--text-primary)">documentation that never goes stale</strong>.</p>
     <p>A comment might say "this returns an array of agents" but the code might have changed. A TypeScript type <em>is</em> the code &mdash; if it says <code>Agent[]</code>, that's what it returns. Period. If someone changes it and doesn't update the callers, the build breaks. You can't have outdated type documentation because the compiler enforces it.</p>
   </div>
 
@@ -945,7 +952,7 @@ app.<span class="fn">get</span>(<span class="str">"/api/agents/:companyId"</span
 
   <div class="analogy">
     <div class="analogy-label">Connection</div>
-    <p>This connects directly to the <strong>build process</strong> from <a href="/lessons/build.html" style="color:var(--accent-indigo);">Course 04</a>. When you run <code>tsc</code> (the TypeScript compiler), it checks every type across every file. If anything doesn't match, the build fails. This is why TypeScript errors show up during <code>pnpm build</code> &mdash; the compiler is verifying your entire type system.</p>
+    <p>This connects directly to the <strong>build process</strong> from <a href="/lessons/build" style="color:var(--accent-indigo);">Course 04</a>. When you run <code>tsc</code> (the TypeScript compiler), it checks every type across every file. If anything doesn't match, the build fails. This is why TypeScript errors show up during <code>pnpm build</code> &mdash; the compiler is verifying your entire type system.</p>
   </div>
 
   <button class="next-btn" onclick="goToLesson(7)">Next: Getting Started &rarr;</button>
@@ -1074,7 +1081,7 @@ $ <span class="fn">npx tsx</span> src/server.ts   <span class="cmt"># compile + 
   <div class="next-course-banner">
     <h3>Up Next</h3>
     <p>Continue to Course 09: How React Works &mdash; Components, state, and building user interfaces.</p>
-    <a href="/lessons/react.html">Start How React Works &rarr;</a>
+    <a href="/lessons/react">Start How React Works &rarr;</a>
   </div>
 </div>
 

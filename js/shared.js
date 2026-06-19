@@ -124,6 +124,43 @@
     var currentTheme = getStoredTheme() || "dark";
     updateThemeToggle(currentTheme);
 
+    /* --- Sidebar Progress Counter --- */
+    var sidebarNav = document.querySelector('.sidebar-nav');
+    if (sidebarNav) {
+      try {
+        var visitedData = JSON.parse(localStorage.getItem('fundamentals-visited') || '{}');
+        var completedCount = Object.keys(visitedData).length;
+        if (completedCount > 0) {
+          var progressDiv = document.createElement('div');
+          progressDiv.className = 'sidebar-progress';
+          progressDiv.innerHTML = '<span>' + completedCount + '/12 completed</span>' +
+            '<div class="sidebar-progress-bar"><div class="sidebar-progress-fill" style="width:' + Math.round(completedCount / 12 * 100) + '%"></div></div>';
+          sidebarNav.insertBefore(progressDiv, sidebarNav.firstChild);
+        }
+      } catch (e) {}
+    }
+
+    /* --- Reset Progress Link --- */
+    var sidebarFooter = document.querySelector('.sidebar-footer');
+    if (sidebarFooter) {
+      try {
+        var visited = JSON.parse(localStorage.getItem('fundamentals-visited') || '{}');
+        if (Object.keys(visited).length > 0) {
+          var resetLink = document.createElement('button');
+          resetLink.className = 'reset-progress';
+          resetLink.textContent = 'Reset progress';
+          resetLink.addEventListener('click', function () {
+            if (confirm('Reset all course progress? This cannot be undone.')) {
+              localStorage.removeItem('fundamentals-visited');
+              localStorage.removeItem('fundamentals-lesson-progress');
+              window.location.reload();
+            }
+          });
+          sidebarFooter.appendChild(resetLink);
+        }
+      } catch (e) {}
+    }
+
     /* --- Sidebar Toggle --- */
     function openSidebar() {
       if (sidebar) sidebar.classList.add("open");
@@ -208,7 +245,7 @@
     });
 
     // Auto-mark the current course as visited based on URL
-    var pathMatch = currentPath.match(/\/lessons\/([^.\/]+)\.html/);
+    var pathMatch = currentPath.match(/\/lessons\/([^.\/]+?)(?:\.html)?$/);
     if (pathMatch) {
       markCourseVisited(pathMatch[1]);
     }
@@ -261,14 +298,14 @@
       searchItems.push({
         label: course.course,
         course: '',
-        url: '/lessons/' + course.id + '.html'
+        url: '/lessons/' + course.id
       });
       // Add each lesson
       course.lessons.forEach(function (lesson) {
         searchItems.push({
           label: lesson,
           course: course.course,
-          url: '/lessons/' + course.id + '.html'
+          url: '/lessons/' + course.id
         });
       });
     });
@@ -411,6 +448,42 @@
       }
     });
 
+    /* --- Breadcrumb: show current lesson name --- */
+    function updateBreadcrumbLesson() {
+      var bc = document.querySelector('.breadcrumb');
+      if (!bc) return;
+      var activeL = document.querySelector('.lesson.active');
+      if (!activeL) return;
+      var h1 = activeL.querySelector('h1');
+      if (!h1) return;
+      // Remove existing lesson elements if present
+      bc.querySelectorAll('.breadcrumb-lesson').forEach(function (el) { el.remove(); });
+      var sep = document.createElement('span');
+      sep.className = 'sep breadcrumb-lesson';
+      sep.textContent = ' › ';
+      var lessonSpan = document.createElement('span');
+      lessonSpan.className = 'breadcrumb-lesson';
+      lessonSpan.textContent = h1.textContent;
+      bc.appendChild(sep);
+      bc.appendChild(lessonSpan);
+    }
+
+    // Wrap goTo to update breadcrumb on lesson change
+    if (typeof window.goTo === 'function') {
+      var originalGoTo = window.goTo;
+      window.goTo = function (n) {
+        originalGoTo(n);
+        updateBreadcrumbLesson();
+      };
+    }
+    updateBreadcrumbLesson();
+
+    /* --- Mobile Nav: Auto-scroll active button into view --- */
+    var activeNavBtn = document.querySelector('.nav button.active, .top-nav button.active');
+    if (activeNavBtn) {
+      activeNavBtn.scrollIntoView({ inline: 'center', block: 'nearest' });
+    }
+
     /* --- Sub-Lesson Visit Tracking & Course Nav Footer --- */
     if (pathMatch) {
       var currentCourseId = pathMatch[1];
@@ -459,14 +532,14 @@
 
           if (courseIdx > 0) {
             var prev = courseIndex[courseIdx - 1];
-            footerHTML += '<a href="/lessons/' + prev.id + '.html" class="course-nav-prev">\u2190 ' + prev.course + '</a>';
+            footerHTML += '<a href="/lessons/' + prev.id + '" class="course-nav-prev">\u2190 ' + prev.course + '</a>';
           } else {
             footerHTML += '<span></span>';
           }
 
           if (courseIdx < courseIndex.length - 1) {
             var next = courseIndex[courseIdx + 1];
-            footerHTML += '<a href="/lessons/' + next.id + '.html" class="course-nav-next">' + next.course + ' \u2192</a>';
+            footerHTML += '<a href="/lessons/' + next.id + '" class="course-nav-next">' + next.course + ' \u2192</a>';
           } else {
             footerHTML += '<span></span>';
           }

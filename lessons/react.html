@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Learn how React works — components, JSX, props, state, effects, and the React lifecycle.">
+<meta property="og:title" content="How React Works — The Fundamentals">
+<meta property="og:description" content="Learn how React works — components, JSX, props, state, effects, and the React lifecycle.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://the-fundamentals-eight.vercel.app/lessons/react">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="How React Works — The Fundamentals">
+<meta name="twitter:description" content="Learn how React works — components, JSX, props, state, effects, and the React lifecycle.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='2' y='4' width='28' height='5' rx='2' fill='%2334d399'/><rect x='2' y='11' width='28' height='5' rx='2' fill='%2360a5fa'/><rect x='2' y='18' width='28' height='5' rx='2' fill='%23c084fc'/><rect x='2' y='25' width='28' height='5' rx='2' fill='%23fbbf24'/></svg>">
 <title>How React Works — The Fundamentals</title>
 <link rel="stylesheet" href="/css/shared.css">
@@ -563,44 +570,44 @@ li { margin-bottom: 8px; color: var(--text-body); }
 <div class="sidebar-overlay" id="sidebar-overlay"></div>
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-header">
-    <a href="/index.html" class="sidebar-logo">The Fundamentals</a>
+    <a href="/" class="sidebar-logo">The Fundamentals</a>
   </div>
   <nav class="sidebar-nav">
     <div class="sidebar-section-title">Courses</div>
-    <a href="/lessons/databases.html" class="sidebar-link" data-course="databases">
+    <a href="/lessons/databases" class="sidebar-link" data-course="databases">
       <span class="sidebar-num">01</span> How Databases Work
     </a>
-    <a href="/lessons/codebase.html" class="sidebar-link" data-course="codebase">
+    <a href="/lessons/codebase" class="sidebar-link" data-course="codebase">
       <span class="sidebar-num">02</span> The Codebase
     </a>
-    <a href="/lessons/apis.html" class="sidebar-link" data-course="apis">
+    <a href="/lessons/apis" class="sidebar-link" data-course="apis">
       <span class="sidebar-num">03</span> APIs &amp; HTTP
     </a>
-    <a href="/lessons/build.html" class="sidebar-link" data-course="build">
+    <a href="/lessons/build" class="sidebar-link" data-course="build">
       <span class="sidebar-num">04</span> Build a Mini App
     </a>
-    <a href="/lessons/deployment.html" class="sidebar-link" data-course="deployment">
+    <a href="/lessons/deployment" class="sidebar-link" data-course="deployment">
       <span class="sidebar-num">05</span> How Deployment Works
     </a>
-    <a href="/lessons/git.html" class="sidebar-link" data-course="git">
+    <a href="/lessons/git" class="sidebar-link" data-course="git">
       <span class="sidebar-num">06</span> How Git Works
     </a>
-    <a href="/lessons/authentication.html" class="sidebar-link" data-course="authentication">
+    <a href="/lessons/authentication" class="sidebar-link" data-course="authentication">
       <span class="sidebar-num">07</span> How Auth Works
     </a>
-    <a href="/lessons/typescript.html" class="sidebar-link" data-course="typescript">
+    <a href="/lessons/typescript" class="sidebar-link" data-course="typescript">
       <span class="sidebar-num">08</span> How TypeScript Works
     </a>
-    <a href="/lessons/react.html" class="sidebar-link" data-course="react" aria-current="page">
+    <a href="/lessons/react" class="sidebar-link" data-course="react" aria-current="page">
       <span class="sidebar-num">09</span> How React Works
     </a>
-    <a href="/lessons/testing.html" class="sidebar-link" data-course="testing">
+    <a href="/lessons/testing" class="sidebar-link" data-course="testing">
       <span class="sidebar-num">10</span> How Testing Works
     </a>
-    <a href="/lessons/ai-agents.html" class="sidebar-link" data-course="ai-agents">
+    <a href="/lessons/ai-agents" class="sidebar-link" data-course="ai-agents">
       <span class="sidebar-num">11</span> How AI Agents Work
     </a>
-    <a href="/lessons/shipping.html" class="sidebar-link" data-course="shipping">
+    <a href="/lessons/shipping" class="sidebar-link" data-course="shipping">
       <span class="sidebar-num">12</span> Shipping
     </a>
   </nav>
@@ -615,7 +622,7 @@ li { margin-bottom: 8px; color: var(--text-body); }
 
 <div class="content-wrapper">
 
-<div class="breadcrumb"><a href="/index.html">Home</a><span class="sep">›</span><span>How React Works</span></div>
+<div class="breadcrumb"><a href="/">Home</a><span class="sep">›</span><span>How React Works</span></div>
 
 <!-- Top Nav -->
 <nav class="top-nav" id="topNav">
@@ -779,7 +786,7 @@ el.<span class="fn">innerHTML</span> = <span class="str">'Another name'</span>;
 }</code></pre>
 
   <h2>Interactive: Explore a Component Tree</h2>
-  <p>This is how Paperclip's AgentDetail page might be composed. Click any component to expand or collapse its children. (Remember from <a href="/lessons/codebase.html">Course 2 &mdash; The Codebase</a>, Paperclip's UI lives in the <code>client/</code> folder.)</p>
+  <p>This is how Paperclip's AgentDetail page might be composed. Click any component to expand or collapse its children. (Remember from <a href="/lessons/codebase">Course 2 &mdash; The Codebase</a>, Paperclip's UI lives in the <code>client/</code> folder.)</p>
 
   <div class="tree-container" id="componentTree">
     <div class="tree-root">
@@ -1170,7 +1177,7 @@ el.<span class="fn">innerHTML</span> = <span class="str">'Another name'</span>;
   );
 }</code></pre>
 
-  <p>Remember <code>fetch</code> from <a href="/lessons/apis.html">Course 3 &mdash; APIs &amp; HTTP</a>? <code>useEffect</code> is where you put it in React.</p>
+  <p>Remember <code>fetch</code> from <a href="/lessons/apis">Course 3 &mdash; APIs &amp; HTTP</a>? <code>useEffect</code> is where you put it in React.</p>
 
   <h2>The Dependency Array</h2>
   <p>The second argument to <code>useEffect</code> controls <em>when</em> the effect runs:</p>
@@ -1375,7 +1382,7 @@ el.<span class="fn">innerHTML</span> = <span class="str">'Another name'</span>;
   <h1>React in Paperclip</h1>
   <p class="subtitle">Lesson 8 of 8 &mdash; Seeing it all come together</p>
 
-  <p>Now that you understand React's building blocks, let's see how they come together in Paperclip's real codebase. (Remember the <a href="/lessons/codebase.html">Course 2 &mdash; The Codebase</a> tour? This is the <code>client/</code> folder.)</p>
+  <p>Now that you understand React's building blocks, let's see how they come together in Paperclip's real codebase. (Remember the <a href="/lessons/codebase">Course 2 &mdash; The Codebase</a> tour? This is the <code>client/</code> folder.)</p>
 
   <h2>Routing: App.tsx</h2>
   <p>Paperclip's main <code>App.tsx</code> maps URLs to page components. When the URL changes, React renders the matching page:</p>
@@ -1514,7 +1521,7 @@ el.<span class="fn">innerHTML</span> = <span class="str">'Another name'</span>;
   <div class="next-course-banner">
     <h3>Up Next</h3>
     <p>Continue to Course 10: How Testing Works &mdash; Unit tests, integration tests, and why they matter.</p>
-    <a href="/lessons/testing.html">Start How Testing Works &rarr;</a>
+    <a href="/lessons/testing">Start How Testing Works &rarr;</a>
   </div>
 </div>
 

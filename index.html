@@ -4,6 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Learn how software works from the ground up. 12 interactive courses covering databases, APIs, React, TypeScript, and more. Zero prerequisites.">
+  <meta property="og:title" content="The Fundamentals">
+  <meta property="og:description" content="Learn how software works from the ground up. 12 interactive courses, zero prerequisites.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://the-fundamentals-eight.vercel.app">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="The Fundamentals">
+  <meta name="twitter:description" content="Learn how software works from the ground up. 12 interactive courses, zero prerequisites.">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='2' y='4' width='28' height='5' rx='2' fill='%2334d399'/><rect x='2' y='11' width='28' height='5' rx='2' fill='%2360a5fa'/><rect x='2' y='18' width='28' height='5' rx='2' fill='%23c084fc'/><rect x='2' y='25' width='28' height='5' rx='2' fill='%23fbbf24'/></svg>">
   <title>The Fundamentals</title>
   <link rel="stylesheet" href="/css/shared.css">
@@ -111,6 +118,32 @@
       color: var(--text-muted);
     }
 
+    /* --- Continue CTA --- */
+    .continue-cta {
+      margin-bottom: 24px;
+    }
+
+    .continue-cta:empty {
+      display: none;
+    }
+
+    .continue-cta a {
+      display: inline-block;
+      background: var(--accent-blue-bg);
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: background 0.2s;
+    }
+
+    .continue-cta a:hover {
+      background: #3b82f6;
+      text-decoration: none;
+    }
+
     /* --- Course Grid --- */
     .courses {
       max-width: 960px;
@@ -135,6 +168,10 @@
       transition: border-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
     }
 
+    .course-card {
+      cursor: pointer;
+    }
+
     .course-card:hover {
       border-color: var(--border-btn-selected);
       transform: translateY(-2px);
@@ -143,6 +180,11 @@
 
     .course-card.completed {
       border-color: var(--accent-green);
+    }
+
+    .course-card.start-here {
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 1px var(--accent-blue), 0 4px 16px rgba(96, 165, 250, 0.15);
     }
 
     .course-card .completed-badge {
@@ -230,44 +272,44 @@
   <div class="sidebar-overlay" id="sidebar-overlay"></div>
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
-      <a href="/index.html" class="sidebar-logo">The Fundamentals</a>
+      <a href="/" class="sidebar-logo">The Fundamentals</a>
     </div>
     <nav class="sidebar-nav">
       <div class="sidebar-section-title">Courses</div>
-      <a href="/lessons/databases.html" class="sidebar-link" data-course="databases">
+      <a href="/lessons/databases" class="sidebar-link" data-course="databases">
         <span class="sidebar-num">01</span> How Databases Work
       </a>
-      <a href="/lessons/codebase.html" class="sidebar-link" data-course="codebase">
+      <a href="/lessons/codebase" class="sidebar-link" data-course="codebase">
         <span class="sidebar-num">02</span> The Codebase
       </a>
-      <a href="/lessons/apis.html" class="sidebar-link" data-course="apis">
+      <a href="/lessons/apis" class="sidebar-link" data-course="apis">
         <span class="sidebar-num">03</span> APIs &amp; HTTP
       </a>
-      <a href="/lessons/build.html" class="sidebar-link" data-course="build">
+      <a href="/lessons/build" class="sidebar-link" data-course="build">
         <span class="sidebar-num">04</span> Build a Mini App
       </a>
-      <a href="/lessons/deployment.html" class="sidebar-link" data-course="deployment">
+      <a href="/lessons/deployment" class="sidebar-link" data-course="deployment">
         <span class="sidebar-num">05</span> How Deployment Works
       </a>
-      <a href="/lessons/git.html" class="sidebar-link" data-course="git">
+      <a href="/lessons/git" class="sidebar-link" data-course="git">
         <span class="sidebar-num">06</span> How Git Works
       </a>
-      <a href="/lessons/authentication.html" class="sidebar-link" data-course="authentication">
+      <a href="/lessons/authentication" class="sidebar-link" data-course="authentication">
         <span class="sidebar-num">07</span> How Auth Works
       </a>
-      <a href="/lessons/typescript.html" class="sidebar-link" data-course="typescript">
+      <a href="/lessons/typescript" class="sidebar-link" data-course="typescript">
         <span class="sidebar-num">08</span> How TypeScript Works
       </a>
-      <a href="/lessons/react.html" class="sidebar-link" data-course="react">
+      <a href="/lessons/react" class="sidebar-link" data-course="react">
         <span class="sidebar-num">09</span> How React Works
       </a>
-      <a href="/lessons/testing.html" class="sidebar-link" data-course="testing">
+      <a href="/lessons/testing" class="sidebar-link" data-course="testing">
         <span class="sidebar-num">10</span> How Testing Works
       </a>
-      <a href="/lessons/ai-agents.html" class="sidebar-link" data-course="ai-agents">
+      <a href="/lessons/ai-agents" class="sidebar-link" data-course="ai-agents">
         <span class="sidebar-num">11</span> How AI Agents Work
       </a>
-      <a href="/lessons/shipping.html" class="sidebar-link" data-course="shipping">
+      <a href="/lessons/shipping" class="sidebar-link" data-course="shipping">
         <span class="sidebar-num">12</span> How to Ship a Product
       </a>
     </nav>
@@ -299,6 +341,7 @@
     </section>
 
     <section class="courses">
+      <div class="continue-cta" id="continue-cta"></div>
       <div class="course-grid">
 
         <!-- Course 01 -->
@@ -309,7 +352,7 @@
           <p class="course-desc">Tables, keys, relationships, and queries.</p>
           <div class="course-meta">
             <span class="course-lessons">6 lessons <span class="reading-time">~15 min</span></span>
-            <a href="/lessons/databases.html" class="course-link">Start course &rarr;</a>
+            <a href="/lessons/databases" class="course-link">Start course &rarr;</a>
           </div>
         </div>
 
@@ -321,7 +364,7 @@
           <p class="course-desc">How a real production codebase is organized.</p>
           <div class="course-meta">
             <span class="course-lessons">8 lessons <span class="reading-time">~20 min</span></span>
-            <a href="/lessons/codebase.html" class="course-link">Start course &rarr;</a>
+            <a href="/lessons/codebase" class="course-link">Start course &rarr;</a>
           </div>
         </div>
 
@@ -333,7 +376,7 @@
           <p class="course-desc">How the browser talks to the server.</p>
           <div class="course-meta">
             <span class="course-lessons">8 lessons <span class="reading-time">~25 min</span></span>
-            <a href="/lessons/apis.html" class="course-link">Start course &rarr;</a>
+            <a href="/lessons/apis" class="course-link">Start course &rarr;</a>
           </div>
         </div>
 
@@ -345,7 +388,7 @@
           <p class="course-desc">Create a working app with a database, API, and UI.</p>
           <div class="course-meta">
             <span class="course-lessons">8 lessons <span class="reading-time">~25 min</span></span>
-            <a href="/lessons/build.html" class="course-link">Start course &rarr;</a>
+            <a href="/lessons/build" class="course-link">Start course &rarr;</a>
           </div>
         </div>
 
@@ -357,7 +400,7 @@
           <p class="course-desc">From localhost to a live URL.</p>
           <div class="course-meta">
             <span class="course-lessons">8 lessons <span class="reading-time">~20 min</span></span>
-            <a href="/lessons/deployment.html" class="course-link">Start course &rarr;</a>
+            <a href="/lessons/deployment" class="course-link">Start course &rarr;</a>
           </div>
         </div>
 
@@ -369,7 +412,7 @@
           <p class="course-desc">Version control, branches, and collaboration.</p>
           <div class="course-meta">
             <span class="course-lessons">8 lessons <span class="reading-time">~20 min</span></span>
-            <a href="/lessons/git.html" class="course-link">Start course &rarr;</a>
+            <a href="/lessons/git" class="course-link">Start course &rarr;</a>
           </div>
         </div>
 
@@ -381,7 +424,7 @@
           <p class="course-desc">Passwords, sessions, tokens, and OAuth.</p>
           <div class="course-meta">
             <span class="course-lessons">8 lessons <span class="reading-time">~25 min</span></span>
-            <a href="/lessons/authentication.html" class="course-link">Start course &rarr;</a>
+            <a href="/lessons/authentication" class="course-link">Start course &rarr;</a>
           </div>
         </div>
 
@@ -393,7 +436,7 @@
           <p class="course-desc">Types, interfaces, and compile-time safety.</p>
           <div class="course-meta">
             <span class="course-lessons">8 lessons <span class="reading-time">~20 min</span></span>
-            <a href="/lessons/typescript.html" class="course-link">Start course &rarr;</a>
+            <a href="/lessons/typescript" class="course-link">Start course &rarr;</a>
           </div>
         </div>
 
@@ -405,7 +448,7 @@
           <p class="course-desc">Components, state, props, and rendering.</p>
           <div class="course-meta">
             <span class="course-lessons">8 lessons <span class="reading-time">~25 min</span></span>
-            <a href="/lessons/react.html" class="course-link">Start course &rarr;</a>
+            <a href="/lessons/react" class="course-link">Start course &rarr;</a>
           </div>
         </div>
 
@@ -417,7 +460,7 @@
           <p class="course-desc">Unit tests, integration tests, and why they matter.</p>
           <div class="course-meta">
             <span class="course-lessons">8 lessons <span class="reading-time">~20 min</span></span>
-            <a href="/lessons/testing.html" class="course-link">Start course &rarr;</a>
+            <a href="/lessons/testing" class="course-link">Start course &rarr;</a>
           </div>
         </div>
 
@@ -429,7 +472,7 @@
           <p class="course-desc">LLMs, prompts, tool use, and the agent loop.</p>
           <div class="course-meta">
             <span class="course-lessons">8 lessons <span class="reading-time">~20 min</span></span>
-            <a href="/lessons/ai-agents.html" class="course-link">Start course &rarr;</a>
+            <a href="/lessons/ai-agents" class="course-link">Start course &rarr;</a>
           </div>
         </div>
 
@@ -441,7 +484,7 @@
           <p class="course-desc">The complete lifecycle from idea to launch.</p>
           <div class="course-meta">
             <span class="course-lessons">8 lessons <span class="reading-time">~25 min</span></span>
-            <a href="/lessons/shipping.html" class="course-link">Start course &rarr;</a>
+            <a href="/lessons/shipping" class="course-link">Start course &rarr;</a>
           </div>
         </div>
 
@@ -456,23 +499,60 @@
 
   <script src="/js/shared.js"></script>
   <script>
-    // Mark course cards as completed based on localStorage
+    // Mark course cards as completed, update CTA text, make cards clickable
     (function () {
       try {
         var visited = JSON.parse(localStorage.getItem('fundamentals-visited') || '{}');
+        var lessonProgress = JSON.parse(localStorage.getItem('fundamentals-lesson-progress') || '{}');
         var visitedCount = 0;
         document.querySelectorAll('.course-card[data-course]').forEach(function (card) {
           var courseId = card.getAttribute('data-course');
+          var link = card.querySelector('.course-link');
+
+          // Update completion state and CTA text
           if (visited[courseId]) {
             card.classList.add('completed');
             visitedCount++;
+            if (link) link.innerHTML = 'Review &rarr;';
+          } else if (lessonProgress[courseId] && lessonProgress[courseId].length > 0) {
+            if (link) link.innerHTML = 'Continue &rarr;';
           }
+
+          // Make entire card clickable
+          card.addEventListener('click', function (e) {
+            if (e.target.closest('a')) return; // let actual link clicks work normally
+            if (link) window.location.href = link.href;
+          });
         });
-        // Show progress summary
+        // Show progress summary and continue CTA
         var progressEl = document.getElementById('progress-summary');
         if (progressEl && visitedCount > 0) {
           progressEl.innerHTML = visitedCount + ' of 12 courses completed' +
             '<div class="progress-bar"><div class="progress-bar-fill" style="width:' + Math.round(visitedCount / 12 * 100) + '%"></div></div>';
+        }
+
+        // New user: highlight first card
+        if (visitedCount === 0) {
+          var firstCard = document.querySelector('.course-card[data-course="databases"]');
+          if (firstCard) firstCard.classList.add('start-here');
+          var continueEl = document.getElementById('continue-cta');
+          if (continueEl) {
+            continueEl.innerHTML = '<a href="/lessons/databases">Start with Course 01: How Databases Work &rarr;</a>';
+          }
+        }
+
+        // Show "continue where you left off" if partially complete
+        if (visitedCount > 0 && visitedCount < 12) {
+          var courseOrder = ['databases','codebase','apis','build','deployment','git','authentication','typescript','react','testing','ai-agents','shipping'];
+          var courseNames = {'databases':'How Databases Work','codebase':'The Codebase','apis':'APIs & HTTP','build':'Build a Mini App','deployment':'How Deployment Works','git':'How Git Works','authentication':'How Auth Works','typescript':'How TypeScript Works','react':'How React Works','testing':'How Testing Works','ai-agents':'How AI Agents Work','shipping':'How to Ship a Product'};
+          var nextCourse = null;
+          for (var i = 0; i < courseOrder.length; i++) {
+            if (!visited[courseOrder[i]]) { nextCourse = courseOrder[i]; break; }
+          }
+          var continueEl = document.getElementById('continue-cta');
+          if (continueEl && nextCourse) {
+            continueEl.innerHTML = '<a href="/lessons/' + nextCourse + '">Continue: ' + courseNames[nextCourse] + ' &rarr;</a>';
+          }
         }
       } catch (e) {
         // localStorage unavailable
