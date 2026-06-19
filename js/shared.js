@@ -1,5 +1,5 @@
 /* ============================================================
-   The Fundamentals — Shared JavaScript
+   Linq Labs — Shared JavaScript
    ============================================================ */
 
 (function () {

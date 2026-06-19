@@ -1,6 +1,23 @@
 /* ============================================================
-   The Fundamentals — Shared Stylesheet
+   Linq Labs — Shared Stylesheet
    ============================================================ */
+
+/* --- Brand Fonts --- */
+@font-face {
+  font-family: 'FK Display';
+  src: url('/assets/fonts/FKDisplay-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Geist Mono';
+  src: url('/assets/fonts/GeistMono-VariableFont_wght.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
 
 /* --- Custom Properties: Dark Mode (default) --- */
 :root {
@@ -123,7 +140,7 @@ html {
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+  font-family: 'FK Display', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue",
     sans-serif;
   background: var(--bg-primary);
@@ -444,6 +461,17 @@ body, .sidebar, .nav, .top-nav, .content-wrapper, .db-table, .analogy, .code-blo
   color: var(--text-primary);
   text-decoration: none;
   letter-spacing: -0.02em;
+}
+
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sidebar-logo img {
+  width: 24px;
+  height: 24px;
 }
 
 .sidebar-logo:hover {
@@ -874,7 +902,7 @@ body, .sidebar, .nav, .top-nav, .content-wrapper, .db-table, .analogy, .code-blo
   padding: 18px 20px;
   margin: 16px 0;
   overflow-x: auto;
-  font-family: 'SF Mono', Monaco, monospace;
+  font-family: 'Geist Mono', 'SF Mono', Monaco, monospace;
   font-size: 13.5px;
   line-height: 1.6;
   color: var(--text-secondary);
@@ -900,7 +928,7 @@ p code, li code, td code {
   border-radius: 4px;
   color: var(--accent-indigo);
   font-size: 13px;
-  font-family: 'SF Mono', Monaco, monospace;
+  font-family: 'Geist Mono', 'SF Mono', Monaco, monospace;
 }
 
 /* ============================================================

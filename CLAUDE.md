@@ -1,4 +1,4 @@
-# The Fundamentals
+# Linq Labs
 
 12 interactive courses teaching how software works. Static site deployed to Vercel.
 

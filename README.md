@@ -1,4 +1,4 @@
-# The Fundamentals
+# Linq Labs
 
 An interactive course that teaches how software works — from databases to shipping a product. No prerequisites. No fluff.
 
@@ -8,7 +8,7 @@ An interactive course that teaches how software works — from databases to ship
 
 Most "learn to code" resources teach you *how* to type syntax. They skip the harder question: how does all of this actually work together?
 
-The Fundamentals walks through a real production codebase ([Paperclip](https://github.com/paperclipai/paperclip)) and uses it as the connective thread across 12 courses. By the end, you understand the full stack — not because you memorized APIs, but because you traced one task from a button click through HTTP, middleware, services, a database, and back.
+Linq Labs walks through a real production codebase ([Paperclip](https://github.com/paperclipai/paperclip)) and uses it as the connective thread across 12 courses. By the end, you understand the full stack — not because you memorized APIs, but because you traced one task from a button click through HTTP, middleware, services, a database, and back.
 
 ## The courses
 
