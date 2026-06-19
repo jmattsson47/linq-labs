@@ -289,8 +289,8 @@ body, .sidebar, .nav, .top-nav, .content-wrapper, .db-table, .analogy, .code-blo
    ============================================================ */
 .breadcrumb {
   padding: 8px 32px 0;
-  margin-top: 20px;
-  margin-bottom: -16px;
+  margin-top: 12px;
+  margin-bottom: 0;
   font-size: 13px;
   color: var(--text-faint);
 }
@@ -364,22 +364,24 @@ body, .sidebar, .nav, .top-nav, .content-wrapper, .db-table, .analogy, .code-blo
    ============================================================ */
 .sidebar-lessons {
   padding: 2px 0 4px;
+  margin-left: 28px;
+  border-left: 2px solid var(--border-primary);
 }
 
 .sidebar-lesson {
   display: flex;
   align-items: center;
-  padding: 7px 20px 7px 48px;
+  padding: 7px 12px 7px 16px;
   color: var(--text-faint);
   text-decoration: none;
   font-size: 0.8rem;
   cursor: pointer;
   border-radius: 4px;
-  margin: 1px 8px;
+  margin: 1px 4px;
   transition: background 0.15s ease, color 0.15s ease;
   border: none;
   background: none;
-  width: calc(100% - 16px);
+  width: calc(100% - 8px);
   text-align: left;
   font-family: inherit;
 }
@@ -510,6 +512,9 @@ body, .sidebar, .nav, .top-nav, .content-wrapper, .db-table, .analogy, .code-blo
 }
 
 .sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   font-size: 1.15rem;
   font-weight: 700;
   color: var(--text-primary);
@@ -517,15 +522,14 @@ body, .sidebar, .nav, .top-nav, .content-wrapper, .db-table, .analogy, .code-blo
   letter-spacing: -0.02em;
 }
 
-.sidebar-logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
 .sidebar-logo img {
   width: 24px;
   height: 24px;
+  transition: filter 0.3s ease;
+}
+
+[data-theme="light"] .sidebar-logo img {
+  filter: invert(1);
 }
 
 .sidebar-logo:hover {
@@ -569,9 +573,9 @@ body, .sidebar, .nav, .top-nav, .content-wrapper, .db-table, .analogy, .code-blo
 }
 
 .sidebar-link.active {
-  color: var(--accent-blue);
-  background: rgba(96, 165, 250, 0.08);
-  font-weight: 500;
+  color: var(--text-primary);
+  background: none;
+  font-weight: 600;
 }
 
 .sidebar-num {
@@ -588,8 +592,8 @@ body, .sidebar, .nav, .top-nav, .content-wrapper, .db-table, .analogy, .code-blo
 }
 
 .sidebar-link.active .sidebar-num {
-  color: var(--accent-blue);
-  background: rgba(96, 165, 250, 0.15);
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
 }
 
 /* --- Sidebar Footer --- */
@@ -645,21 +649,22 @@ body, .sidebar, .nav, .top-nav, .content-wrapper, .db-table, .analogy, .code-blo
 /* --- Sidebar Toggle Button --- */
 .sidebar-toggle {
   position: fixed;
-  top: 16px;
-  left: 16px;
+  top: 12px;
+  left: 12px;
   z-index: 201;
   width: 40px;
   height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg-nav-btn);
-  border: 1px solid var(--border-nav-btn);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
   border-radius: 8px;
   color: var(--text-primary);
   font-size: 1.2rem;
   cursor: pointer;
   transition: background 0.15s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
 
 .sidebar-toggle:hover {
@@ -846,7 +851,7 @@ body, .sidebar, .nav, .top-nav, .content-wrapper, .db-table, .analogy, .code-blo
 .container {
   max-width: 960px;
   margin: 0 auto;
-  padding: 32px 20px 60px;
+  padding: 24px 20px 60px;
 }
 
 .lesson { display: none; }
@@ -1108,18 +1113,19 @@ p code, li code, td code {
    ============================================================ */
 .search-toggle {
   position: fixed;
-  top: 16px;
-  left: 64px;
+  top: 12px;
+  left: 60px;
   z-index: 201;
   width: 40px;
   height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg-nav-btn);
-  border: 1px solid var(--border-nav-btn);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
   border-radius: 8px;
   color: var(--text-primary);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
   cursor: pointer;
   transition: background 0.15s ease;
 }

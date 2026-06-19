@@ -24,6 +24,17 @@
       margin: 0 auto;
     }
 
+    .hero-logo {
+      width: 64px;
+      height: 64px;
+      margin-bottom: 20px;
+      transition: filter 0.3s ease;
+    }
+
+    [data-theme="light"] .hero-logo {
+      filter: invert(1);
+    }
+
     .hero-title {
       font-size: clamp(2.2rem, 5vw, 3.2rem);
       font-weight: 800;
@@ -326,6 +337,7 @@
   <div class="content-wrapper">
 
     <section class="hero">
+      <img src="/assets/cube-white.svg" alt="" class="hero-logo">
       <h1 class="hero-title">linq labs</h1>
       <p class="hero-subtitle">Learn how software works from the ground up. Twelve interactive courses, zero prerequisites.</p>
 

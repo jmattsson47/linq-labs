@@ -560,8 +560,14 @@
 
           activeSidebarLink.parentNode.insertBefore(lessonsDiv, activeSidebarLink.nextSibling);
 
-          // Mark initial lesson as visited
+          // Mark initial lesson as visited and scroll into view
           markLessonVisited(currentCourseId, activeLessonIdx);
+          var activeBtn = lessonsDiv.querySelector('.sidebar-lesson.active');
+          if (activeBtn) {
+            setTimeout(function () {
+              activeBtn.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            }, 100);
+          }
         }
 
         // Auto-generate course navigation footer
