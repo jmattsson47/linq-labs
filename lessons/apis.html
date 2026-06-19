@@ -1566,14 +1566,8 @@ const totalLessons = 8;
 
 function goToLesson(n) {
   document.querySelectorAll('.lesson').forEach(el => el.classList.remove('active'));
-  document.querySelectorAll('.top-nav button').forEach(el => el.classList.remove('active'));
-
   document.getElementById('lesson-' + n).classList.add('active');
-  document.getElementById('nav-' + n).classList.add('active');
-
   currentLesson = n;
-  document.getElementById('progressBar').style.width = ((n + 1) / totalLessons * 100) + '%';
-
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 

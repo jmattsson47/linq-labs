@@ -1081,13 +1081,7 @@ $ <span class="fn">npx tsx</span> src/server.ts   <span class="cmt"># compile + 
 // -- Lesson Navigation --
 function goToLesson(n) {
   const lessons = document.querySelectorAll('.lesson');
-  const buttons = document.querySelectorAll('.nav-btn');
-  lessons.forEach((l, i) => {
-    l.classList.toggle('active', i === n);
-  });
-  buttons.forEach((b, i) => {
-    b.classList.toggle('active', i === n);
-  });
+  lessons.forEach((l, i) => { l.classList.toggle('active', i === n); });
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 

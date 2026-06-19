@@ -1361,14 +1361,9 @@ scope=<span class="str">"email profile calendar"</span>  <span class="cmt">// Al
 // ============================================================
 function goToLesson(index) {
   var lessons = document.querySelectorAll('.lesson');
-  var btns = document.querySelectorAll('.nav-btn');
   lessons.forEach(function(l) { l.classList.remove('active'); });
-  btns.forEach(function(b) { b.classList.remove('active'); });
   lessons[index].classList.add('active');
-  btns[index].classList.add('active');
   window.scrollTo(0, 0);
-  // Scroll nav button into view
-  btns[index].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
 }
 
 // ============================================================

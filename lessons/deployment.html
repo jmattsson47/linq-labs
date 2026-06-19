@@ -1920,23 +1920,12 @@ lessonTitles.forEach((title, i) => {
 });
 
 function goToLesson(num) {
-  // Hide all lessons
   document.querySelectorAll('.lesson').forEach(l => l.classList.remove('active'));
-  document.querySelectorAll('.top-nav button').forEach(b => b.classList.remove('active'));
-
-  // Show target
   const target = document.getElementById('lesson-' + num);
   if (target) {
     target.classList.add('active');
-    target.classList.add('animate-in');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
-
-  const navBtn = document.getElementById('nav-btn-' + num);
-  if (navBtn) navBtn.classList.add('active');
-
-  // Update progress
-  document.getElementById('progressBar').style.width = ((num / totalLessons) * 100) + '%';
 }
 
 // ===== LESSON 1: Deploy diff toggle =====

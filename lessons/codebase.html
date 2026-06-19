@@ -690,11 +690,8 @@ const total = 8;
 
 function goTo(n) {
   document.getElementById('lesson' + current).classList.remove('active');
-  document.getElementById('nav' + current).classList.remove('active');
   current = n;
   document.getElementById('lesson' + current).classList.add('active');
-  document.getElementById('nav' + current).classList.add('active');
-  document.getElementById('progress').textContent = (n + 1) + ' / ' + total;
   window.scrollTo(0, 0);
 }
 
