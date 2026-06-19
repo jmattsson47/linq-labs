@@ -127,6 +127,35 @@
 }
 
 /* ============================================================
+   View Transitions (cross-fade between page navigations)
+   ============================================================ */
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(content) {
+  animation: fade-out 120ms ease-out;
+}
+
+::view-transition-new(content) {
+  animation: fade-in 180ms ease-in;
+}
+
+::view-transition-group(sidebar) {
+  animation: none;
+}
+
+@keyframes fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ============================================================
    Reset & Base
    ============================================================ */
 *, *::before, *::after {
@@ -495,6 +524,7 @@ body, .sidebar, .nav, .top-nav, .content-wrapper, .db-table, .analogy, .code-blo
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  view-transition-name: sidebar;
 }
 
 .sidebar.open {
@@ -678,6 +708,7 @@ body, .sidebar, .nav, .top-nav, .content-wrapper, .db-table, .analogy, .code-blo
   margin-left: 0;
   transition: margin-left 0.3s ease;
   min-height: 100vh;
+  view-transition-name: content;
 }
 
 /* ============================================================
@@ -855,7 +886,15 @@ body, .sidebar, .nav, .top-nav, .content-wrapper, .db-table, .analogy, .code-blo
 }
 
 .lesson { display: none; }
-.lesson.active { display: block; }
+.lesson.active {
+  display: block;
+  animation: lesson-fade-in 250ms ease-out;
+}
+
+@keyframes lesson-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
 /* ============================================================
    Lesson Typography

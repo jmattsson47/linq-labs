@@ -532,8 +532,20 @@
 
           // Make entire card clickable
           card.addEventListener('click', function (e) {
-            if (e.target.closest('a')) return; // let actual link clicks work normally
+            if (e.target.closest('a')) return;
             if (link) window.location.href = link.href;
+          });
+
+          // Prefetch on hover
+          var prefetchDone = false;
+          card.addEventListener('mouseenter', function () {
+            if (!prefetchDone && link) {
+              prefetchDone = true;
+              var pf = document.createElement('link');
+              pf.rel = 'prefetch';
+              pf.href = link.href;
+              document.head.appendChild(pf);
+            }
           });
         });
         // Show progress summary and continue CTA

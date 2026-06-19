@@ -196,12 +196,23 @@
       }
     });
 
-    /* --- Sidebar Auto-Close on Mobile --- */
+    /* --- Sidebar Auto-Close on Mobile + Prefetch on Hover --- */
     var sidebarLinks = document.querySelectorAll(".sidebar-link");
+    var prefetched = {};
     sidebarLinks.forEach(function (link) {
       link.addEventListener("click", function () {
         if (window.innerWidth < 1024) {
           closeSidebar();
+        }
+      });
+      link.addEventListener("mouseenter", function () {
+        var href = link.getAttribute("href");
+        if (href && !prefetched[href]) {
+          prefetched[href] = true;
+          var prefetchLink = document.createElement("link");
+          prefetchLink.rel = "prefetch";
+          prefetchLink.href = href;
+          document.head.appendChild(prefetchLink);
         }
       });
     });
