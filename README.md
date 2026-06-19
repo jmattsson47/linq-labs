@@ -2,7 +2,7 @@
 
 An interactive course that teaches how software works — from databases to shipping a product. No prerequisites. No fluff.
 
-**[the-fundamentals-eight.vercel.app](https://the-fundamentals-eight.vercel.app)**
+**[linq-labs.vercel.app](https://linq-labs.vercel.app)**
 
 ## Why this exists
 

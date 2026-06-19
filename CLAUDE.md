@@ -1,21 +1,29 @@
-# Linq Labs
+# linq labs
 
 12 interactive courses teaching how software works. Static site deployed to Vercel.
 
+This is the **public/shared** version. Jared's private version is at ~/jareds-lab (separate repo, no link).
+
+## Start Claude Code from this directory
+
+Always run `cd ~/linq-labs && claude` — not from `~`. This keeps memory scoped to this project.
+
 ## Decisions
 
-- **No framework.** Static HTML, CSS, vanilla JS. No build step. This is intentional — the app teaches fundamentals, so the app itself should be fundamental. Don't add React, Next.js, or a bundler.
+- **No framework.** Static HTML, CSS, vanilla JS. No build step. Intentional.
 - **One file per course.** Each course is a single self-contained HTML file. The tradeoff (large files, repeated sidebar HTML) is worth the simplicity.
-- **Paperclip is the connective thread.** Every course references the Paperclip codebase (~/paperclip) as its running example. Databases use Paperclip tables. The codebase tutorial walks Paperclip's actual file structure. Don't introduce unrelated example apps.
+- **Paperclip is the connective thread.** Every course references the Paperclip codebase (~/paperclip) as its running example. Don't introduce unrelated example apps.
 - **CSS variables for all colors.** Light/dark theming works because every color is a variable. If you hardcode a hex value, the theme breaks. No exceptions.
+- **Linq brand identity.** Lowercase "linq labs". Cube logo. FK Display font for body, Geist Mono for code. Logo uses CSS `filter: invert(1)` for light mode.
 
 ## Constraints
 
-- Sidebar HTML is duplicated in every file. When adding a course, you must update the sidebar in all 12 existing files + index.html.
-- The `courseIndex` array in `js/shared.js` powers Cmd+K search. It must match the actual courses.
-- Some files use `.nav` for the top bar, others use `.top-nav`. Either is fine — just match whichever the file already uses.
-- Code blocks need class `code-block` to get auto-injected copy buttons. Don't add copy buttons manually.
-- The top nav is `position: fixed` and needs `left: 280px` at desktop widths to clear the sidebar.
+- Sidebar HTML is duplicated in every file. When adding a course, update all 12 lesson files + index.html.
+- Lesson nav is in the sidebar (not a top bar). Lessons are injected dynamically by shared.js using the `courseIndex` array.
+- The `courseIndex` array in `js/shared.js` powers Cmd+K search and sidebar lessons. Must stay in sync.
+- Code blocks need class `code-block` for auto copy buttons. Don't add copy buttons manually.
+- Some courses use `goTo(n)`, others use `goToLesson(n)`. Both are wrapped by shared.js.
+- View Transitions API handles cross-page fades. Sidebar has `view-transition-name: sidebar` to stay static.
 
 ## Deploy
 
@@ -23,5 +31,5 @@
 vercel --prod
 ```
 
-Production: https://the-fundamentals-eight.vercel.app
+Production: https://linq-labs.vercel.app
 Vercel project: jared-2093s-projects/the-fundamentals
