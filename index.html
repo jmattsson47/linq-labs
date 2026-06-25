@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Learn how software works from the ground up. 12 interactive courses covering databases, APIs, React, TypeScript, and more. Zero prerequisites.">
+  <meta name="description" content="Learn how software works from the ground up. Interactive courses covering databases, APIs, React, TypeScript, and more. Zero prerequisites.">
   <meta property="og:title" content="linq labs">
-  <meta property="og:description" content="Learn how software works from the ground up. 12 interactive courses, zero prerequisites.">
+  <meta property="og:description" content="Learn how software works from the ground up. Interactive courses, zero prerequisites.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://linq-labs.vercel.app">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="linq labs">
-  <meta name="twitter:description" content="Learn how software works from the ground up. 12 interactive courses, zero prerequisites.">
+  <meta name="twitter:description" content="Learn how software works from the ground up. Interactive courses, zero prerequisites.">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 736 754'><path d='M269 585L675 416L624 588L225 754L61 359L103 182L269 585Z' fill='white'/><path d='M672 389L285 550L124 160L511 0L672 389ZM346 309L356 332L333 342L324 318L231 357L298 516L344 497L334 474L357 465L367 488L458 450L410 336L391 290L346 309ZM551 224L414 281L480 441L595 393L585 370L608 361L617 384L640 374L631 352L608 361L598 338L621 328L574 214L551 224ZM157 174L223 334L383 268L335 153L289 173L270 127L157 174ZM367 167L404 258L564 191L526 100L367 167ZM338 98L357 144L517 77L498 32L338 98Z' fill='white'/></svg>">
   <title>linq labs</title>
   <link rel="stylesheet" href="/css/shared.css">
@@ -287,41 +287,44 @@
     </div>
     <nav class="sidebar-nav">
       <div class="sidebar-section-title">Courses</div>
-      <a href="/lessons/databases" class="sidebar-link" data-course="databases">
+      <a href="/lessons/databases" class="sidebar-link" data-scope="base" data-course="databases">
         <span class="sidebar-num">01</span> How Databases Work
       </a>
-      <a href="/lessons/codebase" class="sidebar-link" data-course="codebase">
+      <a href="/lessons/codebase" class="sidebar-link" data-scope="paperclip" data-course="codebase">
         <span class="sidebar-num">02</span> The Codebase
       </a>
-      <a href="/lessons/apis" class="sidebar-link" data-course="apis">
+      <a href="/lessons/apis" class="sidebar-link" data-scope="base" data-course="apis">
         <span class="sidebar-num">03</span> APIs &amp; HTTP
       </a>
-      <a href="/lessons/build" class="sidebar-link" data-course="build">
+      <a href="/lessons/build" class="sidebar-link" data-scope="base" data-course="build">
         <span class="sidebar-num">04</span> Build a Mini App
       </a>
-      <a href="/lessons/deployment" class="sidebar-link" data-course="deployment">
+      <a href="/lessons/deployment" class="sidebar-link" data-scope="base" data-course="deployment">
         <span class="sidebar-num">05</span> How Deployment Works
       </a>
-      <a href="/lessons/git" class="sidebar-link" data-course="git">
+      <a href="/lessons/git" class="sidebar-link" data-scope="base" data-course="git">
         <span class="sidebar-num">06</span> How Git Works
       </a>
-      <a href="/lessons/authentication" class="sidebar-link" data-course="authentication">
+      <a href="/lessons/authentication" class="sidebar-link" data-scope="base" data-course="authentication">
         <span class="sidebar-num">07</span> How Auth Works
       </a>
-      <a href="/lessons/typescript" class="sidebar-link" data-course="typescript">
+      <a href="/lessons/typescript" class="sidebar-link" data-scope="base" data-course="typescript">
         <span class="sidebar-num">08</span> How TypeScript Works
       </a>
-      <a href="/lessons/react" class="sidebar-link" data-course="react">
+      <a href="/lessons/react" class="sidebar-link" data-scope="base" data-course="react">
         <span class="sidebar-num">09</span> How React Works
       </a>
-      <a href="/lessons/testing" class="sidebar-link" data-course="testing">
+      <a href="/lessons/testing" class="sidebar-link" data-scope="base" data-course="testing">
         <span class="sidebar-num">10</span> How Testing Works
       </a>
-      <a href="/lessons/ai-agents" class="sidebar-link" data-course="ai-agents">
+      <a href="/lessons/ai-agents" class="sidebar-link" data-scope="base" data-course="ai-agents">
         <span class="sidebar-num">11</span> How AI Agents Work
       </a>
-      <a href="/lessons/shipping" class="sidebar-link" data-course="shipping">
+      <a href="/lessons/shipping" class="sidebar-link" data-scope="base" data-course="shipping">
         <span class="sidebar-num">12</span> How to Ship a Product
+      </a>
+      <a href="/lessons/data-layer" class="sidebar-link" data-scope="linq" data-course="data-layer">
+        <span class="sidebar-num">13</span> How Linq's Data Layer Works
       </a>
     </nav>
     <div class="sidebar-footer">
@@ -339,7 +342,7 @@
     <section class="hero">
       <img src="/assets/cube-white.svg" alt="" class="hero-logo">
       <h1 class="hero-title">linq labs</h1>
-      <p class="hero-subtitle">Learn how software works from the ground up. Twelve interactive courses, zero prerequisites.</p>
+      <p class="hero-subtitle">Learn how software works from the ground up. Interactive courses, zero prerequisites.</p>
 
       <div class="hero-visual">
         <div class="stack-layer" style="--delay: 0s">UI — React</div>
@@ -357,7 +360,7 @@
       <div class="course-grid">
 
         <!-- Course 01 -->
-        <div class="course-card" data-course="databases">
+        <div class="course-card" data-scope="base" data-course="databases">
           <span class="completed-badge">Completed</span>
           <div class="course-num">Course 01</div>
           <h2 class="course-title">How Databases Work</h2>
@@ -369,7 +372,7 @@
         </div>
 
         <!-- Course 02 -->
-        <div class="course-card" data-course="codebase">
+        <div class="course-card" data-scope="paperclip" data-course="codebase">
           <span class="completed-badge">Completed</span>
           <div class="course-num">Course 02</div>
           <h2 class="course-title">The Codebase</h2>
@@ -381,7 +384,7 @@
         </div>
 
         <!-- Course 03 -->
-        <div class="course-card" data-course="apis">
+        <div class="course-card" data-scope="base" data-course="apis">
           <span class="completed-badge">Completed</span>
           <div class="course-num">Course 03</div>
           <h2 class="course-title">APIs &amp; HTTP</h2>
@@ -393,7 +396,7 @@
         </div>
 
         <!-- Course 04 -->
-        <div class="course-card" data-course="build">
+        <div class="course-card" data-scope="base" data-course="build">
           <span class="completed-badge">Completed</span>
           <div class="course-num">Course 04</div>
           <h2 class="course-title">Build a Mini App</h2>
@@ -405,7 +408,7 @@
         </div>
 
         <!-- Course 05 -->
-        <div class="course-card" data-course="deployment">
+        <div class="course-card" data-scope="base" data-course="deployment">
           <span class="completed-badge">Completed</span>
           <div class="course-num">Course 05</div>
           <h2 class="course-title">How Deployment Works</h2>
@@ -417,7 +420,7 @@
         </div>
 
         <!-- Course 06 -->
-        <div class="course-card" data-course="git">
+        <div class="course-card" data-scope="base" data-course="git">
           <span class="completed-badge">Completed</span>
           <div class="course-num">Course 06</div>
           <h2 class="course-title">How Git Works</h2>
@@ -429,7 +432,7 @@
         </div>
 
         <!-- Course 07 -->
-        <div class="course-card" data-course="authentication">
+        <div class="course-card" data-scope="base" data-course="authentication">
           <span class="completed-badge">Completed</span>
           <div class="course-num">Course 07</div>
           <h2 class="course-title">How Auth Works</h2>
@@ -441,7 +444,7 @@
         </div>
 
         <!-- Course 08 -->
-        <div class="course-card" data-course="typescript">
+        <div class="course-card" data-scope="base" data-course="typescript">
           <span class="completed-badge">Completed</span>
           <div class="course-num">Course 08</div>
           <h2 class="course-title">How TypeScript Works</h2>
@@ -453,7 +456,7 @@
         </div>
 
         <!-- Course 09 -->
-        <div class="course-card" data-course="react">
+        <div class="course-card" data-scope="base" data-course="react">
           <span class="completed-badge">Completed</span>
           <div class="course-num">Course 09</div>
           <h2 class="course-title">How React Works</h2>
@@ -465,7 +468,7 @@
         </div>
 
         <!-- Course 10 -->
-        <div class="course-card" data-course="testing">
+        <div class="course-card" data-scope="base" data-course="testing">
           <span class="completed-badge">Completed</span>
           <div class="course-num">Course 10</div>
           <h2 class="course-title">How Testing Works</h2>
@@ -477,7 +480,7 @@
         </div>
 
         <!-- Course 11 -->
-        <div class="course-card" data-course="ai-agents">
+        <div class="course-card" data-scope="base" data-course="ai-agents">
           <span class="completed-badge">Completed</span>
           <div class="course-num">Course 11</div>
           <h2 class="course-title">How AI Agents Work</h2>
@@ -489,7 +492,7 @@
         </div>
 
         <!-- Course 12 -->
-        <div class="course-card" data-course="shipping">
+        <div class="course-card" data-scope="base" data-course="shipping">
           <span class="completed-badge">Completed</span>
           <div class="course-num">Course 12</div>
           <h2 class="course-title">How to Ship a Product</h2>
@@ -497,6 +500,18 @@
           <div class="course-meta">
             <span class="course-lessons">8 lessons <span class="reading-time">~25 min</span></span>
             <a href="/lessons/shipping" class="course-link">Start course &rarr;</a>
+          </div>
+        </div>
+
+        <!-- Linq Track: Data Layer -->
+        <div class="course-card" data-scope="linq" data-course="data-layer">
+          <span class="completed-badge">Completed</span>
+          <div class="course-num">Linq Track</div>
+          <h2 class="course-title">How Linq&rsquo;s Data Layer Works</h2>
+          <p class="course-desc">How Linq&rsquo;s backend really stores data &mdash; the monolith, the microservices, and database-per-service.</p>
+          <div class="course-meta">
+            <span class="course-lessons">7 lessons <span class="reading-time">~20 min</span></span>
+            <a href="/lessons/data-layer" class="course-link">Start course &rarr;</a>
           </div>
         </div>
 
@@ -514,14 +529,23 @@
     // Mark course cards as completed, update CTA text, make cards clickable
     (function () {
       try {
+        var company = (localStorage.getItem('linq-labs-company') || 'paperclip');
         var visited = JSON.parse(localStorage.getItem('fundamentals-visited') || '{}');
         var lessonProgress = JSON.parse(localStorage.getItem('fundamentals-lesson-progress') || '{}');
+
+        function scopeVisible(scope) {
+          return !scope || scope === 'base' || scope === company;
+        }
+
+        // Only operate on the currently selected company's catalog
+        var cards = [].slice.call(document.querySelectorAll('.course-card[data-course]'))
+          .filter(function (card) { return scopeVisible(card.getAttribute('data-scope')); });
+
         var visitedCount = 0;
-        document.querySelectorAll('.course-card[data-course]').forEach(function (card) {
+        cards.forEach(function (card) {
           var courseId = card.getAttribute('data-course');
           var link = card.querySelector('.course-link');
 
-          // Update completion state and CTA text
           if (visited[courseId]) {
             card.classList.add('completed');
             visitedCount++;
@@ -530,13 +554,11 @@
             if (link) link.innerHTML = 'Continue &rarr;';
           }
 
-          // Make entire card clickable
           card.addEventListener('click', function (e) {
             if (e.target.closest('a')) return;
             if (link) window.location.href = link.href;
           });
 
-          // Prefetch on hover
           var prefetchDone = false;
           card.addEventListener('mouseenter', function () {
             if (!prefetchDone && link) {
@@ -548,34 +570,36 @@
             }
           });
         });
-        // Show progress summary and continue CTA
+
+        var total = cards.length;
+
+        // Progress summary (visible catalog only)
         var progressEl = document.getElementById('progress-summary');
         if (progressEl && visitedCount > 0) {
-          progressEl.innerHTML = visitedCount + ' of 12 courses completed' +
-            '<div class="progress-bar"><div class="progress-bar-fill" style="width:' + Math.round(visitedCount / 12 * 100) + '%"></div></div>';
+          progressEl.innerHTML = visitedCount + ' of ' + total + ' courses completed' +
+            '<div class="progress-bar"><div class="progress-bar-fill" style="width:' + Math.round(visitedCount / total * 100) + '%"></div></div>';
         }
 
-        // New user: highlight first card
-        if (visitedCount === 0) {
-          var firstCard = document.querySelector('.course-card[data-course="databases"]');
-          if (firstCard) firstCard.classList.add('start-here');
-          var continueEl = document.getElementById('continue-cta');
-          if (continueEl) {
-            continueEl.innerHTML = '<a href="/lessons/databases">Start with Course 01: How Databases Work &rarr;</a>';
-          }
+        // First unvisited visible course drives the CTA
+        var nextCard = null;
+        for (var i = 0; i < cards.length; i++) {
+          if (!visited[cards[i].getAttribute('data-course')]) { nextCard = cards[i]; break; }
         }
 
-        // Show "continue where you left off" if partially complete
-        if (visitedCount > 0 && visitedCount < 12) {
-          var courseOrder = ['databases','codebase','apis','build','deployment','git','authentication','typescript','react','testing','ai-agents','shipping'];
-          var courseNames = {'databases':'How Databases Work','codebase':'The Codebase','apis':'APIs & HTTP','build':'Build a Mini App','deployment':'How Deployment Works','git':'How Git Works','authentication':'How Auth Works','typescript':'How TypeScript Works','react':'How React Works','testing':'How Testing Works','ai-agents':'How AI Agents Work','shipping':'How to Ship a Product'};
-          var nextCourse = null;
-          for (var i = 0; i < courseOrder.length; i++) {
-            if (!visited[courseOrder[i]]) { nextCourse = courseOrder[i]; break; }
+        var continueEl = document.getElementById('continue-cta');
+        if (visitedCount === 0 && cards.length) {
+          var firstCard = cards[0];
+          firstCard.classList.add('start-here');
+          var firstLink = firstCard.querySelector('.course-link');
+          var firstTitle = firstCard.querySelector('.course-title');
+          if (continueEl && firstLink && firstTitle) {
+            continueEl.innerHTML = '<a href="' + firstLink.getAttribute('href') + '">Start with ' + firstTitle.textContent + ' &rarr;</a>';
           }
-          var continueEl = document.getElementById('continue-cta');
-          if (continueEl && nextCourse) {
-            continueEl.innerHTML = '<a href="/lessons/' + nextCourse + '">Continue: ' + courseNames[nextCourse] + ' &rarr;</a>';
+        } else if (visitedCount > 0 && nextCard) {
+          var nextLink = nextCard.querySelector('.course-link');
+          var nextTitle = nextCard.querySelector('.course-title');
+          if (continueEl && nextLink && nextTitle) {
+            continueEl.innerHTML = '<a href="' + nextLink.getAttribute('href') + '">Continue: ' + nextTitle.textContent + ' &rarr;</a>';
           }
         }
       } catch (e) {

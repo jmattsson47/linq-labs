@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="How Linq's backend really stores data — the rolodeq monolith, the microservices, and why each service owns its own database.">
+  <meta property="og:title" content="How Linq's Data Layer Works — linq labs">
+  <meta property="og:description" content="The monolith, the microservices, and database-per-service — Linq's real data architecture.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://linq-labs.vercel.app/lessons/data-layer">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="How Linq's Data Layer Works — linq labs">
+  <meta name="twitter:description" content="The monolith, the microservices, and database-per-service — Linq's real data architecture.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 736 754'><path d='M269 585L675 416L624 588L225 754L61 359L103 182L269 585Z' fill='white'/><path d='M672 389L285 550L124 160L511 0L672 389ZM346 309L356 332L333 342L324 318L231 357L298 516L344 497L334 474L357 465L367 488L458 450L410 336L391 290L346 309ZM551 224L414 281L480 441L595 393L585 370L608 361L617 384L640 374L631 352L608 361L598 338L621 328L574 214L551 224ZM157 174L223 334L383 268L335 153L289 173L270 127L157 174ZM367 167L404 258L564 191L526 100L367 167ZM338 98L357 144L517 77L498 32L338 98Z' fill='white'/></svg>">
+  <title>How Linq’s Data Layer Works — linq labs</title>
+  <link rel="stylesheet" href="/css/shared.css">
+  <style>
+    /* LESSON-SPECIFIC styles only — converted to use CSS variables */
+    .lesson h2 { font-size: 28px; margin-bottom: 8px; }
+
+    .db-table { margin: 24px 0; border-radius: 10px; overflow: hidden; border: 1px solid var(--border-tertiary); }
+    .db-table .table-header { background: var(--bg-table-header); padding: 10px 16px; font-weight: 600; font-size: 14px; color: var(--accent-blue); display: flex; align-items: center; gap: 8px; }
+    .db-table table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .db-table th { background: var(--bg-table-th); padding: 10px 16px; text-align: left; color: var(--text-table-header); font-weight: 500; border-bottom: 1px solid var(--border-table); }
+    .db-table td { padding: 10px 16px; border-bottom: 1px solid var(--border-table-row); color: var(--text-body); }
+    .db-table tr:last-child td { border-bottom: none; }
+    .db-table tr:hover td { background: var(--bg-table-hover); }
+
+    .file-tree { background: var(--bg-card); border: 1px solid var(--border-secondary); border-radius: 10px; padding: 20px 24px; margin: 20px 0; font-family: 'SF Mono', Monaco, monospace; font-size: 13px; line-height: 2; }
+    .file-tree .folder { color: var(--accent-blue); cursor: pointer; }
+    .file-tree .folder:hover { color: #93bbfc; }
+    .file-tree .file { color: var(--text-table-header); }
+    .file-tree .desc { color: var(--text-faint); font-family: -apple-system, sans-serif; font-size: 12px; }
+    .file-tree .highlight { color: var(--accent-yellow); }
+    .file-tree .indent { padding-left: 24px; }
+    .file-tree .indent2 { padding-left: 48px; }
+    .file-tree .indent3 { padding-left: 72px; }
+
+    .arch-box { background: var(--bg-card); border: 1px solid var(--border-secondary); border-radius: 10px; padding: 24px; margin: 20px 0; font-family: 'SF Mono', Monaco, monospace; font-size: 12px; line-height: 1.8; white-space: pre; overflow-x: auto; }
+    .arch-box .layer { color: var(--accent-purple); font-weight: 600; }
+    .arch-box .component { color: var(--accent-blue); }
+    .arch-box .arrow { color: var(--text-faint); }
+    .arch-box .note { color: var(--text-faint); font-family: -apple-system, sans-serif; }
+    .arch-box .data { color: var(--accent-green); }
+    .arch-box .highlight { color: var(--accent-yellow); }
+
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin: 24px 0; }
+    .stat-card { background: var(--bg-secondary); border: 1px solid var(--border-primary); border-radius: 10px; padding: 16px; text-align: center; }
+    .stat-card .number { font-size: 28px; font-weight: 700; color: var(--text-primary); }
+    .stat-card .label { font-size: 12px; color: var(--text-muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
+
+    .flow-step { display: flex; align-items: flex-start; gap: 16px; margin: 16px 0; }
+    .flow-num { background: var(--accent-blue-bg); color: var(--text-primary); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0; }
+    .flow-content { flex: 1; }
+    .flow-content h4 { color: var(--text-primary); margin-bottom: 4px; font-size: 15px; }
+    .flow-content p { color: var(--text-muted); font-size: 14px; margin: 0; }
+    .flow-content code { background: var(--bg-btn); padding: 2px 6px; border-radius: 4px; font-size: 13px; color: var(--accent-blue); }
+
+    .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-left: 6px; }
+    .tag-server { background: var(--bg-tint-yellow); color: var(--accent-yellow); }
+    .tag-ui { background: var(--bg-tint-green); color: var(--accent-green); }
+    .tag-db { background: var(--bg-tint-indigo); color: var(--accent-indigo); }
+    .tag-pkg { background: #1c1917; color: #a8a29e; }
+
+    .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
+    .compare-card { background: var(--bg-secondary); border: 1px solid var(--border-primary); border-radius: 10px; padding: 20px; }
+    .compare-card h4 { color: var(--text-primary); margin-bottom: 8px; font-size: 15px; }
+    .compare-card p { color: var(--text-muted); font-size: 14px; margin: 0; }
+
+    @media (max-width: 700px) {
+      .compare-grid { grid-template-columns: 1fr; }
+    }
+
+  </style>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <a href="/" class="sidebar-logo"><img src="/assets/cube-white.svg" alt="">linq labs</a>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="sidebar-section-title">Courses</div>
+    <a href="/lessons/databases" class="sidebar-link" data-scope="base" data-course="databases">
+      <span class="sidebar-num">01</span> How Databases Work
+    </a>
+    <a href="/lessons/codebase" class="sidebar-link" data-scope="paperclip" data-course="codebase">
+      <span class="sidebar-num">02</span> The Codebase
+    </a>
+    <a href="/lessons/apis" class="sidebar-link" data-scope="base" data-course="apis">
+      <span class="sidebar-num">03</span> APIs &amp; HTTP
+    </a>
+    <a href="/lessons/build" class="sidebar-link" data-scope="base" data-course="build">
+      <span class="sidebar-num">04</span> Build a Mini App
+    </a>
+    <a href="/lessons/deployment" class="sidebar-link" data-scope="base" data-course="deployment">
+      <span class="sidebar-num">05</span> How Deployment Works
+    </a>
+    <a href="/lessons/git" class="sidebar-link" data-scope="base" data-course="git">
+      <span class="sidebar-num">06</span> How Git Works
+    </a>
+    <a href="/lessons/authentication" class="sidebar-link" data-scope="base" data-course="authentication">
+      <span class="sidebar-num">07</span> How Auth Works
+    </a>
+    <a href="/lessons/typescript" class="sidebar-link" data-scope="base" data-course="typescript">
+      <span class="sidebar-num">08</span> How TypeScript Works
+    </a>
+    <a href="/lessons/react" class="sidebar-link" data-scope="base" data-course="react">
+      <span class="sidebar-num">09</span> How React Works
+    </a>
+    <a href="/lessons/testing" class="sidebar-link" data-scope="base" data-course="testing">
+      <span class="sidebar-num">10</span> How Testing Works
+    </a>
+    <a href="/lessons/ai-agents" class="sidebar-link" data-scope="base" data-course="ai-agents">
+      <span class="sidebar-num">11</span> How AI Agents Work
+    </a>
+    <a href="/lessons/shipping" class="sidebar-link" data-scope="base" data-course="shipping">
+      <span class="sidebar-num">12</span> How to Ship a Product
+    </a>
+    <a href="/lessons/data-layer" class="sidebar-link" data-scope="linq" data-course="data-layer">
+      <span class="sidebar-num">13</span> How Linq's Data Layer Works
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <button class="theme-toggle" id="theme-toggle">
+      <span class="theme-icon" id="theme-icon">☀️</span>
+      <span class="theme-label" id="theme-label">Light Mode</span>
+    </button>
+  </div>
+</aside>
+<button class="sidebar-toggle" id="sidebar-toggle">☰</button>
+
+<div class="content-wrapper">
+
+<div class="breadcrumb"><a href="/">Home</a><span class="sep">›</span><span>How Linq’s Data Layer Works</span></div>
+
+<div class="container">
+
+  <!-- LESSON 1: Big Picture -->
+  <div class="lesson active" id="lesson0">
+    <h2>The Big Picture</h2>
+    <p class="subtitle">What "calling the database by services" actually means at Linq.</p>
+
+    <p>In <strong style="color:var(--text-primary)">The Codebase</strong> course you saw Paperclip: one repo, one server, one database. That's a <strong style="color:var(--text-primary)">monolith</strong> — and it's a great way to start. Linq started the same way. But as Linq grew, one codebase and one database became a single point of failure: if one part fell over, it could take the whole backend with it.</p>
+
+    <p>So Linq is doing what most companies do when they outgrow a monolith: peeling off pieces into independent <strong style="color:var(--text-primary)">microservices</strong>, each with its <strong style="color:var(--accent-blue)">own database</strong>. Here's the shape of it today:</p>
+
+    <div class="stat-grid">
+      <div class="stat-card"><div class="number">1</div><div class="label">Monolith (rolodeq)</div></div>
+      <div class="stat-card"><div class="number">15+</div><div class="label">Microservices</div></div>
+      <div class="stat-card"><div class="number">~200</div><div class="label">Service Objects</div></div>
+      <div class="stat-card"><div class="number">Many</div><div class="label">Databases</div></div>
+    </div>
+
+    <div class="arch-box"><span class="layer">  ROLODEQ</span>    <span class="note">The monolith. Ruby on Rails. Still the operational center.</span>
+     <span class="arrow">  └──</span> <span class="data">one shared PostgreSQL</span>  <span class="note">rolodeq_production (+ a read replica)</span>
+
+<span class="layer">  MICROSERVICES</span>   <span class="note">Independent programs, each peeled off the monolith.</span>
+     <span class="arrow">  ├──</span> <span class="component">contact-service</span>       <span class="data">→ its own PostgreSQL</span>
+     <span class="arrow">  ├──</span> <span class="component">phone-number-service</span>  <span class="data">→ its own PostgreSQL</span>
+     <span class="arrow">  ├──</span> <span class="component">zero-service</span>          <span class="data">→ its own PostgreSQL</span>
+     <span class="arrow">  ├──</span> <span class="component">synapse</span>               <span class="data">→ NATS event streams</span>
+     <span class="arrow">  └──</span> <span class="component">clickhouse-service</span>    <span class="data">→ ClickHouse (analytics)</span>
+
+<span class="highlight">  NATS</span>         <span class="note">The radio network the services use to talk to each other.</span></div>
+
+    <div class="analogy">
+      <strong>Analogy:</strong> The monolith is <strong>one big restaurant kitchen</strong> — one crew, one pantry. Wonderful when you're small. But if the pantry catches fire, <em>no food comes out at all.</em> Microservices are <strong>a fleet of food trucks</strong> — each with its own crew and its own pantry. One truck breaking down doesn't stop the others. The trade-off: the trucks now need radios to coordinate.
+    </div>
+
+    <button class="next-btn" onclick="goTo(1)">Next: The Monolith &rarr;</button>
+  </div>
+
+  <!-- LESSON 2: The Monolith -->
+  <div class="lesson" id="lesson1">
+    <h2>The Monolith (rolodeq)</h2>
+    <p class="subtitle">One Rails app, one shared database — still the heart of Linq.</p>
+
+    <p><strong style="color:var(--accent-blue)">rolodeq</strong> is Linq's original backend: a <strong style="color:var(--text-primary)">Ruby on Rails</strong> application. It handles auth, core business logic, and most of the product. Everything inside it shares <strong style="color:var(--text-primary)">one PostgreSQL database</strong> called <code style="color:var(--accent-yellow)">rolodeq_production</code>, with a read replica to spread out heavy reads.</p>
+
+    <div class="db-table">
+      <div class="table-header">rolodeq/config/database.yml</div>
+      <table>
+        <tr><th>Connection</th><th>What it is</th></tr>
+        <tr><td style="color:var(--accent-blue)">primary</td><td>The main read/write database — rolodeq_production</td></tr>
+        <tr><td style="color:var(--accent-green)">primary_replica</td><td>A read-only copy, for queries that don't need to write</td></tr>
+      </table>
+    </div>
+
+    <p>One shared database is exactly what makes a monolith easy at first: any part of the code can read any table, joins are trivial, and there's one place to look. It's also exactly what makes it fragile at scale — everyone shares the same fridge, so one bad query or one overloaded table can slow down <em>everything</em>.</p>
+
+    <div class="analogy">
+      <strong>Analogy:</strong> rolodeq is a big house-share where everyone cooks from <strong>one shared fridge</strong>. Super convenient — until someone leaves the door open or hogs all the space, and now nobody can cook.
+    </div>
+
+    <button class="next-btn" onclick="goTo(2)">Next: "Service" Means Two Things &rarr;</button>
+  </div>
+
+  <!-- LESSON 3: "Service" means two things -->
+  <div class="lesson" id="lesson2">
+    <h2>"Service" Means Two Things</h2>
+    <p class="subtitle">The single most confusing word in Linq's backend — untangled.</p>
+
+    <p>When someone at Linq says "service," they could mean one of <strong style="color:var(--text-primary)">two completely different things</strong>. They look similar and share a name, but one is just a chunk of code and the other is an entire running program. Click each to see the difference:</p>
+
+    <div class="btn-row">
+      <button class="btn selected" onclick="showServiceType('object')" id="st-object">Service Object</button>
+      <button class="btn" onclick="showServiceType('micro')" id="st-micro">Microservice</button>
+    </div>
+
+    <div class="detail-box" id="servicetype-detail">
+      <div id="servicetype-object">
+        <div class="label">A service object = a Ruby class inside the monolith</div>
+        <p style="color:var(--text-body)">Inside rolodeq there are about <strong style="color:var(--text-primary)">200 "service objects"</strong> in <code style="color:var(--accent-blue)">app/services/</code>. Each one is just a <strong>Ruby class</strong> that holds some business logic — for example <code style="color:var(--accent-yellow)">add_user_to_organization.rb</code>. They are <strong>not</strong> separate programs. They all run in the same Rails process and read from the same shared database.</p>
+        <div class="db-table">
+          <div class="table-header">rolodeq/app/services/ (examples)</div>
+          <table>
+            <tr><th>File</th><th>What it does</th></tr>
+            <tr><td style="color:var(--accent-blue)">add_user_to_organization.rb</td><td>Adds a user to an org</td></tr>
+            <tr><td style="color:var(--accent-blue)">accept_organization_invite.rb</td><td>Handles invite acceptance</td></tr>
+            <tr><td style="color:var(--accent-blue)">authentication_service.rb</td><td>Login / identity logic</td></tr>
+          </table>
+        </div>
+        <p style="color:var(--text-muted)">Think of these as <strong>well-organized drawers in one big desk</strong>. Tidy, but still one desk, one room.</p>
+      </div>
+      <div id="servicetype-micro" style="display:none">
+        <div class="label">A microservice = its own program, its own database</div>
+        <p style="color:var(--text-body)">A microservice like <code style="color:var(--accent-green)">contact-service</code> is a <strong>whole separate application</strong>: its own repository, its own server process, and crucially its <strong style="color:var(--accent-blue)">own database</strong>. It runs on its own, can be deployed on its own, and can fail on its own without dragging the rest down.</p>
+        <div class="db-table">
+          <div class="table-header">Standalone microservices (examples)</div>
+          <table>
+            <tr><th>Service</th><th>Owns</th></tr>
+            <tr><td style="color:var(--accent-green)">contact-service</td><td>Its own PostgreSQL database</td></tr>
+            <tr><td style="color:var(--accent-green)">phone-number-service</td><td>Its own PostgreSQL database</td></tr>
+            <tr><td style="color:var(--accent-green)">zero-service</td><td>Its own PostgreSQL database</td></tr>
+          </table>
+        </div>
+        <p style="color:var(--text-muted)">These are <strong>separate buildings</strong>, not drawers. Each has its own pantry and its own front door.</p>
+      </div>
+    </div>
+
+    <p style="margin-top:20px">So "the contact service" might mean a Ruby class <em>or</em> a standalone microservice depending on who's talking. The tell: <strong>does it have its own database and run on its own?</strong> If yes, it's a microservice. If it's just a class sharing rolodeq's database, it's a service object.</p>
+
+    <button class="next-btn" onclick="goTo(3)">Next: The Microservices &rarr;</button>
+  </div>
+
+  <!-- LESSON 4: The Microservices -->
+  <div class="lesson" id="lesson3">
+    <h2>The Microservices</h2>
+    <p class="subtitle">The real programs Linq has peeled off the monolith. Click each one.</p>
+
+    <p>Each of these is an independent application with its own database. Click to see what it does and what it owns:</p>
+
+    <div class="btn-row">
+      <button class="btn selected" onclick="showService('contact')" id="sv-contact">contact-service</button>
+      <button class="btn" onclick="showService('phone')" id="sv-phone">phone-number-service</button>
+      <button class="btn" onclick="showService('zero')" id="sv-zero">zero-service</button>
+      <button class="btn" onclick="showService('synapse')" id="sv-synapse">synapse</button>
+      <button class="btn" onclick="showService('clickhouse')" id="sv-clickhouse">clickhouse-service</button>
+    </div>
+
+    <div class="detail-box" id="service-detail">
+      <div id="service-contact">
+        <div class="label">contact-service</div>
+        <p style="color:var(--text-body)"><strong style="color:var(--text-primary)">Job:</strong> Manages contacts. <strong style="color:var(--text-primary)">Stack:</strong> TypeScript / Fastify. <strong style="color:var(--text-primary)">Owns:</strong> its own PostgreSQL database, plus OpenSearch for fast contact search.</p>
+        <p style="color:var(--text-muted)">When another service needs "who is +1 555…?", it asks contact-service — it never reaches into contact-service's database directly.</p>
+      </div>
+      <div id="service-phone" style="display:none">
+        <div class="label">phone-number-service</div>
+        <p style="color:var(--text-body)"><strong style="color:var(--text-primary)">Job:</strong> Manages phone numbers. <strong style="color:var(--text-primary)">Stack:</strong> TypeScript / NestJS with the Prisma ORM. <strong style="color:var(--text-primary)">Owns:</strong> its own PostgreSQL database.</p>
+        <p style="color:var(--text-muted)">Other services route messages by asking this service which number to use.</p>
+      </div>
+      <div id="service-zero" style="display:none">
+        <div class="label">zero-service</div>
+        <p style="color:var(--text-body)"><strong style="color:var(--text-primary)">Job:</strong> A "backend-for-frontend" for the Zero product — it composes data from several other services for the app. <strong style="color:var(--text-primary)">Stack:</strong> TypeScript / NestJS. <strong style="color:var(--text-primary)">Owns:</strong> its own PostgreSQL database.</p>
+        <p style="color:var(--text-muted)">You'll see zero-service star in the end-to-end flow in the last lesson.</p>
+      </div>
+      <div id="service-synapse" style="display:none">
+        <div class="label">synapse</div>
+        <p style="color:var(--text-body)"><strong style="color:var(--text-primary)">Job:</strong> The ultra-low-latency messaging core (iMessage delivery). <strong style="color:var(--text-primary)">Stack:</strong> Go. <strong style="color:var(--text-primary)">Owns:</strong> message events live in <strong>NATS streams</strong> rather than a classic table — built for speed and volume.</p>
+        <p style="color:var(--text-muted)">synapse is also where the event "language" the other services listen to is defined.</p>
+      </div>
+      <div id="service-clickhouse" style="display:none">
+        <div class="label">clickhouse-service</div>
+        <p style="color:var(--text-body)"><strong style="color:var(--text-primary)">Job:</strong> Analytics — counting and reporting over huge volumes of events. <strong style="color:var(--text-primary)">Stack:</strong> Go. <strong style="color:var(--text-primary)">Owns:</strong> a <strong>ClickHouse</strong> database, a totally different engine tuned for analytics, not day-to-day app data.</p>
+        <p style="color:var(--text-muted)">Different job, different kind of database. Not every service uses PostgreSQL.</p>
+      </div>
+    </div>
+
+    <p style="margin-top:20px">Notice the pattern: <strong style="color:var(--text-primary)">different services pick different databases for different jobs</strong> — and none of them share. That's the idea we unpack next.</p>
+
+    <button class="next-btn" onclick="goTo(4)">Next: Database-per-Service &rarr;</button>
+  </div>
+
+  <!-- LESSON 5: Database-per-service -->
+  <div class="lesson" id="lesson4">
+    <h2>Database-per-Service</h2>
+    <p class="subtitle">The real punchline — why each service owns its own database.</p>
+
+    <p>This is the heart of the whole thing. In the monolith, every service object shares <strong>one</strong> database. Each microservice instead has its <strong style="color:var(--accent-blue)">own</strong> database, with its own connection string:</p>
+
+    <div class="code-block">
+<span class="comment"># Each microservice points at a DIFFERENT database</span>
+
+<span class="comment"># contact-service</span>
+DATABASE_URL=<span class="str">postgresql://.../contact_service</span>
+
+<span class="comment"># phone-number-service</span>
+DATABASE_URL=<span class="str">postgresql://.../phone_number_service</span>
+
+<span class="comment"># zero-service</span>
+DATABASE_URL=<span class="str">postgresql://.../zero_service</span>
+    </div>
+
+    <div class="compare-grid">
+      <div class="compare-card">
+        <h4 style="color:var(--accent-purple)">One shared database</h4>
+        <p>Easy joins, one place to look.<br><br>
+        But: one slow query or one bad migration can hurt <strong>everything</strong>. The whole backend shares the blast radius.</p>
+      </div>
+      <div class="compare-card">
+        <h4 style="color:var(--accent-blue)">Database-per-service</h4>
+        <p>Each failure stays contained — if contact-service's database struggles, phone-number-service is untouched.<br><br>
+        But: no cross-service joins, and data can be briefly out of sync.</p>
+      </div>
+    </div>
+
+    <p>That isolation is what delivers the resilience you'd expect from "microservices": a problem in one service's database can't directly knock over another's. The cost is real, though — services can no longer just <code>JOIN</code> across each other's tables, so they have to <strong>ask each other</strong> for data and accept that things sync up a moment later instead of instantly.</p>
+
+    <div class="analogy">
+      <strong>Analogy:</strong> Separate fridges in separate apartments. A fire in one kitchen doesn't spoil everyone else's food. But you can't just grab milk from your neighbor's fridge anymore — you have to text them and ask. That "texting" is the next lesson.
+    </div>
+
+    <button class="next-btn" onclick="goTo(5)">Next: How Services Talk &rarr;</button>
+  </div>
+
+  <!-- LESSON 6: How services talk -->
+  <div class="lesson" id="lesson5">
+    <h2>How Services Talk</h2>
+    <p class="subtitle">No shared fridge means they have to pass messages. Three ways they do it.</p>
+
+    <p>Because services can't read each other's databases, they communicate over the network. Linq uses three main mechanisms — click each:</p>
+
+    <div class="btn-row">
+      <button class="btn selected" onclick="showComm('nats')" id="cm-nats">NATS (events)</button>
+      <button class="btn" onclick="showComm('webhooks')" id="cm-webhooks">Webhooks</button>
+      <button class="btn" onclick="showComm('http')" id="cm-http">HTTP calls</button>
+    </div>
+
+    <div class="detail-box" id="comm-detail">
+      <div id="comm-nats">
+        <div class="label">NATS — the internal event radio</div>
+        <p style="color:var(--text-body)">When something happens, a service <strong>announces it</strong> on a NATS "subject" and any interested service can listen. The announcer doesn't know or care who's listening. Subjects have a tidy naming convention:</p>
+        <div class="code-block">
+<span class="comment">// A real NATS subject from synapse</span>
+synapse.event.message.<span class="kw">sent</span>.v1
+synapse.event.message.<span class="kw">delivered</span>.v1
+synapse.event.message.<span class="kw">read</span>.v1
+        </div>
+        <p style="color:var(--text-muted)">This is great for "fire and forget" facts: <em>a message was sent</em>. Anyone who cares (analytics, webhooks, risk scoring) reacts on their own.</p>
+      </div>
+      <div id="comm-webhooks" style="display:none">
+        <div class="label">Webhooks — telling the outside world</div>
+        <p style="color:var(--text-body)">Webhooks are how Linq notifies <strong>external</strong> customers' systems that something happened. Linq sends an HTTP POST with a standard, signed payload:</p>
+        <div class="code-block">
+{
+  <span class="str">"event_type"</span>: <span class="str">"message.received"</span>,
+  <span class="str">"data"</span>: { <span class="str">"message"</span>: { <span class="str">"id"</span>: <span class="str">"msg-1"</span> } }
+}
+        </div>
+        <p style="color:var(--text-muted)">They're HMAC-signed so the receiver can trust they really came from Linq, and retried if delivery fails.</p>
+      </div>
+      <div id="comm-http" style="display:none">
+        <div class="label">HTTP — asking a direct question</div>
+        <p style="color:var(--text-body)">Sometimes a service needs an answer <strong>right now</strong>. Then it makes a direct HTTP request to another service and waits for the reply — like a phone call instead of a broadcast.</p>
+        <div class="code-block">
+<span class="comment">// zero-service asks contact-service: who are these numbers?</span>
+<span class="kw">POST</span> /v1/contacts/lookup
+{ <span class="str">"phones"</span>: [<span class="str">"+15550001111"</span>] }
+
+<span class="comment">// contact-service replies</span>
+{ <span class="str">"+15550001111"</span>: { <span class="str">"name"</span>: <span class="str">"John"</span> } }
+        </div>
+        <p style="color:var(--text-muted)">This is the "text your neighbor for milk" pattern from the last lesson.</p>
+      </div>
+    </div>
+
+    <button class="next-btn" onclick="goTo(6)">Next: A Real Flow &rarr;</button>
+  </div>
+
+  <!-- LESSON 7: A real flow -->
+  <div class="lesson" id="lesson6">
+    <h2>A Real Flow, End to End</h2>
+    <p class="subtitle">Loading a chat list — watch the services cooperate without sharing a database.</p>
+
+    <p>Let's trace one real request: the Zero app opens and needs to show your <strong style="color:var(--text-primary)">list of chats, with each person's name and photo</strong>. No single database has all of that — so the services collaborate:</p>
+
+    <div class="flow-step"><div class="flow-num">1</div><div class="flow-content"><h4>The app asks zero-service</h4><p>The Zero web app opens a connection to <code>zero-service</code> and says "get my chats."</p></div></div>
+    <div class="flow-step"><div class="flow-num">2</div><div class="flow-content"><h4>zero-service asks Synapse for the chats</h4><p>It calls Synapse's API: <code>GET /v3/chats</code>. Synapse owns the messaging data and returns the raw chats — but those only contain phone numbers, not names.</p></div></div>
+    <div class="flow-step"><div class="flow-num">3</div><div class="flow-content"><h4>zero-service asks contact-service for the names</h4><p>It takes the phone numbers and calls <code>POST /v1/contacts/lookup</code>. contact-service owns the contact data and returns names and photos.</p></div></div>
+    <div class="flow-step"><div class="flow-num">4</div><div class="flow-content"><h4>zero-service stitches it together</h4><p>It merges "chats from Synapse" + "names from contact-service" into one tidy response.</p></div></div>
+    <div class="flow-step"><div class="flow-num">5</div><div class="flow-content"><h4>The app shows your chat list</h4><p>You see chats with real names and photos — assembled from <strong>three</strong> services, each owning its own slice of data.</p></div></div>
+
+    <p style="margin-top:24px">No service reached into another's database. zero-service didn't <code>JOIN</code> Synapse's tables with contact-service's tables — it <strong>asked each one</strong> and combined the answers. That's database-per-service in action.</p>
+
+    <div class="db-table">
+      <div class="table-header">One chat list &mdash; who owned what</div>
+      <table>
+        <tr><th>Service</th><th>Owned</th><th>Role in this flow</th></tr>
+        <tr><td style="color:var(--accent-blue)">zero-service</td><td>Its own DB</td><td>Orchestrated the request, stitched the result</td></tr>
+        <tr><td style="color:var(--accent-green)">synapse</td><td>Message events (NATS)</td><td>Provided the raw chats</td></tr>
+        <tr><td style="color:var(--accent-yellow)">contact-service</td><td>Contacts (PostgreSQL + OpenSearch)</td><td>Provided names and photos</td></tr>
+      </table>
+    </div>
+
+    <div class="analogy">
+      <strong>What you learned:</strong><br><br>
+      <strong style="color:var(--accent-blue)">Monolith (rolodeq)</strong> = one Rails app, one shared database<br>
+      <strong style="color:var(--text-primary)">Service object</strong> = a class inside the monolith (shared DB)<br>
+      <strong style="color:var(--accent-green)">Microservice</strong> = its own program, its own database<br>
+      <strong style="color:var(--accent-indigo)">Database-per-service</strong> = isolation &amp; resilience, at the cost of joins<br>
+      <strong style="color:var(--accent-pink)">NATS / webhooks / HTTP</strong> = how services talk when they can't share a fridge
+    </div>
+
+    <div class="next-course-banner">
+      <h3>That's the Linq track &mdash; for now</h3>
+      <p>This is the first course in Linq's own track, and more will join it. Switch back to <strong>Paperclip</strong> any time using the example switcher in the top-left.</p>
+      <a href="/">Back to all courses &rarr;</a>
+    </div>
+  </div>
+
+</div>
+
+</div>
+
+<script>
+let current = 0;
+const total = 7;
+
+function goTo(n) {
+  document.getElementById('lesson' + current).classList.remove('active');
+  current = n;
+  document.getElementById('lesson' + current).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// Lesson 3: Service object vs microservice
+function showServiceType(name) {
+  ['object', 'micro'].forEach(t => {
+    document.getElementById('servicetype-' + t).style.display = t === name ? 'block' : 'none';
+    document.getElementById('st-' + t).classList.toggle('selected', t === name);
+  });
+}
+
+// Lesson 4: Microservice explorer
+function showService(name) {
+  ['contact', 'phone', 'zero', 'synapse', 'clickhouse'].forEach(svc => {
+    document.getElementById('service-' + svc).style.display = svc === name ? 'block' : 'none';
+    document.getElementById('sv-' + svc).classList.toggle('selected', svc === name);
+  });
+}
+
+// Lesson 6: How services talk
+function showComm(name) {
+  ['nats', 'webhooks', 'http'].forEach(c => {
+    document.getElementById('comm-' + c).style.display = c === name ? 'block' : 'none';
+    document.getElementById('cm-' + c).classList.toggle('selected', c === name);
+  });
+}
+</script>
+<script src="/js/shared.js"></script>
+
+</body>
+</html>

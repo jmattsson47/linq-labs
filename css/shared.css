@@ -567,6 +567,127 @@ body, .sidebar, .nav, .top-nav, .content-wrapper, .db-table, .analogy, .code-blo
   color: var(--accent-blue);
 }
 
+/* --- Company Example Switcher --- */
+.company-switcher {
+  position: relative;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-primary);
+  flex-shrink: 0;
+}
+
+.company-current {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  color: var(--text-primary);
+  font-family: inherit;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.company-current:hover {
+  border-color: var(--accent-blue);
+  background: var(--bg-tertiary);
+}
+
+.company-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  line-height: 1.2;
+}
+
+.company-eyebrow {
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-faint);
+}
+
+.company-name {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.company-caret {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  transition: transform 0.15s ease;
+}
+
+.company-current[aria-expanded="true"] .company-caret {
+  transform: rotate(180deg);
+}
+
+.company-menu {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  top: calc(100% - 4px);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+.company-menu[hidden] {
+  display: none;
+}
+
+.company-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.company-option:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.company-option.selected {
+  color: var(--accent-blue);
+  font-weight: 700;
+}
+
+.company-option.selected::after {
+  content: "\2713";
+}
+
+/* --- Company catalog filtering ---
+   Hide courses that don't belong to the selected company. Base courses
+   (no cross-company data-scope) are always shown. Add a pair here per
+   new company. */
+html[data-company="paperclip"] [data-scope="linq"],
+html[data-company="linq"] [data-scope="paperclip"] {
+  display: none !important;
+}
+
 /* --- Sidebar Navigation --- */
 .sidebar-nav {
   flex: 1;

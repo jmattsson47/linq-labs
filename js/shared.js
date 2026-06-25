@@ -47,6 +47,36 @@
   }
 
   /* ----------------------------------------------------------
+     Company Example Selection
+     Each course is scoped 'base' (shared by every company) or to a
+     specific company id. Switching companies swaps the visible catalog.
+     ---------------------------------------------------------- */
+  var companies = [
+    { id: 'paperclip', name: 'Paperclip' },
+    { id: 'linq', name: 'Linq' }
+  ];
+
+  function getCompany() {
+    try {
+      return localStorage.getItem('linq-labs-company') || 'paperclip';
+    } catch (e) {
+      return 'paperclip';
+    }
+  }
+
+  function setCompany(id) {
+    try {
+      localStorage.setItem('linq-labs-company', id);
+    } catch (e) {
+      // localStorage unavailable
+    }
+  }
+
+  // Apply selected company immediately so CSS hides the other catalog
+  // before paint (no flash of the wrong courses).
+  document.documentElement.setAttribute('data-company', getCompany());
+
+  /* ----------------------------------------------------------
      Progress Tracking
      ---------------------------------------------------------- */
   function markCourseVisited(courseId) {
@@ -97,19 +127,33 @@
      Command Palette — Course Index
      ---------------------------------------------------------- */
   var courseIndex = [
-    { course: 'How Databases Work', id: 'databases', lessons: ['Tables', 'Keys', 'Relationships', 'Schema', 'Queries', 'Paperclip Scale'] },
-    { course: 'The Codebase', id: 'codebase', lessons: ['Big Picture', 'File Map', 'Server', 'Database Layer', 'UI', 'Adapters', 'Heartbeat', 'Full Flow'] },
-    { course: 'APIs & HTTP', id: 'apis', lessons: ['The Internet', 'APIs', 'HTTP Methods', 'The Request', 'The Response', 'JSON', 'Tracing a Request', 'REST'] },
-    { course: 'Build a Mini App', id: 'build', lessons: ['What We\'re Building', 'The Database', 'The Server', 'The UI', 'How They Connect', 'What Makes It Real', 'Full Code', 'What You Know'] },
-    { course: 'How Deployment Works', id: 'deployment', lessons: ['localhost vs World', 'Servers', 'Build Step', 'Vercel', 'DNS', 'CDN', 'Environments', 'Full Journey'] },
-    { course: 'How Git Works', id: 'git', lessons: ['Why Git Exists', 'Commits', 'Three Areas', 'Branches', 'Merging', 'Remote & GitHub', 'Pull Requests', 'Git in Practice'] },
-    { course: 'How Auth Works', id: 'authentication', lessons: ['The Problem', 'Passwords & Hashing', 'Sessions & Cookies', 'Tokens (JWT)', 'OAuth', 'API Keys', 'Authorization vs Authentication', 'Auth in Practice'] },
-    { course: 'How TypeScript Works', id: 'typescript', lessons: ['The Problem TypeScript Solves', 'Types — The Basics', 'Interfaces & Objects', 'Functions & Return Types', 'Generics', 'Union Types & Type Guards', 'TypeScript in the Codebase', 'Getting Started'] },
-    { course: 'How React Works', id: 'react', lessons: ['Why React Exists', 'Components', 'JSX', 'Props', 'State', 'Effects & Data Fetching', 'The React Lifecycle', 'React in Paperclip'] },
-    { course: 'How Testing Works', id: 'testing', lessons: ['Why Test?', 'Unit Tests', 'What to Test', 'Integration Tests', 'End-to-End Tests', 'Mocking & Fixtures', 'TDD', 'Testing in Practice'] },
-    { course: 'How AI Agents Work', id: 'ai-agents', lessons: ['What is an LLM?', 'Prompts & Context', 'Tool Use', 'The Agent Loop', 'How Claude Code Works', 'Adapters & Orchestration', 'Costs & Limits', 'The Future'] },
-    { course: 'How to Ship a Product', id: 'shipping', lessons: ['Ideas vs Execution', 'The Stack Decision', 'Design Before Code', 'Building in Phases', 'Launch Checklist', 'Getting Users', 'Monitoring', 'What You\'ve Learned'] }
+    { course: 'How Databases Work', id: 'databases', scope: 'base', lessons: ['Tables', 'Keys', 'Relationships', 'Schema', 'Queries', 'Paperclip Scale'] },
+    { course: 'The Codebase', id: 'codebase', scope: 'paperclip', lessons: ['Big Picture', 'File Map', 'Server', 'Database Layer', 'UI', 'Adapters', 'Heartbeat', 'Full Flow'] },
+    { course: 'APIs & HTTP', id: 'apis', scope: 'base', lessons: ['The Internet', 'APIs', 'HTTP Methods', 'The Request', 'The Response', 'JSON', 'Tracing a Request', 'REST'] },
+    { course: 'Build a Mini App', id: 'build', scope: 'base', lessons: ['What We\'re Building', 'The Database', 'The Server', 'The UI', 'How They Connect', 'What Makes It Real', 'Full Code', 'What You Know'] },
+    { course: 'How Deployment Works', id: 'deployment', scope: 'base', lessons: ['localhost vs World', 'Servers', 'Build Step', 'Vercel', 'DNS', 'CDN', 'Environments', 'Full Journey'] },
+    { course: 'How Git Works', id: 'git', scope: 'base', lessons: ['Why Git Exists', 'Commits', 'Three Areas', 'Branches', 'Merging', 'Remote & GitHub', 'Pull Requests', 'Git in Practice'] },
+    { course: 'How Auth Works', id: 'authentication', scope: 'base', lessons: ['The Problem', 'Passwords & Hashing', 'Sessions & Cookies', 'Tokens (JWT)', 'OAuth', 'API Keys', 'Authorization vs Authentication', 'Auth in Practice'] },
+    { course: 'How TypeScript Works', id: 'typescript', scope: 'base', lessons: ['The Problem TypeScript Solves', 'Types — The Basics', 'Interfaces & Objects', 'Functions & Return Types', 'Generics', 'Union Types & Type Guards', 'TypeScript in the Codebase', 'Getting Started'] },
+    { course: 'How React Works', id: 'react', scope: 'base', lessons: ['Why React Exists', 'Components', 'JSX', 'Props', 'State', 'Effects & Data Fetching', 'The React Lifecycle', 'React in Paperclip'] },
+    { course: 'How Testing Works', id: 'testing', scope: 'base', lessons: ['Why Test?', 'Unit Tests', 'What to Test', 'Integration Tests', 'End-to-End Tests', 'Mocking & Fixtures', 'TDD', 'Testing in Practice'] },
+    { course: 'How AI Agents Work', id: 'ai-agents', scope: 'base', lessons: ['What is an LLM?', 'Prompts & Context', 'Tool Use', 'The Agent Loop', 'How Claude Code Works', 'Adapters & Orchestration', 'Costs & Limits', 'The Future'] },
+    { course: 'How to Ship a Product', id: 'shipping', scope: 'base', lessons: ['Ideas vs Execution', 'The Stack Decision', 'Design Before Code', 'Building in Phases', 'Launch Checklist', 'Getting Users', 'Monitoring', 'What You\'ve Learned'] },
+    { course: 'How Linq\'s Data Layer Works', id: 'data-layer', scope: 'linq', lessons: ['Big Picture', 'The Monolith', '"Service" x2', 'The Microservices', 'Database-per-Service', 'How Services Talk', 'A Real Flow'] }
   ];
+
+  // A course is visible when it's shared ('base') or belongs to the selected company.
+  function courseScope(id) {
+    for (var i = 0; i < courseIndex.length; i++) {
+      if (courseIndex[i].id === id) return courseIndex[i].scope || 'base';
+    }
+    return 'base';
+  }
+
+  function courseVisible(id) {
+    var s = courseScope(id);
+    return s === 'base' || s === getCompany();
+  }
 
   /* ----------------------------------------------------------
      DOM Ready
@@ -124,17 +168,75 @@
     var currentTheme = getStoredTheme() || "dark";
     updateThemeToggle(currentTheme);
 
-    /* --- Sidebar Progress Counter --- */
+    /* --- Company Switcher (injected into the sidebar header) --- */
+    var sidebarHeader = document.querySelector('.sidebar-header');
+    if (sidebarHeader && !document.querySelector('.company-switcher')) {
+      var activeCompany = getCompany();
+      var activeCompanyObj = companies.filter(function (c) { return c.id === activeCompany; })[0] || companies[0];
+
+      var switcher = document.createElement('div');
+      switcher.className = 'company-switcher';
+
+      var html = '<button class="company-current" id="company-current" aria-haspopup="true" aria-expanded="false">' +
+        '<span class="company-meta"><span class="company-eyebrow">Example</span>' +
+        '<span class="company-name">' + activeCompanyObj.name + '</span></span>' +
+        '<span class="company-caret">▾</span></button>' +
+        '<div class="company-menu" id="company-menu" role="menu" hidden>';
+      companies.forEach(function (c) {
+        var sel = c.id === activeCompany ? ' selected' : '';
+        html += '<button class="company-option' + sel + '" role="menuitem" data-company-id="' + c.id + '">' + c.name + '</button>';
+      });
+      html += '</div>';
+      switcher.innerHTML = html;
+      // Place as a full-width row directly under the logo header.
+      sidebarHeader.parentNode.insertBefore(switcher, sidebarHeader.nextSibling);
+
+      var currentBtn = switcher.querySelector('.company-current');
+      var menu = switcher.querySelector('.company-menu');
+
+      function closeMenu() {
+        menu.setAttribute('hidden', '');
+        currentBtn.setAttribute('aria-expanded', 'false');
+      }
+      currentBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        if (menu.hasAttribute('hidden')) {
+          menu.removeAttribute('hidden');
+          currentBtn.setAttribute('aria-expanded', 'true');
+        } else {
+          closeMenu();
+        }
+      });
+      switcher.querySelectorAll('.company-option').forEach(function (opt) {
+        opt.addEventListener('click', function () {
+          var id = opt.getAttribute('data-company-id');
+          if (id === getCompany()) { closeMenu(); return; }
+          setCompany(id);
+          // Reload into the home catalog for the newly selected company.
+          window.location.href = '/';
+        });
+      });
+      document.addEventListener('click', function (e) {
+        if (!switcher.contains(e.target)) closeMenu();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeMenu();
+      });
+    }
+
+    /* --- Sidebar Progress Counter (counts the visible catalog) --- */
     var sidebarNav = document.querySelector('.sidebar-nav');
     if (sidebarNav) {
       try {
         var visitedData = JSON.parse(localStorage.getItem('fundamentals-visited') || '{}');
-        var completedCount = Object.keys(visitedData).length;
+        var visibleCourses = courseIndex.filter(function (c) { return courseVisible(c.id); });
+        var totalVisible = visibleCourses.length;
+        var completedCount = visibleCourses.filter(function (c) { return visitedData[c.id]; }).length;
         if (completedCount > 0) {
           var progressDiv = document.createElement('div');
           progressDiv.className = 'sidebar-progress';
-          progressDiv.innerHTML = '<span>' + completedCount + '/12 completed</span>' +
-            '<div class="sidebar-progress-bar"><div class="sidebar-progress-fill" style="width:' + Math.round(completedCount / 12 * 100) + '%"></div></div>';
+          progressDiv.innerHTML = '<span>' + completedCount + '/' + totalVisible + ' completed</span>' +
+            '<div class="sidebar-progress-bar"><div class="sidebar-progress-fill" style="width:' + Math.round(completedCount / totalVisible * 100) + '%"></div></div>';
           sidebarNav.insertBefore(progressDiv, sidebarNav.firstChild);
         }
       } catch (e) {}
@@ -305,6 +407,8 @@
     // Build flat search index
     var searchItems = [];
     courseIndex.forEach(function (course) {
+      // Only surface courses in the currently selected company's catalog
+      if (!courseVisible(course.id)) return;
       // Add the course itself
       searchItems.push({
         label: course.course,
@@ -581,22 +685,28 @@
           }
         }
 
-        // Auto-generate course navigation footer
+        // Auto-generate course navigation footer (within the visible catalog)
         var container = document.querySelector('.container');
         if (container) {
+          var navList = courseIndex.filter(function (c) { return courseVisible(c.id); });
+          var navIdx = -1;
+          for (var ni = 0; ni < navList.length; ni++) {
+            if (navList[ni].id === currentCourseId) { navIdx = ni; break; }
+          }
+
           var navFooter = document.createElement('div');
           navFooter.className = 'course-nav-footer';
           var footerHTML = '';
 
-          if (courseIdx > 0) {
-            var prev = courseIndex[courseIdx - 1];
+          if (navIdx > 0) {
+            var prev = navList[navIdx - 1];
             footerHTML += '<a href="/lessons/' + prev.id + '" class="course-nav-prev">\u2190 ' + prev.course + '</a>';
           } else {
             footerHTML += '<span></span>';
           }
 
-          if (courseIdx < courseIndex.length - 1) {
-            var next = courseIndex[courseIdx + 1];
+          if (navIdx !== -1 && navIdx < navList.length - 1) {
+            var next = navList[navIdx + 1];
             footerHTML += '<a href="/lessons/' + next.id + '" class="course-nav-next">' + next.course + ' \u2192</a>';
           } else {
             footerHTML += '<span></span>';
